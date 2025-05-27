@@ -5,8 +5,12 @@
 ![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens)
 ![NCP](https://img.shields.io/badge/Naver_Cloud-03C75A?style=for-the-badge&logo=Naver&logoColor=white)
 
-수면과 인지 기능의 상관관계를 지원하는 API 서버
+서비스 주소
+🔗 https://focusz.site
+🔗 https://www.focusz.site
+🔗 https://www.dev.focusz.site
 
+수면과 인지 기능의 상관관계를 지원하는 API 서버
 ---
 
 ## 🎯 프로젝트 소개  
