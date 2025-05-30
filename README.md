@@ -111,7 +111,7 @@
 graph TD
   Developer[Developer] -->|Push to GitHub| GitHub[GitHub Repository]
   GitHub -->|CI/CD| GitHubActions[GitHub Actions]
-  GitHubActions -->|Deploy| EC2[NCP EC2 - Ubuntu]
+  GitHubActions -->|Deploy| EC2[NCP Server - Ubuntu]
   GitHubActions -->|Notify| Discord[Discord Alert]
 
   subgraph Web Server
@@ -124,7 +124,7 @@ graph TD
   Nginx --> Gunicorn
   Gunicorn --> Django
 
-  Django --> PostgreSQL[NCP RDS - PostgreSQL]
+  Django --> PostgreSQL[NCP cloud DB - PostgreSQL]
 ```
 
 
