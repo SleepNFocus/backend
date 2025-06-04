@@ -104,3 +104,27 @@
 - **인프라**: NCP EC2 + PostgreSQL RDS  
 - **웹서버**: Gunicorn + Nginx + HTTPS  
 - **CI/CD**: GitHub Actions + Discord 알림
+
+### 🏗️ Infra Diagram (Mermaid)
+
+```mermaid
+graph TD
+  Developer[Developer] -->|Push to GitHub| GitHub[GitHub Repository]
+  GitHub -->|CI/CD| GitHubActions[GitHub Actions]
+  GitHubActions -->|Deploy| EC2[NCP Server - Ubuntu]
+  GitHubActions -->|Notify| Discord[Discord Alert]
+
+  subgraph Web Server
+    Nginx[Nginx - HTTPS]
+    Gunicorn[Gunicorn]
+    Django[Django App]
+  end
+
+  EC2 --> Nginx
+  Nginx --> Gunicorn
+  Gunicorn --> Django
+
+  Django --> PostgreSQL[NCP cloud DB - PostgreSQL]
+```
+
+
