@@ -3,13 +3,13 @@ name: Deploy
 on:
   pull_request:
     types:
-      - closed
+      - closed   # 풀 리퀘스트가 “병합(closed)”되었을 때 트리거
 
 jobs:
   deploy-dev:
+    # dev 브랜치로 머지되었을 때만 실행
     if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'dev'
     name: Deploy to NCP Dev Server
-    needs: lint-and-typecheck
     runs-on: ubuntu-latest
 
     steps:
@@ -34,9 +34,9 @@ jobs:
             sudo systemctl restart nginx
 
   deploy-live:
+    # main 브랜치로 머지되었을 때만 실행
     if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
     name: Deploy to NCP Live Server
-    needs: lint-and-typecheck
     runs-on: ubuntu-latest
 
     steps:
