@@ -1,0 +1,95 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - dev
+      - main
+
+jobs:
+  lint-and-typecheck:
+    if: github.event.pull_request.merged == true
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry & Dependencies
+        run: |
+          pip install poetry
+          poetry config virtualenvs.create false
+          poetry install --with dev
+
+      - name: Run isort
+        run: isort . --check --diff
+
+      - name: Run black
+        run: black . --check --diff
+
+      - name: Run ruff
+        run: ruff .
+
+      - name: Run mypy (with stubs)
+        run: mypy . --strict
+
+  deploy-dev:
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'dev'
+    name: Deploy to NCP Dev Server
+    needs: lint-and-typecheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH to Dev Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEV_NCP_HOST }}
+          username: ${{ secrets.DEV_NCP_USER }}
+          key: ${{ secrets.DEV_NCP_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/your-project-folder
+            source ~/.bashrc || true
+            export PATH="$HOME/.poetry/bin:$HOME/.local/bin:$PATH"
+
+            git pull origin dev
+            poetry install --no-interaction --no-ansi
+            poetry run python manage.py migrate
+            poetry run python manage.py collectstatic --noinput
+
+            sudo systemctl restart gunicorn
+            sudo systemctl restart nginx
+
+  deploy-live:
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    name: Deploy to NCP Live Server
+    needs: lint-and-typecheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH to Live Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.LIVE_NCP_HOST }}
+          username: ${{ secrets.LIVE_NCP_USER }}
+          key: ${{ secrets.LIVE_NCP_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/your-project-folder
+            source ~/.bashrc || true
+            export PATH="$HOME/.poetry/bin:$HOME/.local/bin:$PATH"
+
+            git pull origin main
+            poetry install --no-interaction --no-ansi
+            poetry run python manage.py migrate
+            poetry run python manage.py collectstatic --noinput
+
+            sudo systemctl restart gunicorn
+            sudo systemctl restart nginx
