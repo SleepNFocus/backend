@@ -1,3 +1,5 @@
-from django.urls import path
+from typing import List, Union
 
-urlpatterns = []
+from django.urls import URLPattern, URLResolver
+
+urlpatterns: List[Union[URLPattern, URLResolver]] = []
