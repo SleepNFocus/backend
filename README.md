@@ -107,7 +107,6 @@
 
 ### 🏗️ Infra Diagram (Mermaid)
 
-
 ```mermaid
 graph TD
   Developer[Developer] -->|Push to GitHub| GitHub[GitHub Repository]
