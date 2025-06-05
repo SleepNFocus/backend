@@ -21,7 +21,7 @@ jobs:
           key: ${{ secrets.DEV_NCP_SSH_KEY }}
           script: |
             set -e
-            cd ~/your-project-folder
+            cd ~/backend
             source ~/.bashrc || true
             export PATH="$HOME/.poetry/bin:$HOME/.local/bin:$PATH"
 
@@ -48,7 +48,7 @@ jobs:
           key: ${{ secrets.LIVE_NCP_SSH_KEY }}
           script: |
             set -e
-            cd ~/your-project-folder
+            cd ~/backend
             source ~/.bashrc || true
             export PATH="$HOME/.poetry/bin:$HOME/.local/bin:$PATH"
 
