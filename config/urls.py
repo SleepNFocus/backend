@@ -14,10 +14,11 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.http import HttpResponse
 from django.urls import path
 
 urlpatterns = [
     # 루트(‘/’) 요청 시 Hello, World! 반환
-    path('', lambda request: HttpResponse('Hello, World!'), name='home'),
+    path("", lambda request: HttpResponse("Hello, World!"), name="home"),
 ]
