@@ -19,4 +19,5 @@ def main():
 
 
 if __name__ == '__main__':
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.base')  # 이 줄 추가
     main()
