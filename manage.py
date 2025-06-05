@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 # python-dotenv 모듈은 기본적으로 타입 스텁이 없으므로 무시합니다.
-from dotenv import load_dotenv  # type: ignore
+from dotenv import load_dotenv
 
 # 프로젝트 최상위(.env가 위치한 곳)에 있는 .env 파일을 로드
 load_dotenv(Path(__file__).resolve().parent / ".env")
