@@ -1,51 +1,12 @@
-name: CI/CD Pipeline
+name: Deploy
 
 on:
   pull_request:
     types:
-      - opened
-      - synchronize
-      - reopened
-
-    branches:
-      - dev
-      - main
+      - closed
 
 jobs:
-  lint-and-typecheck:
-
-    name: Code Quality Checks
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-
-      - name: Install Poetry & Dependencies
-        run: |
-          pip install poetry
-          poetry config virtualenvs.create false
-          poetry install --with dev
-
-      - name: Run isort
-        run: isort . --check --diff
-
-      - name: Run black
-        run: black . --check --diff
-
-      - name: Run ruff
-        run: ruff .
-
-      - name: Run mypy (with stubs)
-        run: mypy . --strict
-
   deploy-dev:
-
     if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'dev'
     name: Deploy to NCP Dev Server
     needs: lint-and-typecheck
@@ -73,7 +34,6 @@ jobs:
             sudo systemctl restart nginx
 
   deploy-live:
-
     if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
     name: Deploy to NCP Live Server
     needs: lint-and-typecheck

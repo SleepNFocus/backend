@@ -1,0 +1,46 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+    branches:
+      - dev
+      - main
+
+jobs:
+  lint-and-typecheck:
+
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry & Dependencies
+        run: |
+          pip install poetry
+          poetry config virtualenvs.create false
+          poetry install --with dev
+
+      - name: Run isort
+        run: isort . --check --diff
+
+      - name: Run black
+        run: black . --check --diff
+
+      - name: Run ruff
+        run: ruff .
+
+      - name: Run mypy (with stubs)
+        run: mypy . --strict
+
