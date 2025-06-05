@@ -14,7 +14,7 @@ load_dotenv(Path(__file__).resolve().parent / ".env")
 def main() -> None:
     """Run administrative tasks."""
     # os.environ.get(...)은 반환형이 항상 str이므로 mypy 오류가 없습니다.
-    env_value = os.environ.get("DJANGO_ENV", "dev")
+    env_value = os.environ.get("DJANGO_ENV", "local")
     env: str = env_value  # 명시적으로 str으로 단언
 
     # 예: DJANGO_ENV=prod → "config.settings.prod"를 사용
