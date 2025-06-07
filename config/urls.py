@@ -20,4 +20,8 @@ from django.urls import path
 urlpatterns = [
     # 루트(‘/’) 요청 시 Hello, World! 반환
     path('', lambda request: HttpResponse('Hello, World!'), name='home'),
+
+    # cognitive req011~018
+    path('api/tests/', include('cognitives.urls')),
+    path('api/cognitive-tests/', include('cognitive_statistics.urls')),
 ]
