@@ -1,17 +1,36 @@
-[project]
-name = "sleepnfocus"
+[tool.poetry]
+name = "focuz-backend"
 version = "0.1.0"
-description = ""
-authors = [
-    {name = "workface",email = "with.you70@gmail.com"}
-]
+description = "수면과 인지 기능의 상관관계를 지원하는 API 서버"
+authors = ["workface <with.you70@gmail.com>"]
 readme = "README.md"
-requires-python = ">=3.13"
-dependencies = [
-    "django (>=5.2.1,<6.0.0)"
+
+packages = [
+  { include = "admin" },
+  { include = "cognitive_statistics" },
+  { include = "cognitives" },
+  { include = "config" },
+  { include = "sleep" },
+  { include = "users" },
 ]
 
+[tool.poetry.dependencies]
+python = ">=3.11,<4.0"
+django = ">=5.2.1,<6.0.0"
+dotenv = "^0.9.9"
+psycopg2-binary = "^2.9.10"
+django-redis = "^5.4.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+isort = "^5.12.0"
+black = "^24.0"
+ruff = "^0.4.4"
+mypy = "^1.10.0"
+django-stubs = "^4.2.7"
+djangorestframework-stubs = "^3.14.5"
+types-redis = "^4.6.0.20241004"
+

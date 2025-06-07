@@ -1,0 +1,61 @@
+name: Deploy
+
+on:
+  pull_request:
+    types:
+      - closed   # 풀 리퀘스트가 “병합(closed)”되었을 때 트리거
+
+jobs:
+  deploy-dev:
+    # dev 브랜치로 머지되었을 때만 실행
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'dev'
+    name: Deploy to NCP Dev Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH to Dev Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEV_NCP_HOST }}
+          username: ${{ secrets.DEV_NCP_USER }}
+          key: ${{ secrets.DEV_NCP_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/backend
+            source ~/.bashrc || true
+            export PATH="$HOME/.poetry/bin:$HOME/.local/bin:$PATH"
+
+            git pull origin dev
+            poetry install --no-interaction --no-ansi
+            poetry run python manage.py migrate
+            poetry run python manage.py collectstatic --noinput
+
+            sudo systemctl restart gunicorn
+            sudo systemctl restart nginx
+
+  deploy-live:
+    # main 브랜치로 머지되었을 때만 실행
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    name: Deploy to NCP Live Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH to Live Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.LIVE_NCP_HOST }}
+          username: ${{ secrets.LIVE_NCP_USER }}
+          key: ${{ secrets.LIVE_NCP_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/backend
+            source ~/.bashrc || true
+            export PATH="$HOME/.poetry/bin:$HOME/.local/bin:$PATH"
+
+            git pull origin main
+            poetry install --no-interaction --no-ansi
+            poetry run python manage.py migrate
+            poetry run python manage.py collectstatic --noinput
+
+            sudo systemctl restart gunicorn
+            sudo systemctl restart nginx
