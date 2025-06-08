@@ -1,5 +1,10 @@
 from typing import Any
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
 from django.db import models
 from django.utils import timezone
 
@@ -59,11 +64,7 @@ class WorkTimePattern(models.TextChoices):
 # 커스텀 유저 매니저
 class CustomUserManager(BaseUserManager["User"]):
     def create_user(
-        self,
-        email: str,
-        social_type: str,
-        social_id: str,
-        **extra_fields: Any
+        self, email: str, social_type: str, social_id: str, **extra_fields: Any
     ) -> "User":
         if not email:
             raise ValueError("이메일은 필수 항목입니다.")
@@ -80,7 +81,7 @@ class CustomUserManager(BaseUserManager["User"]):
         email: str,
         social_type: str = "KAKAO",
         social_id: str = "admin",
-        **extra_fields: Any
+        **extra_fields: Any,
     ) -> "User":
         extra_fields.setdefault("is_admin", True)
         extra_fields.setdefault("is_superuser", True)
@@ -101,7 +102,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         max_length=10, choices=MBTIType.choices, null=True, blank=True
     )
     joined_at: timezone.datetime = models.DateTimeField(default=timezone.now)
-    last_login_at: timezone.datetime | None = models.DateTimeField(null=True, blank=True)
+    last_login_at: timezone.datetime | None = models.DateTimeField(
+        null=True, blank=True
+    )
     updated_at: timezone.datetime = models.DateTimeField(auto_now=True)
     status: str = models.CharField(
         max_length=10, choices=UserStatus.choices, default=UserStatus.ACTIVE
@@ -121,7 +124,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class UserBlacklist(models.Model):
     blacklist_id: int = models.AutoField(primary_key=True)
-    user: User = models.ForeignKey(User, on_delete=models.CASCADE, related_name="blacklists")
+    user: User = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="blacklists"
+    )
     reason: str | None = models.TextField(null=True, blank=True)
     created_at: timezone.datetime = models.DateTimeField(default=timezone.now)
     expired_at: timezone.datetime | None = models.DateTimeField(null=True, blank=True)
@@ -133,10 +138,16 @@ class UserBlacklist(models.Model):
 
 class JobSurvey(models.Model):
     job_survey_id: int = models.AutoField(primary_key=True)
-    user: User = models.ForeignKey(User, on_delete=models.CASCADE, related_name="job_surveys")
+    user: User = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="job_surveys"
+    )
     cognitive_type: str = models.CharField(max_length=20, choices=CognitiveType.choices)
-    work_time_pattern: str = models.CharField(max_length=20, choices=WorkTimePattern.choices)
+    work_time_pattern: str = models.CharField(
+        max_length=20, choices=WorkTimePattern.choices
+    )
     created_at: timezone.datetime = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return f"{self.user.nickname} - {self.cognitive_type} / {self.work_time_pattern}"
+        return (
+            f"{self.user.nickname} - {self.cognitive_type} / {self.work_time_pattern}"
+        )

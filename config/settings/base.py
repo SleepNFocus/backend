@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     "sleep",
     "cognitives",
     "cognitive_statistics",
-    "admin",
+    "management",
 ]
 
 MIDDLEWARE = [
