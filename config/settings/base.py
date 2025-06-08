@@ -34,6 +34,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     "users",
+    "sleep",
+    "cognitives",
+    "cognitive_statistics",
+    "admin",
 ]
 
 MIDDLEWARE = [
