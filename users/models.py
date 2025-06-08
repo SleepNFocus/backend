@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from django.contrib.auth.models import (
@@ -9,7 +11,7 @@ from django.db import models
 from django.utils import timezone
 
 
-# User ENUM 필드
+# User ENUM 필드 (선택지 제한용)
 class SocialType(models.TextChoices):
     KAKAO = "KAKAO"
     GOOGLE = "GOOGLE"
@@ -62,56 +64,52 @@ class WorkTimePattern(models.TextChoices):
 
 
 # 커스텀 유저 매니저
-class CustomUserManager(BaseUserManager["User"]):
-    def create_user(
-        self, email: str, social_type: str, social_id: str, **extra_fields: Any
-    ) -> "User":
+class CustomUserManager(BaseUserManager[Any]):
+    # 일반 사용자
+    def create_user(self, email: str, social_type: str, social_id: str, **extra_fields: Any) -> User:
         if not email:
             raise ValueError("이메일은 필수 항목입니다.")
         email = self.normalize_email(email)
         user = self.model(
-            email=email, social_id=social_id, social_type=social_type, **extra_fields
+            email=email,
+            social_id=social_id,
+            social_type=social_type,
+            **extra_fields,
         )
         user.set_unusable_password()
         user.save(using=self._db)
         return user
 
+    # 관리자
     def create_superuser(
-        self,
-        email: str,
-        social_type: str = "KAKAO",
-        social_id: str = "admin",
-        **extra_fields: Any,
-    ) -> "User":
+        self, email: str, social_type: str = "KAKAO", social_id: str = "admin", **extra_fields: Any
+    ) -> User:
         extra_fields.setdefault("is_admin", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_staff", True)
         return self.create_user(email, social_type, social_id, **extra_fields)
 
 
+# User
 class User(AbstractBaseUser, PermissionsMixin):
-    user_id: int = models.AutoField(primary_key=True)
-    social_type: str = models.CharField(max_length=20, choices=SocialType.choices)
-    social_id: str = models.CharField(max_length=255, unique=True)
-    email: str = models.EmailField(max_length=100)
-    nickname: str = models.CharField(max_length=50)
-    profile_img: str | None = models.TextField(null=True, blank=True)
-    gender: str = models.CharField(max_length=5, choices=Gender.choices)
-    birth_year: int = models.PositiveSmallIntegerField()
-    mbti: str | None = models.CharField(
-        max_length=10, choices=MBTIType.choices, null=True, blank=True
-    )
-    joined_at: timezone.datetime = models.DateTimeField(default=timezone.now)
-    last_login_at: timezone.datetime | None = models.DateTimeField(
-        null=True, blank=True
-    )
-    updated_at: timezone.datetime = models.DateTimeField(auto_now=True)
-    status: str = models.CharField(
+    user_id = models.AutoField(primary_key=True)
+    social_type = models.CharField(max_length=20, choices=SocialType.choices)
+    social_id = models.CharField(max_length=255, unique=True)
+    email = models.EmailField(max_length=100)
+    nickname = models.CharField(max_length=50)
+    profile_img = models.TextField(null=True, blank=True)
+    gender = models.CharField(max_length=5, choices=Gender.choices)
+    birth_year = models.PositiveSmallIntegerField()
+    mbti = models.CharField(max_length=10, choices=MBTIType.choices, null=True, blank=True)  # 시리얼라이저에서 null로 변환 처리
+    joined_at = models.DateTimeField(default=timezone.now)
+    last_login_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(
         max_length=10, choices=UserStatus.choices, default=UserStatus.ACTIVE
     )
-    is_active: bool = models.BooleanField(default=True)
-    is_admin: bool = models.BooleanField(default=False)
-    is_staff: bool = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_admin = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
 
     USERNAME_FIELD = "social_id"
     REQUIRED_FIELDS = ["social_type", "email", "nickname"]
@@ -122,32 +120,26 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{self.nickname} - {self.email} / {self.social_type}"
 
 
+# UserBlacklist
 class UserBlacklist(models.Model):
-    blacklist_id: int = models.AutoField(primary_key=True)
-    user: User = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="blacklists"
-    )
-    reason: str | None = models.TextField(null=True, blank=True)
-    created_at: timezone.datetime = models.DateTimeField(default=timezone.now)
-    expired_at: timezone.datetime | None = models.DateTimeField(null=True, blank=True)
-    is_active: bool = models.BooleanField(default=True)
+    blacklist_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="blacklists")
+    reason = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    expired_at = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self) -> str:
         return f"{self.user.nickname} - {self.reason or '사유 미기재'}"
 
 
+# JobSurvey
 class JobSurvey(models.Model):
-    job_survey_id: int = models.AutoField(primary_key=True)
-    user: User = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="job_surveys"
-    )
-    cognitive_type: str = models.CharField(max_length=20, choices=CognitiveType.choices)
-    work_time_pattern: str = models.CharField(
-        max_length=20, choices=WorkTimePattern.choices
-    )
-    created_at: timezone.datetime = models.DateTimeField(auto_now_add=True)
+    job_survey_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="job_surveys")
+    cognitive_type = models.CharField(max_length=20, choices=CognitiveType.choices)
+    work_time_pattern = models.CharField(max_length=20, choices=WorkTimePattern.choices)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return (
-            f"{self.user.nickname} - {self.cognitive_type} / {self.work_time_pattern}"
-        )
+        return f"{self.user.nickname} - {self.cognitive_type} / {self.work_time_pattern}"
