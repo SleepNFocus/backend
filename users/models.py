@@ -66,7 +66,9 @@ class WorkTimePattern(models.TextChoices):
 # 커스텀 유저 매니저
 class CustomUserManager(BaseUserManager[Any]):
     # 일반 사용자
-    def create_user(self, email: str, social_type: str, social_id: str, **extra_fields: Any) -> User:
+    def create_user(
+        self, email: str, social_type: str, social_id: str, **extra_fields: Any
+    ) -> User:
         if not email:
             raise ValueError("이메일은 필수 항목입니다.")
         email = self.normalize_email(email)
@@ -82,7 +84,11 @@ class CustomUserManager(BaseUserManager[Any]):
 
     # 관리자
     def create_superuser(
-        self, email: str, social_type: str = "KAKAO", social_id: str = "admin", **extra_fields: Any
+        self,
+        email: str,
+        social_type: str = "KAKAO",
+        social_id: str = "admin",
+        **extra_fields: Any,
     ) -> User:
         extra_fields.setdefault("is_admin", True)
         extra_fields.setdefault("is_superuser", True)
@@ -100,7 +106,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     profile_img = models.TextField(null=True, blank=True)
     gender = models.CharField(max_length=5, choices=Gender.choices)
     birth_year = models.PositiveSmallIntegerField()
-    mbti = models.CharField(max_length=10, choices=MBTIType.choices, null=True, blank=True)  # 시리얼라이저에서 null로 변환 처리
+    mbti = models.CharField(
+        max_length=10, choices=MBTIType.choices, null=True, blank=True
+    )  # 시리얼라이저에서 null로 변환 처리
     joined_at = models.DateTimeField(default=timezone.now)
     last_login_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -142,4 +150,6 @@ class JobSurvey(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return f"{self.user.nickname} - {self.cognitive_type} / {self.work_time_pattern}"
+        return (
+            f"{self.user.nickname} - {self.cognitive_type} / {self.work_time_pattern}"
+        )
