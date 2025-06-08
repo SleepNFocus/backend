@@ -20,7 +20,7 @@ REDIS_DB = int(os.getenv("REDIS_DB", 1))
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = "users.User"
 
 
 # Application definition
@@ -32,12 +32,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "users",
     "sleep",
     "cognitives",
     "cognitive_statistics",
-    "admin",
+    "management",
 ]
 
 MIDDLEWARE = [

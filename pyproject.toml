@@ -6,7 +6,7 @@ authors = ["workface <with.you70@gmail.com>"]
 readme = "README.md"
 
 packages = [
-  { include = "admin" },
+  { include = "management" },
   { include = "cognitive_statistics" },
   { include = "cognitives" },
   { include = "config" },
@@ -33,4 +33,15 @@ mypy = "^1.10.0"
 django-stubs = "^4.2.7"
 djangorestframework-stubs = "^3.14.5"
 types-redis = "^4.6.0.20241004"
+monkeytype = "^23.3.0"
 
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
+strict = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings.local"
+strict_settings = true
