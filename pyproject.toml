@@ -33,4 +33,3 @@ mypy = "^1.10.0"
 django-stubs = "^4.2.7"
 djangorestframework-stubs = "^3.14.5"
 types-redis = "^4.6.0.20241004"
-
