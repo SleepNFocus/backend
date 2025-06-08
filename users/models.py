@@ -1,6 +1,9 @@
 from django.conf import settings
-from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
-                                        PermissionsMixin)
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
 from django.db import models
 from django.utils import timezone
 
@@ -10,9 +13,11 @@ class SocialType(models.TextChoices):
     KAKAO = "KAKAO"
     GOOGLE = "GOOGLE"
 
+
 class Gender(models.TextChoices):
     MALE = "남"
     FEMALE = "여"
+
 
 class MBTIType(models.TextChoices):
     ISTJ = "ISTJ"
@@ -33,10 +38,12 @@ class MBTIType(models.TextChoices):
     ENFP = "ENFP"
     NONE = "선택안함"
 
+
 class UserStatus(models.TextChoices):
     ACTIVE = "active"
     DORMANT = "dormant"
     WITHDRAWN = "withdrawn"
+
 
 # Jobsurvey ENUM 필드
 class CognitiveType(models.TextChoices):
@@ -60,16 +67,13 @@ class CustomUserManager(BaseUserManager):
         # 이메일 필수 체크
         if not email:
             raise ValueError("이메일은 필수 항목입니다.")
-    
+
         # 이메일 정규화 (소문자 처리, 불필요한 공백 및 형식 오류를 정리해줌)
         email = self.normalize_email(email)
 
         # user 모델 인스턴스 생성
         user = self.model(
-            email = email,
-            social_id = social_id,
-            social_type = social_type,
-            **extra_fields
+            email=email, social_id=social_id, social_type=social_type, **extra_fields
         )
 
         # 비밀번호 로그인 불가 설정
@@ -78,7 +82,9 @@ class CustomUserManager(BaseUserManager):
         user.save(using=self._db)
 
     # 관리자
-    def create_superuser(self, email, social_type="KAKAO", social_id="admin", **extra_fields):
+    def create_superuser(
+        self, email, social_type="KAKAO", social_id="admin", **extra_fields
+    ):
         # 관리자 계정에 필요한 권한 설정
         extra_fields.setdefault("is_admin", True)
         extra_fields.setdefault("is_superuser", True)
@@ -86,7 +92,7 @@ class CustomUserManager(BaseUserManager):
 
         # 일반 사용자 생성 로직 재사용
         return self.create_user(email, social_type, social_id, **extra_fields)
-    
+
 
 # User
 class User(AbstractBaseUser, PermissionsMixin):
@@ -98,11 +104,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     profile_img = models.TextField(null=True, blank=True)
     gender = models.CharField(max_length=5, choices=Gender.choices)
     birth_year = models.PositiveSmallIntegerField()
-    mbti = models.CharField(max_length=10, choices=MBTIType.choices, null=True, blank=True) # 시리얼라이저에서 null로 변환 처리
+    mbti = models.CharField(
+        max_length=10, choices=MBTIType.choices, null=True, blank=True
+    )  # 시리얼라이저에서 null로 변환 처리
     joined_at = models.DateTimeField(default=timezone.now)
     last_login_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
-    status = models.CharField(max_length=10, choices=UserStatus.choices, default=UserStatus.ACTIVE)
+    status = models.CharField(
+        max_length=10, choices=UserStatus.choices, default=UserStatus.ACTIVE
+    )
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
@@ -119,7 +129,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 # UserBlacklist
 class UserBlacklist(models.Model):
     blacklist_id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blacklists')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="blacklists")
     reason = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     expired_at = models.DateTimeField(null=True, blank=True)
@@ -138,4 +148,6 @@ class JobSurvey(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.nickname} - {self.cognitive_type} / {self.work_time_pattern}"
+        return (
+            f"{self.user.nickname} - {self.cognitive_type} / {self.work_time_pattern}"
+        )
