@@ -17,9 +17,9 @@ packages = [
 [tool.poetry.dependencies]
 python = ">=3.11,<4.0"
 django = ">=5.2.1,<6.0.0"
-dotenv = "^0.9.9"
 psycopg2-binary = "^2.9.10"
 django-redis = "^5.4.0"
+python-dotenv = "^1.1.0"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"
