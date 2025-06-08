@@ -1,11 +1,8 @@
-from django.db import models
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-    PermissionsMixin,
-    BaseUserManager
-)
-from django.utils import timezone
 from django.conf import settings
+from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
+                                        PermissionsMixin)
+from django.db import models
+from django.utils import timezone
 
 
 # User ENUM 필드 (선택지 제한용)
