@@ -10,17 +10,14 @@ from django.contrib.auth.models import (
 from django.db import models
 from django.utils import timezone
 
-
 # User ENUM 필드 (선택지 제한용)
 class SocialType(models.TextChoices):
     KAKAO = "KAKAO"
     GOOGLE = "GOOGLE"
 
-
 class Gender(models.TextChoices):
     MALE = "남"
     FEMALE = "여"
-
 
 class MBTIType(models.TextChoices):
     ISTJ = "ISTJ"
@@ -41,12 +38,10 @@ class MBTIType(models.TextChoices):
     ENFP = "ENFP"
     NONE = "선택안함"
 
-
 class UserStatus(models.TextChoices):
     ACTIVE = "active"
     DORMANT = "dormant"
     WITHDRAWN = "withdrawn"
-
 
 # Jobsurvey ENUM 필드
 class CognitiveType(models.TextChoices):
@@ -55,20 +50,18 @@ class CognitiveType(models.TextChoices):
     PHYSICAL = "physical"
     NONE = "none"
 
-
 class WorkTimePattern(models.TextChoices):
     REGULAR_DAY = "regular_day"
     SHIFT_NIGHT = "shift_night"
     FLEXIBLE = "flexible"
     NO_SCHEDULE = "no_schedule"
 
-
 # 커스텀 유저 매니저
-class CustomUserManager(BaseUserManager[Any]):
+class CustomUserManager(BaseUserManager["User"]):
     # 일반 사용자
     def create_user(
         self, email: str, social_type: str, social_id: str, **extra_fields: Any
-    ) -> User:
+    ) -> "User":
         if not email:
             raise ValueError("이메일은 필수 항목입니다.")
         email = self.normalize_email(email)
@@ -89,12 +82,11 @@ class CustomUserManager(BaseUserManager[Any]):
         social_type: str = "KAKAO",
         social_id: str = "admin",
         **extra_fields: Any,
-    ) -> User:
+    ) -> "User":
         extra_fields.setdefault("is_admin", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_staff", True)
         return self.create_user(email, social_type, social_id, **extra_fields)
-
 
 # User
 class User(AbstractBaseUser, PermissionsMixin):
@@ -108,7 +100,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     birth_year = models.PositiveSmallIntegerField()
     mbti = models.CharField(
         max_length=10, choices=MBTIType.choices, null=True, blank=True
-    )  # 시리얼라이저에서 null로 변환 처리
+    ) # 시리얼라이저에서 null로 변환 처리
     joined_at = models.DateTimeField(default=timezone.now)
     last_login_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -127,7 +119,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self) -> str:
         return f"{self.nickname} - {self.email} / {self.social_type}"
 
-
 # UserBlacklist
 class UserBlacklist(models.Model):
     blacklist_id = models.AutoField(primary_key=True)
@@ -140,7 +131,6 @@ class UserBlacklist(models.Model):
     def __str__(self) -> str:
         return f"{self.user.nickname} - {self.reason or '사유 미기재'}"
 
-
 # JobSurvey
 class JobSurvey(models.Model):
     job_survey_id = models.AutoField(primary_key=True)
@@ -150,6 +140,4 @@ class JobSurvey(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return (
-            f"{self.user.nickname} - {self.cognitive_type} / {self.work_time_pattern}"
-        )
+        return f"{self.user.nickname} - {self.cognitive_type} / {self.work_time_pattern}"
