@@ -21,10 +21,6 @@ dotenv = "^0.9.9"
 psycopg2-binary = "^2.9.10"
 django-redis = "^5.4.0"
 
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
-
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"
 black = "^24.0"
@@ -34,3 +30,48 @@ django-stubs = "^4.2.7"
 djangorestframework-stubs = "^3.14.5"
 types-redis = "^4.6.0.20241004"
 
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+# Black 프로파일을 따라가도록 설정
+profile = "black"
+# 한 줄 최대 길이 (black 과 일치)
+line_length = 88
+# 프로젝트의 first-party 패키지로 인식할 모듈 목록
+known_first_party = ["admin", "cognitive_statistics", "cognitives", "config", "sleep", "users"]
+# Multi-line output style: 3 = vertical hanging indent
+multi_line_output = 3
+include_trailing_comma = true
+
+[tool.black]
+# 최대 줄 길이 (isort 과 일치)
+line-length = 88
+# 지원할 Python 버전
+target-version = ["py311"]
+# 포맷팅할 파일 패턴
+include = '\.pyi?$'
+# 제외할 디렉터리/파일
+exclude = '''
+/(
+  \.eggs
+| \.git
+| \.hg
+| \.mypy_cache
+| \.tox
+| \.venv
+| build
+| dist
+)/
+'''
+
+[tool.mypy]
+# 검사할 Python 버전
+python_version = "3.11"
+# 엄격 모드
+strict = true
+# 설치된 패키지의 타입 힌트 누락 오류 무시
+ignore_missing_imports = true
+# Django-stubs 플러그인 활성화
+plugins = ["mypy_django_plugin.main"]
