@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import redis
 from django.conf import settings
 
@@ -15,3 +17,5 @@ def set_redis_key(key: str, value: str) -> None:
 def get_redis_key(key: str) -> str | None:
     val = client.get(key)
     return val.decode("utf-8") if val else None
+
+
