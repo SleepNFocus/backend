@@ -79,8 +79,4 @@ plugins = ["mypy_django_plugin.main"]
 
 [tool.django-stubs]
 django_settings_module = "config.settings.local"
-<<<<<<< HEAD
 strict_settings = true
-=======
-strict_settings = true
->>>>>>> fb113e7c4d4110a8b082b2771156350dcd642261
