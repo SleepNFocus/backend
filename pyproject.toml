@@ -77,5 +77,6 @@ ignore_missing_imports = true
 # Django-stubs 플러그인 활성화
 plugins = ["mypy_django_plugin.main"]
 
-#[tool.mypy.plugins.django-stubs]
+[tool.django-stubs]
 django_settings_module = "config.settings.local"
+strict_settings = true
