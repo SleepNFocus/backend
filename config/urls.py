@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.urls import path, include
+from django.urls import include, path
 
 urlpatterns = [
     path('', lambda request: HttpResponse('Hello, World!'), name='home'),

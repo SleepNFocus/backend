@@ -1,5 +1,7 @@
 from typing import List, Union
-from django.urls import path, URLPattern, URLResolver
+
+from django.urls import URLPattern, URLResolver, path
+
 from . import views
 
 urlpatterns: List[Union[URLPattern, URLResolver]] = [
