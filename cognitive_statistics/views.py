@@ -1,52 +1,77 @@
+from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from .models import (
+    CognitiveTestType,
+    CognitiveTestFormat,
+    CognitiveTestTime,
+    CognitiveTestResult
+)
+from .serializers import (
+    CognitiveTestTypeSerializer,
+    CognitiveTestFormatSerializer,
+    CognitiveTestTimeSerializer,
+    CognitiveTestResultSerializer
+)
+
+# 메타 정보 조회: 유형 목록
+class CognitiveTestTypeListAPIView(generics.ListAPIView):
+    queryset = CognitiveTestType.objects.all()
+    serializer_class = CognitiveTestTypeSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
-class CognitiveTestTypeListAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        return Response("REQ-011")
-
-
-class CognitiveTestFormatListAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        return Response("REQ-012")
+# 메타 정보 조회: 형식(세부) 목록
+class CognitiveTestFormatListAPIView(generics.ListAPIView):
+    queryset = CognitiveTestFormat.objects.select_related('test_type').all()
+    serializer_class = CognitiveTestFormatSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
-class CognitiveTestTimeSaveAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+# 테스트 소요 시간 저장
+class CognitiveTestTimeSaveAPIView(generics.CreateAPIView):
+    serializer_class = CognitiveTestTimeSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request):
-        return Response("REQ-014")
-
-
-class CognitiveTestTimeGuideAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        return Response("REQ-015")
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
-class CognitiveTestResultBasicAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+# 권장 시간 안내(가이드)
+class CognitiveTestTimeGuideAPIView(generics.ListAPIView):
+    queryset = CognitiveTestFormat.objects.all()
+    serializer_class = CognitiveTestFormatSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request):
-        return Response("REQ-016")
+
+# 기본 결과 조회(히스토리)
+class CognitiveTestResultBasicAPIView(generics.ListAPIView):
+    serializer_class = CognitiveTestResultSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return CognitiveTestResult.objects.filter(user=self.request.user)
 
 
+# 상관관계 분석 (REQ-017)
 class CognitiveTestResultCorrelationAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        return Response("REQ-017")
+        # TODO: 수면 기록과 테스트 결과 간 상관계산 로직 구현 (REQ-017) :contentReference[oaicite:2]{index=2}
+        return Response(
+            {'detail': 'Correlation feature not implemented yet.'},
+            status=status.HTTP_501_NOT_IMPLEMENTED
+        )
 
 
+# 시각화 데이터 제공 (REQ-018)
 class CognitiveTestResultVisualizationAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        return Response("REQ-018")
+        # TODO: 레이더 차트/시계열 차트용 데이터 구성 로직 구현 (REQ-018) :contentReference[oaicite:3]{index=3}
+        return Response(
+            {'detail': 'Visualization feature not implemented yet.'},
+            status=status.HTTP_501_NOT_IMPLEMENTED
+        )
