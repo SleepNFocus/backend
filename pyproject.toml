@@ -6,7 +6,7 @@ authors = ["workface <with.you70@gmail.com>"]
 readme = "README.md"
 
 packages = [
-  { include = "management" },
+  { include = "admin" },
   { include = "cognitive_statistics" },
   { include = "cognitives" },
   { include = "config" },
