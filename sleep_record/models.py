@@ -19,6 +19,7 @@ class SleepRecord(models.Model):
         default=list,
         help_text="수면 방해 요소 리스트",
     )
+    memo = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
