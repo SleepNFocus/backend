@@ -1,13 +1,13 @@
-from typing import List, Union
+from django.contrib import admin
+from django.http import HttpResponse
+from django.urls import include, path
 
-from django.urls import URLPattern, URLResolver, path
+from config.health_check import HealthCheckView
 
-from . import views
-
-urlpatterns: List[Union[URLPattern, URLResolver]] = [
-    path("", views.TestPlayListAPIView.as_view(), name="test-play-list"),
-    path("<str:test_type>/", views.TestPlayAPIView.as_view(), name="test-play"),
-    path(
-        "<str:test_type>/submit/", views.TestSubmitAPIView.as_view(), name="test-submit"
-    ),
+urlpatterns = [
+    path("", lambda request: HttpResponse("Hello, World!"), name="home"),
+    path("admin/", admin.site.urls),
+    path("api/tests/", include("cognitives.urls")),
+    path("api/cognitive-tests/", include("cognitive_statistics.urls")),
+    path("health/", HealthCheckView.as_view(), name="health-check"),
 ]
