@@ -20,6 +20,7 @@ REDIS_DB = int(os.getenv("REDIS_DB", 1))
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
+AUTH_USER_MODEL = "users.User"
 
 
 # Application definition
@@ -31,6 +32,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "users",
+    "sleep",
+    "cognitives",
+    "cognitive_statistics",
+    "management",
 ]
 
 MIDDLEWARE = [
@@ -124,3 +130,10 @@ CACHES = {
         },
     }
 }
+
+
+# 수집된 정적 파일을 담을 디렉토리
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# 기존 설정 예시
+STATIC_URL = "/static/"

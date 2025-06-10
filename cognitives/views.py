@@ -64,7 +64,7 @@ class TestSubmitAPIView(APIView):
         normalized_scores = raw_scores
         average_score = sum(normalized_scores.values()) / len(normalized_scores)
 
-        # 종합 결과 저장 (cognitive_statistics 앱)
+        # 종합 결과 저장
         CognitiveTestResult.objects.create(
             user=request.user,
             raw_scores=raw_scores,
