@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from cognitive_statistics.serializers import CognitiveTestFormatSerializer
 
-from .models import CognitiveProblem, CognitiveResponse
+from .models import CognitiveProblem
 
 
 class CognitiveProblemSerializer(serializers.ModelSerializer):

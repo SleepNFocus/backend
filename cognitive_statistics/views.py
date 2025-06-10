@@ -1,4 +1,4 @@
-from rest_framework import generics, permissions, status
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -7,7 +7,6 @@ from rest_framework.views import APIView
 from .models import (
     CognitiveTestFormat,
     CognitiveTestResult,
-    CognitiveTestTime,
     CognitiveTestType,
 )
 from .serializers import (
