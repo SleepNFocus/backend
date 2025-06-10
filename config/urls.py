@@ -10,7 +10,6 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-
 urlpatterns = [
     path("", lambda request: HttpResponse("Hello, World!"), name="home"),
     path("admin/", admin.site.urls),
@@ -23,5 +22,6 @@ urlpatterns = [
     # 🔐 JWT 토큰 발급/갱신 엔드포인트
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-
+    # 각 앱 API 연결
+    path("api/sleepRecord/", include("sleep_record.urls")),
 ]
