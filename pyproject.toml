@@ -21,6 +21,7 @@ psycopg2-binary = "^2.9.10"
 django-redis = "^5.4.0"
 python-dotenv = "^1.1.0"
 djangorestframework = "^3.16.0"
+djangorestframework-simplejwt = "^5.5.0"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"
@@ -72,13 +73,11 @@ exclude = '''
 python_version = "3.13"
 # 엄격 모드
 strict = true
+# 설치된 패키지의 타입 힌트 누락 오류 무시
+ignore_missing_imports = true
 # Django-stubs 플러그인 활성화
-plugins = [
-  "mypy_django_plugin.main",
-]
+plugins = ["mypy_django_plugin.main"]
 
 [tool.django-stubs]
-# 로컬 개발 환경에서 쓸 settings 모듈 경로
 django_settings_module = "config.settings.local"
-# settings.py 에 타입 엄격 검사를 켤지 여부 (선택)
 strict_settings = true

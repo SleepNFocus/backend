@@ -1,6 +1,13 @@
-from django.http import HttpResponse
-from django.urls import path
+from typing import List, Union
 
-urlpatterns = [
-    path("", lambda request: HttpResponse("Hello, World!"), name="home"),
+from django.urls import URLPattern, URLResolver, path
+
+from . import views
+
+urlpatterns: List[Union[URLPattern, URLResolver]] = [
+    path("", views.TestPlayListAPIView.as_view(), name="test-play-list"),
+    path("<str:test_type>/", views.TestPlayAPIView.as_view(), name="test-play"),
+    path(
+        "<str:test_type>/submit/", views.TestSubmitAPIView.as_view(), name="test-submit"
+    ),
 ]
