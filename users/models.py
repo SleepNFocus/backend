@@ -92,7 +92,6 @@ class CustomUserManager(BaseUserManager["User"]):
     ) -> "User":
         extra_fields.setdefault("is_admin", True)
         extra_fields.setdefault("is_superuser", True)
-        extra_fields.setdefault("birth_year", 1990)
         extra_fields.setdefault("is_staff", True)
         return self.create_user(email, social_type, social_id, **extra_fields)
 
