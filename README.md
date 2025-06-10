@@ -105,26 +105,9 @@
 - **웹서버**: Gunicorn + Nginx + HTTPS  
 - **CI/CD**: GitHub Actions + Discord 알림
 
-### 🏗️ Infra Diagram (Mermaid)
+### 🏗️ Infra Diagram
 
-```mermaid
-graph TD
-  Developer[Developer] -->|Push to GitHub| GitHub[GitHub Repository]
-  GitHub -->|CI/CD| GitHubActions[GitHub Actions]
-  GitHubActions -->|Deploy| EC2[NCP Server - Ubuntu]
-  GitHubActions -->|Notify| Discord[Discord Alert]
+![Web App Reference Architecture (1)](https://github.com/user-attachments/assets/1b43633e-0509-46ac-80d6-9124306e3082)
 
-  subgraph Web Server
-    Nginx[Nginx - HTTPS]
-    Gunicorn[Gunicorn]
-    Django[Django App]
-  end
-
-  EC2 --> Nginx
-  Nginx --> Gunicorn
-  Gunicorn --> Django
-
-  Django --> PostgreSQL[NCP cloud DB - PostgreSQL]
-```
 
 
