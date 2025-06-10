@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from sleep_record.models import SleepRecord
 
 
@@ -13,4 +14,4 @@ class SleepRecordCreateSerializer(serializers.ModelSerializer):
 class SleepRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = SleepRecord
-        fields = '__all__'
+        fields = "__all__"

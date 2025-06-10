@@ -20,10 +20,10 @@ def create_sleep_record(user, data):
         print("💥 수면 기록 생성 오류:", e)
         raise ValidationError({"detail": f"수면 기록 생성 실패: {str(e)}"})
 
+
 def get_sleep_record(user, date):
     try:
         sleep_record = SleepRecord.objects.get(user=user, date=date)
-
 
         return sleep_record
     except Exception as e:
