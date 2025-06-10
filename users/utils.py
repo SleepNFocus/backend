@@ -1,10 +1,11 @@
+from typing import TYPE_CHECKING, Any, Dict, Optional
+
 import redis
 import requests
 from django.conf import settings
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.response import Response
 from rest_framework import status
-from typing import Optional, Dict, Any, TYPE_CHECKING
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 
 if TYPE_CHECKING:
     from .models import User
@@ -38,6 +39,7 @@ KAKAO_DEFAULT_IMG_URLS = [
 # 구글은 이미지가 고정 URL이 아님 그래서 특정 키워드가 포함된 경우만 골라냄
 GOOGLE_DEFAULT_IMG_KEYWORDS = ["default_profile", "photo.jpg"]
 
+
 def normalize_profile_img(provider: str, url: Optional[str]) -> Optional[str]:
     # url 없으면 none (db에는 null로 저장)
     if not url:
@@ -54,15 +56,25 @@ def normalize_profile_img(provider: str, url: Optional[str]) -> Optional[str]:
 
 # 소셜 로그인 에러 응답 반환
 def handle_social_login_error(detail: str) -> Response:
-    if '블랙리스트' in detail:
-        reason = detail.split(':')[-1]
-        return Response({'detail': '블랙리스트 계정', 'reason': reason}, status=status.HTTP_403_FORBIDDEN)
-    elif '비활성' in detail or '탈퇴' in detail:
-        return Response({'detail': '비활성화/탈퇴 계정'}, status=status.HTTP_403_FORBIDDEN)
-    elif '지원하지 않는 provider' in detail:
-        return Response({'detail': '지원하지 않는 provider'}, status=status.HTTP_400_BAD_REQUEST)
+    if "블랙리스트" in detail:
+        reason = detail.split(":")[-1]
+        return Response(
+            {"detail": "블랙리스트 계정", "reason": reason},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+    elif "비활성" in detail or "탈퇴" in detail:
+        return Response(
+            {"detail": "비활성화/탈퇴 계정"}, status=status.HTTP_403_FORBIDDEN
+        )
+    elif "지원하지 않는 provider" in detail:
+        return Response(
+            {"detail": "지원하지 않는 provider"}, status=status.HTTP_400_BAD_REQUEST
+        )
     else:
-        return Response({'detail': '소셜 로그인 실패', 'error': detail}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"detail": "소셜 로그인 실패", "error": detail},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 # 소셜 인가 코드로 액세스 토큰 요청

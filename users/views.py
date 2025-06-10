@@ -1,4 +1,5 @@
 from typing import Any
+
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import permissions, status
@@ -13,8 +14,8 @@ from .utils import (
     get_access_token_from_code,
     get_google_user_info,
     get_kakao_user_info,
+    handle_social_login_error,
     normalize_profile_img,
-    handle_social_login_error
 )
 
 
@@ -33,14 +34,12 @@ class SocialLoginView(APIView):
 
         try:
             tokens, user = SocialLoginService.social_login(
-                provider=provider,
-                code=code,
-                access_token=access_token
+                provider=provider, code=code, access_token=access_token
             )
         except Exception as e:
             # 함수로 에러 메세지 반환
             return handle_social_login_error(str(e))
-        
+
         # 토큰/유저 정보 응답
         return Response(
             {
