@@ -1,20 +1,20 @@
 from rest_framework import generics, permissions, status
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import (
-    CognitiveTestType,
     CognitiveTestFormat,
+    CognitiveTestResult,
     CognitiveTestTime,
-    CognitiveTestResult
+    CognitiveTestType,
 )
 from .serializers import (
-    CognitiveTestTypeSerializer,
     CognitiveTestFormatSerializer,
+    CognitiveTestResultSerializer,
     CognitiveTestTimeSerializer,
-    CognitiveTestResultSerializer
+    CognitiveTestTypeSerializer,
 )
 
 
@@ -27,7 +27,7 @@ class CognitiveTestTypeListAPIView(generics.ListAPIView):
 
 # 메타 정보 조회: 형식(세부) 목록
 class CognitiveTestFormatListAPIView(generics.ListAPIView):
-    queryset = CognitiveTestFormat.objects.select_related('test_type').all()
+    queryset = CognitiveTestFormat.objects.select_related("test_type").all()
     serializer_class = CognitiveTestFormatSerializer
     permission_classes = [IsAuthenticated]
 
@@ -64,8 +64,8 @@ class CognitiveTestResultCorrelationAPIView(APIView):
     def get(self, request: Request) -> Response:
         # TODO: 수면 기록과 테스트 결과 간 상관계산 로직 구현
         return Response(
-            {'detail': 'Correlation feature not implemented yet.'},
-            status=status.HTTP_501_NOT_IMPLEMENTED
+            {"detail": "Correlation feature not implemented yet."},
+            status=status.HTTP_501_NOT_IMPLEMENTED,
         )
 
 
@@ -76,6 +76,6 @@ class CognitiveTestResultVisualizationAPIView(APIView):
     def get(self, request: Request) -> Response:
         # TODO: 레이더 차트/시계열 차트용 데이터 구성 로직 구현
         return Response(
-            {'detail': 'Visualization feature not implemented yet.'},
-            status=status.HTTP_501_NOT_IMPLEMENTED
+            {"detail": "Visualization feature not implemented yet."},
+            status=status.HTTP_501_NOT_IMPLEMENTED,
         )
