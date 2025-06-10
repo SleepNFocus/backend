@@ -5,12 +5,10 @@ from sleep_record.models import SleepRecord
 
 def create_sleep_record(user, data):
     try:
-        sleep_record = SleepRecord.objects.get(user=user, date=data['date'])
+        sleep_record = SleepRecord.objects.get(user=user, date=data["date"])
 
-
-        if sleep_record :
-            raise ValidationError('수면 기록을 이미 작성했습니다.')
-
+        if sleep_record:
+            raise ValidationError("수면 기록을 이미 작성했습니다.")
 
         return SleepRecord.objects.create(
             user=user,
