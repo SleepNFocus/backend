@@ -10,7 +10,7 @@ packages = [
   { include = "cognitive_statistics" },
   { include = "cognitives" },
   { include = "config" },
-  { include = "sleep-record" },
+  { include = "sleep_record" },
   { include = "users" },
 ]
 
