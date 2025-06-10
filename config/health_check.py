@@ -7,5 +7,5 @@ class HealthCheckView(APIView):
     authentication_classes = []
     permission_classes = []
 
-    def get(self, request : Request) -> Response:
+    def get(self, request: Request) -> Response:
         return Response({"status": "ok"}, status=200)
