@@ -104,7 +104,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=100)
     nickname = models.CharField(max_length=50)
     profile_img = models.TextField(null=True, blank=True)
-    gender = models.CharField(max_length=5, choices=Gender.choices, null=True, blank=True)
+    gender = models.CharField(
+        max_length=5, choices=Gender.choices, null=True, blank=True
+    )
     birth_year = models.PositiveSmallIntegerField(null=True, blank=True)
     mbti = models.CharField(
         max_length=10, choices=MBTIType.choices, null=True, blank=True
@@ -126,13 +128,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self) -> str:
         return f"{self.nickname} - {self.email} / {self.social_type}"
-    
+
     # 소셜 타입 + 소셜 아이디 유니크 조합 설정
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields = ["social_type", "social_id"],
-                name = "unique_social_type_id"
+                fields=["social_type", "social_id"], name="unique_social_type_id"
             )
         ]
 

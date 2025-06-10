@@ -5,7 +5,7 @@ from django.urls import include, path
 urlpatterns = [
     path("", lambda request: HttpResponse("Hello, World!"), name="home"),
     path("admin/", admin.site.urls),
-    path("api/users/", include('users.urls')),
+    path("api/users/", include("users.urls")),
     path("api/tests/", include("cognitives.urls")),
     path("api/cognitive-tests/", include("cognitive_statistics.urls")),
 ]
