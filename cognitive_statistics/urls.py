@@ -39,4 +39,3 @@ urlpatterns = [
         name="cognitive-test-result-visualization",
     ),
 ]
-
