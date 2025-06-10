@@ -10,6 +10,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
+
 urlpatterns = [
     path("", lambda request: HttpResponse("Hello, World!"), name="home"),
     path("admin/", admin.site.urls),
