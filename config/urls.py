@@ -5,6 +5,8 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
+from users.views import CustomTokenObtainPairView
+
 urlpatterns = [
     path("", lambda request: HttpResponse("Hello, World!"), name="home"),
     path("api/tests/", include("cognitives.urls")),
@@ -13,5 +15,5 @@ urlpatterns = [
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     # 각 앱 API 연결
-    path("api/sleepRecord", include("sleep_record.urls")),
+    path("api/sleepRecord/", include("sleep_record.urls")),
 ]

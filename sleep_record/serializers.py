@@ -1,4 +1,4 @@
-from cognitive_statistics import serializers
+from rest_framework import serializers
 from sleep_record.models import SleepRecord
 
 
