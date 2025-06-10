@@ -68,16 +68,6 @@ exclude = '''
 )/
 '''
 
-[tool.mypy]
-# 검사할 Python 버전
-python_version = "3.13"
-# 엄격 모드
-strict = true
-# 설치된 패키지의 타입 힌트 누락 오류 무시
-ignore_missing_imports = true
-# Django-stubs 플러그인 활성화
-plugins = ["mypy_django_plugin.main"]
-
 [tool.django-stubs]
 django_settings_module = "config.settings.local"
 strict_settings = true
