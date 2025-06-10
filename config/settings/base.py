@@ -5,7 +5,6 @@ from datetime import timedelta
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -39,6 +38,7 @@ INSTALLED_APPS = [
     "cognitive_statistics",
     "management",
     "rest_framework_simplejwt.token_blacklist",
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
@@ -56,7 +56,9 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            BASE_DIR.parent / "docs",
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -157,3 +159,11 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # 기존 설정 예시
 STATIC_URL = "/static/"
+
+
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': None,
+    'VALIDATOR_URL': None,
+    'SPEC_URL': '/swagger.yaml',
+}

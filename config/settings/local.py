@@ -6,12 +6,12 @@ ALLOWED_HOSTS = ["*"]
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
+        "ENGINE": "django.db.backends.sqlite3",
         "NAME": "FocusZ",
-        "USER": "dev_user",
-        "PASSWORD": "sleepNfocus",
-        "HOST": "localhost",
-        "PORT": "54324",
+        # "USER": "dev_user",
+        # "PASSWORD": "sleepNfocus",
+        # "HOST": "localhost",
+        # "PORT": "54324",
     }
 }
 
