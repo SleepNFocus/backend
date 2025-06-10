@@ -32,13 +32,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'rest_framework',
-
-    'users',
-    'sleep_record',
-    'cognitives',
-    'cognitive_statistics',
-    'management',
+    "rest_framework",
+    "users",
+    "sleep_record",
+    "cognitives",
+    "cognitive_statistics",
+    "management",
 ]
 
 MIDDLEWARE = [
@@ -52,8 +51,8 @@ MIDDLEWARE = [
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
 ROOT_URLCONF = "config.urls"

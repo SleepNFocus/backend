@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.db import models
 
 from cognitive_statistics.models import CognitiveSession
 from users.models import User
@@ -17,7 +17,7 @@ class SleepRecord(models.Model):
         models.CharField(max_length=255),
         blank=True,
         default=list,
-        help_text="수면 방해 요소 리스트"
+        help_text="수면 방해 요소 리스트",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
