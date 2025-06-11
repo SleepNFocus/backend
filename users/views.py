@@ -1,22 +1,12 @@
 from typing import Any
 
-from django.db import transaction
-from django.utils import timezone
-from rest_framework import permissions, status
+from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import User, UserBlacklist
 from .serializers import SocialLoginSerializer
 from .services import SocialLoginService
-from .utils import (
-    generate_jwt_token_pair,
-    get_access_token_from_code,
-    get_google_user_info,
-    get_kakao_user_info,
-    handle_social_login_error,
-    normalize_profile_img,
-)
+from .utils import handle_social_login_error
 
 
 # 소셜 로그인/자동 로그인

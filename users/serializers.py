@@ -1,7 +1,5 @@
 from rest_framework import serializers
 
-from .models import User
-
 
 # 소셜 로그인(회원가입)
 class SocialLoginSerializer(serializers.Serializer):
