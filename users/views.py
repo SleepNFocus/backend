@@ -5,7 +5,12 @@ from rest_framework.views import APIView
 
 from users.models import UserStatus
 
-from .serializers import LogoutSerializer, SocialLoginSerializer
+from .serializers import (
+    LogoutSerializer,
+    OnboardingBasicSerializer,
+    OnboardingJobSerializer,
+    SocialLoginSerializer,
+)
 from .services import SocialLoginService
 from .utils import add_token_to_blacklist, handle_social_login_error
 
@@ -76,3 +81,30 @@ class UserWithdrawalView(APIView):
         user.status = UserStatus.WITHDRAWN
         user.save()
         return Response({"message": "회원 탈퇴 완료"}, status=200)
+
+
+# 온보딩 설문
+# 기본 정보 저장
+class OnboardingBasicView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = OnboardingBasicSerializer(
+            instance=request.user, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(OnboardingBasicSerializer(user).data, status=200)
+
+
+# 직업 설문 저장
+class OnboardingJobView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = OnboardingJobSerializer(
+            data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=200)

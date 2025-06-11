@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import User
+from .models import JobSurvey, User
 
 
 @admin.register(User)
@@ -26,3 +26,15 @@ class UserAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
     ordering = ["-joined_at"]
     # 날짜 정보 (읽기 전용으로 수정 불가)
     readonly_fields = ["joined_at", "updated_at", "last_login_at"]
+
+
+@admin.register(JobSurvey)
+class JobSurveyAdmin(admin.ModelAdmin):
+    list_display = [
+        "user",
+        "job_survey_id",
+        "cognitive_type",
+        "work_time_pattern",
+        "created_at",
+    ]
+    search_fields = ["user__email", "user__nickname"]
