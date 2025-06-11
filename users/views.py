@@ -3,6 +3,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from users.models import UserStatus
+
 from .serializers import LogoutSerializer, SocialLoginSerializer
 from .services import SocialLoginService
 from .utils import add_token_to_blacklist, handle_social_login_error
@@ -63,3 +65,14 @@ class LogoutView(APIView):
         add_token_to_blacklist(refresh_token)
 
         return Response({"message": "로그아웃 완료"}, status=200)
+
+
+# 회원 탈퇴
+class UserWithdrawalView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        user.status = UserStatus.WITHDRAWN
+        user.save()
+        return Response({"message": "회원 탈퇴 완료"}, status=200)

@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.utils import timezone
 
-from .models import User, UserBlacklist
+from .models import User, UserBlacklist, UserStatus
 from .utils import (
     generate_jwt_token_pair,
     get_access_token_from_code,
@@ -26,9 +26,26 @@ def get_or_create_active_user(provider, social_id, email, nickname, profile_img)
         bl = UserBlacklist.objects.filter(user=user, is_active=True).first()
         if bl:
             raise UserStatusException(f"블랙리스트 계정: {bl.reason}")
-        # 탈퇴/비활성 유저 거부
-        if not user.is_active or user.status != "active":
-            raise UserStatusException("비활성/탈퇴 계정")
+        # 탈퇴 유저일 경우 기존 계정 비활성화 + 신규 계정 생성
+        if user.status == UserStatus.WITHDRAWN or not user.is_active:
+            # 탈퇴 유저 소셜 아이디 무력화
+            user.social_id = (
+                f"{user.social_id}_withdrawn_{int(timezone.now().timestamp())}"
+            )
+            # 무력화 된 아이디로 저장
+            user.save(update_fields=["social_id"])
+
+            # 새 계정 생성
+            return User.objects.create(
+                social_type=provider.upper(),
+                social_id=social_id,
+                email=email,
+                nickname=nickname,
+                profile_img=profile_img,
+                joined_at=timezone.now(),
+                status=UserStatus.ACTIVE,
+                is_active=True,
+            )
     # 유저가 없으면 회원가입
     if not user:
         with transaction.atomic():
