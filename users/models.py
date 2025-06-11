@@ -100,12 +100,14 @@ class CustomUserManager(BaseUserManager["User"]):
 class User(AbstractBaseUser, PermissionsMixin):
     user_id = models.AutoField(primary_key=True)
     social_type = models.CharField(max_length=20, choices=SocialType.choices)
-    social_id = models.CharField(max_length=255, unique=True)
+    social_id = models.CharField(max_length=255)
     email = models.EmailField(max_length=100)
     nickname = models.CharField(max_length=50)
     profile_img = models.TextField(null=True, blank=True)
-    gender = models.CharField(max_length=5, choices=Gender.choices)
-    birth_year = models.PositiveSmallIntegerField()
+    gender = models.CharField(
+        max_length=5, choices=Gender.choices, null=True, blank=True
+    )
+    birth_year = models.PositiveSmallIntegerField(null=True, blank=True)
     mbti = models.CharField(
         max_length=10, choices=MBTIType.choices, null=True, blank=True
     )  # 시리얼라이저에서 null로 변환 처리
@@ -119,13 +121,21 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
 
-    USERNAME_FIELD = "social_id"
+    USERNAME_FIELD = "user_id"
     REQUIRED_FIELDS = ["social_type", "email", "nickname", "gender", "birth_year"]
 
     objects = CustomUserManager()
 
     def __str__(self) -> str:
         return f"{self.nickname} - {self.email} / {self.social_type}"
+
+    # 소셜 타입 + 소셜 아이디 유니크 조합 설정
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["social_type", "social_id"], name="unique_social_type_id"
+            )
+        ]
 
 
 # UserBlacklist

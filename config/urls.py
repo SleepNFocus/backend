@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import include, path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -6,6 +7,8 @@ from config.health_check import HealthCheckView
 
 urlpatterns = [
     path("", lambda request: HttpResponse("Hello, World!"), name="home"),
+    path("admin/", admin.site.urls),
+    path("api/users/", include("users.urls")),
     path("api/tests/", include("cognitives.urls")),
     path("api/cognitive-tests/", include("cognitive_statistics.urls")),
     path("health/", HealthCheckView.as_view(), name="health-check"),

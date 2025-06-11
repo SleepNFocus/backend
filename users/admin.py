@@ -11,6 +11,7 @@ class UserAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
         "email",
         "nickname",
         "social_type",
+        "social_id",
         "gender",
         "birth_year",
         "status",
