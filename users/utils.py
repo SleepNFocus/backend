@@ -1,14 +1,10 @@
-from typing import TYPE_CHECKING, Any, Dict, Optional
-
 import redis
 import requests
 from django.conf import settings
+from django.core.cache import cache
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
-if TYPE_CHECKING:
-    from .models import User
 
 # 레디스로 리프레시 토큰 블랙리스트 관리
 # 레디스 서버에 연결
@@ -20,12 +16,12 @@ redis_client = redis.StrictRedis(
 )
 
 
-def blacklist_refresh_token(token: str, exp: int) -> None:
+def blacklist_refresh_token(token, exp):
     # 토큰을 블랙리스트에 만료시간 동안 저장
     redis_client.setex(f"blacklist:{token}", exp, "blacklisted")
 
 
-def is_blacklisted(token: str) -> bool:
+def is_blacklisted(token):
     # 토큰이 블랙리스트에 있는지 확인 (있으면 True)
     return redis_client.exists(f"blacklist:{token}") == 1
 
@@ -40,7 +36,7 @@ KAKAO_DEFAULT_IMG_URLS = [
 GOOGLE_DEFAULT_IMG_KEYWORDS = ["default_profile", "photo.jpg"]
 
 
-def normalize_profile_img(provider: str, url: Optional[str]) -> Optional[str]:
+def normalize_profile_img(provider, url):
     # url 없으면 none (db에는 null로 저장)
     if not url:
         return None
@@ -55,7 +51,7 @@ def normalize_profile_img(provider: str, url: Optional[str]) -> Optional[str]:
 
 
 # 소셜 로그인 에러 응답 반환
-def handle_social_login_error(detail: str) -> Response:
+def handle_social_login_error(detail):
     if "블랙리스트" in detail:
         reason = detail.split(":")[-1]
         return Response(
@@ -78,7 +74,7 @@ def handle_social_login_error(detail: str) -> Response:
 
 
 # 소셜 인가 코드로 액세스 토큰 요청
-def get_access_token_from_code(provider: str, code: str) -> str:
+def get_access_token_from_code(provider, code):
     if provider == "kakao":
         # 카카오로 토큰 요청
         resp = requests.post(
@@ -114,7 +110,7 @@ def get_access_token_from_code(provider: str, code: str) -> str:
 
 
 # 카카오 엑세스 토큰으로 사용자 정보 요청
-def get_kakao_user_info(access_token: str) -> Dict[str, Any]:
+def get_kakao_user_info(access_token):
     resp = requests.get(
         "https://kapi.kakao.com/v2/user/me",
         headers={"Authorization": f"Bearer {access_token}"},
@@ -130,7 +126,7 @@ def get_kakao_user_info(access_token: str) -> Dict[str, Any]:
 
 
 # 구글 액세스 토큰으로 사용자 정보 요청
-def get_google_user_info(access_token: str) -> Dict[str, Any]:
+def get_google_user_info(access_token):
     resp = requests.get(
         "https://www.googleapis.com/oauth2/v3/userinfo",
         headers={"Authorization": f"Bearer {access_token}"},
@@ -146,7 +142,7 @@ def get_google_user_info(access_token: str) -> Dict[str, Any]:
 
 
 # 로그인 성공 유저에게 JWT 토큰 발급 (access/refresh)
-def generate_jwt_token_pair(user: "User") -> Dict[str, str]:
+def generate_jwt_token_pair(user):
     # 유저 기준으로 토큰 생성
     refresh = RefreshToken.for_user(user)
     # 둘 다 문자열로 반환
@@ -154,3 +150,21 @@ def generate_jwt_token_pair(user: "User") -> Dict[str, str]:
         "access": str(refresh.access_token),
         "refresh": str(refresh),
     }
+
+
+# 로그아웃(리프레시 토큰 무효화)
+def add_token_to_blacklist(refresh_token):
+    try:
+        token = RefreshToken(refresh_token)
+
+        jti = token.get("jti")  # 토큰 고유 id
+        exp = token["exp"]
+        now = token.current_time.timestamp()
+
+        timeout = int(exp - now)  # 토큰이 앞으로 몇 초 동안 유효한지
+        cache.set(
+            f"blacklist:{jti}", "true", timeout
+        )  # 레디스에 어떻게 저장하고 언제 삭제할건지
+
+    except Exception:
+        pass  # 유효하지 않은 토큰일 경우 무시
