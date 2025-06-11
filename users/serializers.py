@@ -24,3 +24,13 @@ class SocialLoginSerializer(serializers.Serializer):
                 "code, access_token 중 하나만 입력해주세요."
             )
         return data
+
+
+# 로그아웃(리프레시 토큰 무효화)
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+
+    def validate_refresh(self, value):
+        if not value:
+            raise serializers.ValidationError("리프레시 토큰은 필수입니다.")
+        return value

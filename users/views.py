@@ -1,19 +1,18 @@
-from typing import Any
-
 from rest_framework import permissions
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import SocialLoginSerializer
+from .serializers import LogoutSerializer, SocialLoginSerializer
 from .services import SocialLoginService
-from .utils import handle_social_login_error
+from .utils import add_token_to_blacklist, handle_social_login_error
 
 
 # 소셜 로그인/자동 로그인
 class SocialLoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
-    def post(self, request: Any, *args: Any, **kwargs: Any) -> Response:
+    def post(self, request, *args, **kwargs):
         # serializer로 데이터 검사
         serializer = SocialLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -47,3 +46,20 @@ class SocialLoginView(APIView):
             },
             status=200,
         )
+
+
+# 로그아웃(리프레시 토큰 무효화)
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # serializer로 유효성 검사
+        serializer = LogoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # 검사 통과 시 리프레시 토큰 꺼냄
+        refresh_token = serializer.validated_data["refresh"]
+        # 리프레시 토큰을 블랙리스트에 저장함
+        add_token_to_blacklist(refresh_token)
+
+        return Response({"message": "로그아웃 완료"}, status=200)
