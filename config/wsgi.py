@@ -1,3 +1,4 @@
+# 작성자: 한율
 """
 WSGI config for config project.
 

@@ -1,3 +1,4 @@
+# 작성자: 한율
 from django.contrib import admin
 
 from .models import JobSurvey, User

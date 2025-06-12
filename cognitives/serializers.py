@@ -1,3 +1,4 @@
+# 작성자: 한율
 from rest_framework import serializers
 
 from cognitive_statistics.serializers import CognitiveTestFormatSerializer
