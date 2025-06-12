@@ -1,5 +1,4 @@
 import os
-from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -36,11 +35,11 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_yasg",
     "users",
-    "sleep_record",
+    "sleep",
     "cognitives",
     "cognitive_statistics",
     "management",
-    "rest_framework_simplejwt.token_blacklist",
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
@@ -53,17 +52,12 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
-}
 ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / 'docs' / 'swagger.yaml'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -83,22 +77,10 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST"),
-        "PORT": os.getenv("DB_PORT"),
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-
-
-# 소셜 로그인 환경변수
-KAKAO_CLIENT_ID = os.getenv("KAKAO_CLIENT_ID", "755a7281199f31ede61637c7d25aaed0")
-KAKAO_REDIRECT_URI = os.getenv("KAKAO_REDIRECT_URI", "")
-
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
-GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "")
 
 
 # Password validation
@@ -118,7 +100,6 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -142,7 +123,6 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
 # redis 설정
 CACHES = {
     "default": {
@@ -155,16 +135,34 @@ CACHES = {
 }
 
 
-# simplejwt 설정
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-}
-
-
 # 수집된 정적 파일을 담을 디렉토리
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-
 # 기존 설정 예시
 STATIC_URL = "/static/"
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    },
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'displayOperationId': True,
+    },
+    'SWAGGER_UI_EXTRA_URL': {
+        'swagger': '/docs/swagger/swagger.yaml',
+    },
+    'USE_SESSION_AUTH': False,
+    'VALIDATOR_URL': None,
+    'OPERATIONS_SORTER': None,
+    'TAGS_SORTER': None,
+    'DOC_EXPANSION': 'none',
+    'DEFAULT_MODEL_RENDERING': 'model',
+    'DEFAULT_INFO': None,
+    'DEFAULT_API_URL': 'https://www.dev.focusz.site',
+}
