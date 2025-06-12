@@ -38,7 +38,6 @@ class TestSubmitAPIView(APIView):
         serializer = TestSubmitSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        fmt = get_object_or_404(CognitiveTestFormat, name=test_type)
         answers = serializer.validated_data["answers"]
 
         raw_scores = {}

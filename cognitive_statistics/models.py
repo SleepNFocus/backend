@@ -60,3 +60,18 @@ class CognitiveTestResult(models.Model):
 
     class Meta:
         ordering = ["-timestamp"]
+
+
+class CognitiveSession(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="cognitive_sessions",
+    )
+    started_at = models.DateTimeField(auto_now_add=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+
+    summary = models.JSONField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.nickname} - Session from {self.started_at.strftime('%Y-%m-%d %H:%M:%S')}"
