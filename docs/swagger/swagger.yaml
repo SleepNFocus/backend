@@ -1,0 +1,1171 @@
+openapi: 3.0.3
+info:
+  title: SleepNFocus API 명세서
+  version: 1.0.0
+  description: api swagger입니다
+servers:
+  - url: https://www.dev.focusz.site
+    description: 기본 서버 URL
+
+tags:
+  - name: 사용자
+    description: 사용자 계정 관리 (회원가입, 조회, 탈퇴)
+  - name: 마이페이지
+    description: 유저의 기록, 프로필, 통계 정보 조회
+  - name: 수면
+    description: 수면 기록 및 예측 점수 관리
+  - name: 인지
+    description: 인지 테스트 세션 및 결과 저장
+  - name: 로그
+    description: 관리자 및 시스템 로그 관리
+
+paths:
+  /api/users/login/:
+    get:
+      tags:
+        - 사용자
+      summary: 소셜 로그인 및 회원가입
+      description: 소셜 로그인 및 회원가입을 합니다.
+      deprecated: true
+      responses:
+        '200':
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          description: 유효하지 않은 로그인 정보
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: 유효하지 않은 로그인 정보입니다.
+
+    post:
+      tags:
+        - 사용자
+      summary: 신규 사용자 등록
+      description: 새로운 사용자 계정을 등록합니다.
+      deprecated: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '201':
+          description: 사용자 생성 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /api/users/token/refresh/:
+    post:
+      tags:
+        - 사용자
+      summary: JWT 리프레시 토큰 재발급
+      deprecated: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh:
+                  type: string
+      responses:
+        '200':
+          description: 새 access 토큰 발급
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access:
+                    type: string
+        '401':
+          description: 토큰 유효하지 않거나 만료됨
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: 토큰이 유효하지 않거나 만료되었습니다.
+
+  /api/users/logout/:
+    post:
+      tags:
+        - 사용자
+      summary: 리프레시 토큰 무효화, 로그아웃
+      description: JWT 리프레시 토큰을 만료시켜 로그아웃합니다.
+      deprecated: true
+      responses:
+        '201':
+          description: 정상적으로 로그아웃되었습니다.
+        '401':
+          description: 유효하지 않은 토큰입니다.
+
+  /api/users/withdrawal/:
+    delete:
+      tags:
+        - 사용자
+      summary: 회원탈퇴 및 개인정보 삭제
+      description: 해당 사용자 계정을 삭제합니다.
+      deprecated: true
+      responses:
+        '204':
+          description: 계정이 삭제되었습니다.
+        '404':
+          description: 인증이 필요합니다.
+
+  /api/mypage/main/:
+    get:
+      tags:
+        - 마이페이지
+      summary: 마이페이지 메인 정보 조회
+      description: 유저의 프로필, 총 수면 시간, 평균 점수 등 마이페이지 메인 정보를 조회합니다.
+      deprecated: true
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nickname:
+                    type: string
+                    example: 콘치
+                  profile_image:
+                    type: string
+                    format: uri
+                    example: https://...
+                  joined_at:
+                    type: string
+                    format: date
+                    example: 2025-05-30
+                  tracking_days:
+                    type: integer
+                    example: 4
+                  total_sleep_hours:
+                    type: number
+                    example: 321.5
+                  average_sleep_score:
+                    type: integer
+                    example: 85
+                  average_cognitive_score:
+                    type: integer
+                    example: 78
+        '401':
+          description: 인증 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: 인증이 필요합니다.
+
+  /api/mypage/profile/:
+    get:
+      tags:
+        - 마이페이지
+      summary: 프로필 상세 정보 조회
+      description: 유저의 상세 프로필 정보를 조회합니다.
+      deprecated: true
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: 인증 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: 인증이 필요합니다.
+    patch:
+      tags:
+        - 마이페이지
+      summary: 프로필 정보 수정
+      description: 유저의 프로필 정보를 수정합니다.
+      deprecated: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPartialUpdate'
+      responses:
+        '200':
+          description: 수정 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: 잘못된 요청입니다.
+
+  /api/mypage/records/list/:
+    get:
+      tags:
+        - 마이페이지
+      summary: 일/주/월별 기록 조회
+      description: period를 기준으로 최근 기록을 리스트 형식으로 조회합니다.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: period
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [day, week, month]
+            example: day
+      deprecated: true
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    description: 일별 조회 결과 (period=day)
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/SleepRecord'
+                  - type: object
+                    description: 주별 조회 결과 (period=week)
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            week:
+                              type: integer
+                            start_date:
+                              type: string
+                              format: date
+                            end_date:
+                              type: string
+                              format: date
+                            total_sleep_hours:
+                              type: number
+                            average_sleep_score:
+                              type: number
+                            average_cognitive_score:
+                              type: number
+                  - type: object
+                    description: 월별 조회 결과 (period=month)
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            month:
+                              type: string
+                            total_sleep_hours:
+                              type: number
+                            average_sleep_score:
+                              type: number
+                            average_cognitive_score:
+                              type: number
+  
+  /api/sleep/record/:
+    post:
+      tags:
+        - 수면
+      summary: 수면 기록 등록
+      description: 수면 기록을 등록합니다.
+      deprecated: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SleepRecordCreate'
+      responses:
+        '201':
+          description: 수면 기록 등록 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SleepRecord'
+        '400':
+          description: 잘못된 요청 데이터
+
+  /api/sleep/record/{sleep_id}/:
+    parameters:
+      - in: path
+        name: sleep_id
+        schema:
+          type: integer
+        required: true
+        description: 조회, 업데이트 또는 삭제할 수면 기록의 ID
+    get:
+      tags:
+        - 수면
+      summary: 특정 수면 기록 조회
+      description: 지정된 sleep_id를 가진 수면 기록의 상세 정보를 조회합니다.
+      deprecated: true
+      responses:
+        '200':
+          description: 수면 기록 상세 정보 반환 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SleepRecord'
+        '404':
+          description: 수면 기록 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: 수면 기록을 찾을 수 없습니다.
+    patch:
+      tags:
+        - 수면
+      summary: 수면 기록 부분 수정
+      description: 지정된 sleep_id를 가진 수면 기록의 일부 정보를 수정합니다.
+      deprecated: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SleepRecordPartialUpdate'
+      responses:
+        '200':
+          description: 수면 기록 업데이트 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SleepRecord'
+        '400':
+          description: 잘못된 요청 데이터
+        '404':
+          description: 수면 기록 없음
+    delete:
+      tags:
+        - 수면
+      summary: 수면 기록 삭제
+      description: 지정된 sleep_id를 가진 수면 기록을 삭제합니다.
+      deprecated: true
+      responses:
+        '204':
+          description: 수면 기록 삭제 성공 (콘텐츠 없음)
+        '404':
+          description: 수면 기록 없음
+
+  /api/sleep/predict/:
+    post:
+      tags:
+        - 수면
+      summary: 수면 점수 예측 및 저장
+      description: AI를 사용하여 수면 점수를 예측하고 저장합니다.
+      deprecated: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SleepScorePredictionCreate'
+      responses:
+        '201':
+          description: 수면 점수 예측 및 저장 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SleepScorePrediction'
+        '400':
+          description: 잘못된 요청 데이터
+
+  /api/cognitive-tests/problems/:
+    get:
+      tags:
+        - 인지
+      summary: 인지 테스트 문제 목록 조회
+      description: 인지 테스트 문제 목록을 조회합니다.
+      deprecated: true
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CognitiveProblem'
+
+  /api/cognitive-tests/problems/types/:
+    get:
+      tags:
+        - 인지
+      summary: 인지 테스트 유형 목록 조회
+      description: 인지 테스트 유형 목록을 조회합니다.
+      deprecated: true
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  example: "SRT"
+
+  /api/cognitive-tests/time/:
+    get:
+      tags:
+        - 인지
+      summary: 인지 테스트 시간 조회
+      description: 인지 테스트 시간 정보를 조회합니다.
+      deprecated: true
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  duration:
+                    type: integer
+                    description: 테스트 소요 시간(분)
+                  start_time:
+                    type: string
+                    format: date-time
+                    description: 테스트 시작 시간
+
+  /api/cognitive-tests/time/guide/:
+    get:
+      tags:
+        - 인지
+      summary: 인지 테스트 시간 가이드 조회
+      description: 인지 테스트 시간 가이드 정보를 조회합니다.
+      deprecated: true
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  guide_text:
+                    type: string
+                    description: 테스트 시간 가이드 텍스트
+
+  /api/cognitive-tests/result/basic/:
+    get:
+      tags:
+        - 인지
+      summary: 인지 테스트 기본 결과 조회
+      description: 인지 테스트의 기본 결과를 조회합니다.
+      deprecated: true
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CognitiveResultBasic'
+
+  /api/cognitive-tests/result/correlation/:
+    get:
+      tags:
+        - 인지
+      summary: 인지 테스트 상관관계 결과 조회
+      description: 인지 테스트 결과의 상관관계를 조회합니다.
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CognitiveResultCorrelation'
+
+  /api/cognitive-tests/result/visualization/:
+    get:
+      tags:
+        - 인지
+      summary: 인지 테스트 시각화 결과 조회
+      description: 인지 테스트 결과의 시각화 데이터를 조회합니다.
+      deprecated: true
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CognitiveResultVisualization'
+
+  /api/logs/:
+    post:
+      tags:
+        - 로그
+      summary: 시스템 로그 기록
+      description: 관리자 및 시스템 이벤트를 로그로 기록합니다.
+      deprecated: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogCreate'
+      responses:
+        '201':
+          description: 로그 기록 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Log'
+        '400':
+          description: 잘못된 요청 데이터
+
+  /api/admin:
+    get:
+      tags:
+        - 로그
+      summary: 어드민 API 루트
+      description: 어드민 API의 기본 경로를 반환합니다.
+      operationId: getAdminRoot
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Admin API Root
+
+  /api/admin/users:
+    get:
+      tags:
+        - 로그
+      summary: 모든 사용자 목록 조회
+      description: 시스템의 모든 사용자 목록을 조회합니다.
+      operationId: getAdminUserList
+      responses:
+        '200':
+          description: 사용자 목록 반환 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDetail'
+        '401':
+          description: 인증 실패
+
+  /api/admin/users/{user_id}:
+    parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+        description: 조회, 업데이트 또는 삭제할 사용자의 ID
+    get:
+      tags:
+        - 로그
+      summary: 특정 사용자 정보 조회
+      description: 지정된 user_id를 가진 사용자의 상세 정보를 조회합니다.
+      operationId: getAdminUserDetail
+      responses:
+        '200':
+          description: 사용자 상세 정보 반환 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+        '404':
+          description: 사용자 없음
+    put:
+      tags:
+        - 로그
+      summary: 특정 사용자 정보 업데이트
+      description: 지정된 user_id를 가진 사용자의 정보를 업데이트합니다.
+      operationId: updateAdminUserDetail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: 사용자 정보 업데이트 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+        '400':
+          description: 잘못된 요청 데이터
+        '404':
+          description: 사용자 없음
+    delete:
+      tags:
+        - 로그
+      summary: 특정 사용자 삭제
+      description: 지정된 user_id를 가진 사용자를 삭제합니다.
+      operationId: deleteAdminUserDetail
+      responses:
+        '204':
+          description: 사용자 삭제 성공 (콘텐츠 없음)
+        '404':
+          description: 사용자 없음
+
+  /api/admin/logs:
+    get:
+      tags:
+        - 로그
+      summary: 시스템 로그 조회
+      description: 시스템 로그 데이터를 조회합니다. (로그 모델이 현재는 관리 앱에서 직접 사용 가능하지 않음)
+      operationId: getAdminLogs
+      responses:
+        '200':
+          description: 로그 데이터 반환 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: GET logs data
+
+components:
+  schemas:
+    UserDetail:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+        nickname:
+          type: string
+        gender:
+          type: string
+        birth_year:
+          type: integer
+        status:
+          type: string
+        is_active:
+          type: boolean
+        is_admin:
+          type: boolean
+        joined_at:
+          type: string
+          format: date-time
+        last_login_at:
+          type: string
+          format: date-time
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+      example:
+        user_id: 1
+        email: user@example.com
+        nickname: zzㅣ존간zi
+        gender: 여
+        birth_year: 1990
+        status: active
+        is_active: true
+        is_admin: false
+        joined_at: "2023-01-01T10:00:00Z"
+        last_login_at: "2024-07-26T15:30:00Z"
+        updated_at: "2024-07-26T15:30:00Z"
+    UserUpdate:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          description: 업데이트할 사용자의 ID (필수)
+        email:
+          type: string
+          format: email
+          description: 사용자 이메일 (선택 사항)
+        nickname:
+          type: string
+          description: 사용자 닉네임 (선택 사항)
+        is_admin:
+          type: boolean
+          description: 관리자 권한 여부 (선택 사항)
+      required:
+        - user_id
+      example:
+        user_id: 1
+        email: new_email@example.com
+        nickname: NewNickname
+        is_admin: true
+    User:
+      type: object
+      description: 사용자 계정 정보.
+      properties:
+        user_id:
+          type: integer
+          description: 사용자 고유 ID (PK)
+        social_id:
+          type: string
+          description: 소셜 로그인 고유 식별자
+        email:
+          type: string
+          description: 이메일 주소
+        nickname:
+          type: string
+          description: 사용자 닉네임
+        profile_img:
+          type: string
+          description: 프로필 이미지 URL
+        gender:
+          type: string
+          description: 성별
+        age_group:
+          type: string
+          description: 연령대
+        joined_at:
+          type: string
+          format: date-time
+          description: 계정 생성 시각
+        last_login_at:
+          type: string
+          format: date-time
+          description: 마지막 로그인 시각
+        deleted_at:
+          type: string
+          format: date-time
+          description: 계정 삭제(비활성화) 시각 (null일 경우 활성 상태)
+        is_active:
+          type: boolean
+          description: 계정 활성 상태
+        is_admin:
+          type: boolean
+          description: 관리자 권한 여부
+        mbti:
+          type: string
+          description: MBTI 유형
+      required:
+        - user_id
+        - social_id
+        - email
+        - nickname
+        - joined_at
+        - is_active
+        - is_admin
+
+    UserCreate:
+      type: object
+      description: 신규 사용자 생성 시 사용하는 요청 바디
+      properties:
+        social_id:
+          type: string
+          description: 소셜 로그인 고유 식별자 (필수)
+        email:
+          type: string
+          description: 이메일 주소 (필수)
+        nickname:
+          type: string
+          description: 닉네임 (필수)
+        profile_img:
+          type: string
+          description: 프로필 이미지 URL
+        gender:
+          type: string
+          description: 성별
+        age_group:
+          type: string
+          description: 연령대
+        mbti:
+          type: string
+          description: MBTI 유형
+      required:
+        - social_id
+        - email
+        - nickname
+
+    UserPartialUpdate:
+      type: object
+      description: 사용자 정보 부분 수정 시 사용하는 요청 바디 (필드별 선택)
+      properties:
+        social_id:
+          type: string
+          description: 소셜 로그인 고유 식별자
+        email:
+          type: string
+          description: 이메일 주소
+        nickname:
+          type: string
+          description: 닉네임
+        profile_img:
+          type: string
+          description: 프로필 이미지 URL
+        gender:
+          type: string
+          description: 성별
+        age_group:
+          type: string
+          description: 연령대
+        mbti:
+          type: string
+          description: MBTI 유형
+        is_active:
+          type: boolean
+          description: 계정 활성 상태
+        is_admin:
+          type: boolean
+          description: 관리자 권한 여부
+
+    SleepRecord:
+      type: object
+      description: 수면 기록 테이블.  
+        사용자가 특정 날짜에 잔 수면 정보를 저장합니다.
+      properties:
+        sleep_id:
+          type: integer
+          description: 수면 기록 고유 ID (PK)
+        user_id:
+          type: integer
+          description: 사용자 ID (Users.user_id)
+        date:
+          type: string
+          format: date
+          description: 수면 발생 날짜
+        sleep_duration:
+          type: integer
+          description: 총 수면 시간(분 단위)
+        subjective_quality:
+          type: integer
+          description: 주관적 수면 질 점수 (1~10)
+        sleep_latency:
+          type: integer
+          description: 수면에 드는 시간(분)
+        wake_count:
+          type: integer
+          description: 수면 중 깬 횟수
+        dstat_factors:
+          type: string
+          description: D-STAT 관련 요인 (VARCHAR(255))
+        created_at:
+          type: string
+          format: date-time
+          description: 레코드 생성 시각
+        updated_at:
+          type: string
+          format: date-time
+          description: 레코드 수정 시각
+      required:
+        - sleep_id
+        - user_id
+        - date
+        - sleep_duration
+        - subjective_quality
+        - sleep_latency
+        - wake_count
+        - created_at
+
+    SleepRecordCreate:
+      type: object
+      description: 수면 기록 생성 요청 바디
+      properties:
+        user_id:
+          type: integer
+          description: 사용자 ID (필수)
+        date:
+          type: string
+          format: date
+          description: 수면 발생 날짜 (필수)
+        sleep_duration:
+          type: integer
+          description: 총 수면 시간(분 단위) (필수)
+        subjective_quality:
+          type: integer
+          description: 주관적 수면 질 점수 (필수)
+        sleep_latency:
+          type: integer
+          description: 수면에 드는 시간(분) (필수)
+        wake_count:
+          type: integer
+          description: 수면 중 깬 횟수 (필수)
+        dstat_factors:
+          type: string
+          description: D-STAT 관련 요인
+      required:
+        - user_id
+        - date
+        - sleep_duration
+        - subjective_quality
+        - sleep_latency
+        - wake_count
+
+    SleepRecordPartialUpdate:
+      type: object
+      description: 수면 기록 부분 수정 요청 바디 (필드별 선택)
+      properties:
+        date:
+          type: string
+          format: date
+          description: 수면 발생 날짜
+        sleep_duration:
+          type: integer
+          description: 총 수면 시간(분 단위)
+        subjective_quality:
+          type: integer
+          description: 주관적 수면 질 점수
+        sleep_latency:
+          type: integer
+          description: 수면에 드는 시간(분)
+        wake_count:
+          type: integer
+          description: 수면 중 깬 횟수
+        dstat_factors:
+          type: string
+          description: D-STAT 관련 요인
+
+    SleepScorePrediction:
+      type: object
+      description: 수면 점수 예측 결과 테이블.  
+        AI가 예측한 수면 점수를 저장합니다.
+      properties:
+        id:
+          type: integer
+          description: 예측 결과 고유 ID (PK)
+        user_id:
+          type: integer
+          description: 사용자 ID (Users.user_id)
+        sleep_id:
+          type: integer
+          description: 해당 수면 기록 ID (SleepRecord.sleep_id)
+        record_date:
+          type: string
+          format: date
+          description: 수면 발생 날짜
+        predicted_score:
+          type: number
+          format: float
+          description: AI 예측 점수 (0.0~100.0)
+        created_at:
+          type: string
+          format: date-time
+          description: 예측 결과 생성 시각
+      required:
+        - id
+        - user_id
+        - sleep_id
+        - record_date
+        - predicted_score
+        - created_at
+
+    SleepScorePredictionCreate:
+      type: object
+      description: 수면 점수 예측 결과 생성 요청 바디
+      properties:
+        user_id:
+          type: integer
+          description: 사용자 ID (필수)
+        sleep_id:
+          type: integer
+          description: 수면 기록 ID (필수)
+        record_date:
+          type: string
+          format: date
+          description: 수면 발생 날짜 (필수)
+        predicted_score:
+          type: number
+          format: float
+          description: AI 예측 점수 (필수)
+      required:
+        - user_id
+        - sleep_id
+        - record_date
+        - predicted_score
+
+    Log:
+      type: object
+      description: 관리자 및 시스템 로그 테이블.  
+        관리자의 모든 주요 활동이나 시스템 이벤트를 기록합니다.
+      properties:
+        logs_id:
+          type: integer
+          description: 로그 고유 ID (PK)
+        user_id:
+          type: integer
+          description: 관련 사용자 ID (Users.user_id)
+        action_type:
+          type: string
+          description: 행위 유형
+        description:
+          type: string
+          description: 행위 설명 (VARCHAR(255))
+        created_at:
+          type: string
+          format: date-time
+          description: 로그 생성 시각
+      required:
+        - logs_id
+        - action_type
+        - description
+        - created_at
+
+    LogCreate:
+      type: object
+      description: 로그 생성 요청 바디
+      properties:
+        user_id:
+          type: integer
+          description: 관련 사용자 ID
+        action_type:
+          type: string
+          description: 행위 유형 (필수)
+        description:
+          type: string
+          description: 행위 설명 (필수)
+      required:
+        - action_type
+        - description
+
+    CognitiveProblem:
+      type: object
+      description: 인지 테스트 문제 정보
+      properties:
+        id:
+          type: integer
+          description: 문제 ID
+        type:
+          type: string
+          description: 문제 유형
+        content:
+          type: string
+          description: 문제 내용
+        difficulty:
+          type: integer
+          description: 문제 난이도
+        time_limit:
+          type: integer
+          description: 제한 시간(초)
+        options:
+          type: array
+          description: 선택지 목록
+          items:
+            type: string
+        correct_answer:
+          type: string
+          description: 정답
+
+    CognitiveResultBasic:
+      type: object
+      description: 인지 테스트 기본 결과
+      properties:
+        avgSpeed:
+          type: number
+          format: float
+          description: 평균 속도
+        accuracy:
+          type: number
+          format: float
+          description: 정확도
+        reactionTimeAvg:
+          type: number
+          format: float
+          description: 평균 반응 시간
+
+    CognitiveResultCorrelation:
+      type: object
+      description: 인지 테스트 상관관계 결과
+      properties:
+        sleepQualityCorrelation:
+          type: number
+          format: float
+          description: 수면 질과의 상관관계
+        cognitiveScoreCorrelation:
+          type: number
+          format: float
+          description: 인지 점수와의 상관관계
+
+    CognitiveResultVisualization:
+      type: object
+      description: 인지 테스트 시각화 결과
+      properties:
+        dailyScores:
+          type: array
+          description: 일별 점수
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              score:
+                type: number
+                format: float
+        weeklyScores:
+          type: array
+          description: 주간 점수
+          items:
+            type: object
+            properties:
+              week:
+                type: string
+              score:
+                type: number
+                format: float
+        monthlyScores:
+          type: array
+          description: 월별 점수
+          items:
+            type: object
+            properties:
+              month:
+                type: string
+              score:
+                type: number
+                format: float
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+

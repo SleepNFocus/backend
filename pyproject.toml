@@ -6,7 +6,7 @@ authors = ["workface <with.you70@gmail.com>"]
 readme = "README.md"
 
 packages = [
-  { include = "admin" },
+  { include = "management" },
   { include = "cognitive_statistics" },
   { include = "cognitives" },
   { include = "config" },
@@ -21,6 +21,7 @@ psycopg2-binary = "^2.9.10"
 django-redis = "^5.4.0"
 python-dotenv = "^1.1.0"
 djangorestframework = "^3.16.0"
+djangorestframework-simplejwt = "^5.5.0"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"
@@ -77,5 +78,6 @@ ignore_missing_imports = true
 # Django-stubs 플러그인 활성화
 plugins = ["mypy_django_plugin.main"]
 
-#[tool.mypy.plugins.django-stubs]
+[tool.django-stubs]
 django_settings_module = "config.settings.local"
+strict_settings = true
