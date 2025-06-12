@@ -50,26 +50,17 @@ class UserStatus(models.TextChoices):
 
 # Jobsurvey ENUM 필드
 class CognitiveType(models.TextChoices):
-    HIGH_FOCUS = (
-        "high_focus",
-        "복잡한 문제 해결·전략적 사고 중심",
-    )
-    MULTITASK = (
-        "multitask",
-        "판단력·멀티태스킹·정보 처리 중심",
-    )
-    PHYSICAL = (
-        "physical",
-        "반복적 업무·신체 활동 중심",
-    )
-    NONE = "none", "현재 일하지 않음 / 학생 / 은퇴 등"
+    HIGH_FOCUS = "high_focus"
+    MULTITASK = "multitask"
+    PHYSICAL = "physical"
+    NONE = "none"
 
 
 class WorkTimePattern(models.TextChoices):
-    REGULAR_DAY = "regular_day", "낮 시간대, 규칙적 근무"
-    SHIFT_NIGHT = "shift_night", "교대/야간 등 불규칙 근무"
-    FLEXIBLE = "flexible", "자유로운 시간대, 프리랜서 등"
-    NO_SCHEDULE = "no_schedule", "일정 없음 / 학생 / 주부 등"
+    REGULAR_DAY = "regular_day"
+    SHIFT_NIGHT = "shift_night"
+    FLEXIBLE = "flexible"
+    NO_SCHEDULE = "no_schedule"
 
 
 # 커스텀 유저 매니저
@@ -109,14 +100,12 @@ class CustomUserManager(BaseUserManager["User"]):
 class User(AbstractBaseUser, PermissionsMixin):
     user_id = models.AutoField(primary_key=True)
     social_type = models.CharField(max_length=20, choices=SocialType.choices)
-    social_id = models.CharField(max_length=255)
+    social_id = models.CharField(max_length=255, unique=True)
     email = models.EmailField(max_length=100)
     nickname = models.CharField(max_length=50)
     profile_img = models.TextField(null=True, blank=True)
-    gender = models.CharField(
-        max_length=5, choices=Gender.choices, null=True, blank=True
-    )
-    birth_year = models.PositiveSmallIntegerField(null=True, blank=True)
+    gender = models.CharField(max_length=5, choices=Gender.choices)
+    birth_year = models.PositiveSmallIntegerField()
     mbti = models.CharField(
         max_length=10, choices=MBTIType.choices, null=True, blank=True
     )  # 시리얼라이저에서 null로 변환 처리
@@ -130,21 +119,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
 
-    USERNAME_FIELD = "user_id"
+    USERNAME_FIELD = "social_id"
     REQUIRED_FIELDS = ["social_type", "email", "nickname", "gender", "birth_year"]
 
     objects = CustomUserManager()
 
     def __str__(self) -> str:
         return f"{self.nickname} - {self.email} / {self.social_type}"
-
-    # 소셜 타입 + 소셜 아이디 유니크 조합 설정
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["social_type", "social_id"], name="unique_social_type_id"
-            )
-        ]
 
 
 # UserBlacklist
