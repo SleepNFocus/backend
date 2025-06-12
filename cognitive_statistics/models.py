@@ -61,11 +61,12 @@ class CognitiveTestResult(models.Model):
     class Meta:
         ordering = ["-timestamp"]
 
+
 class CognitiveSession(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="cognitive_sessions"
+        related_name="cognitive_sessions",
     )
     started_at = models.DateTimeField(auto_now_add=True)
     ended_at = models.DateTimeField(null=True, blank=True)
