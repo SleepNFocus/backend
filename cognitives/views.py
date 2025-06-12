@@ -38,7 +38,6 @@ class TestSubmitAPIView(APIView):
         serializer = TestSubmitSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-
         answers = serializer.validated_data["answers"]
 
         raw_scores = {}

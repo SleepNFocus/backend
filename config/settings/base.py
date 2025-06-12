@@ -55,7 +55,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / 'docs' / 'swagger.yaml'],
+        "DIRS": [BASE_DIR / "docs" / "swagger.yaml"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -140,27 +140,23 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = "/static/"
 
 SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {
-        'Bearer': {
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header'
-        }
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"}
     },
-    'SWAGGER_UI_SETTINGS': {
-        'deepLinking': True,
-        'persistAuthorization': True,
-        'displayOperationId': True,
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayOperationId": True,
     },
-    'SWAGGER_UI_EXTRA_URL': {
-        'swagger': '/docs/swagger/swagger.yaml',
+    "SWAGGER_UI_EXTRA_URL": {
+        "swagger": "/docs/swagger/swagger.yaml",
     },
-    'USE_SESSION_AUTH': False,
-    'VALIDATOR_URL': None,
-    'OPERATIONS_SORTER': None,
-    'TAGS_SORTER': None,
-    'DOC_EXPANSION': 'none',
-    'DEFAULT_MODEL_RENDERING': 'model',
-    'DEFAULT_INFO': None,
-    'DEFAULT_API_URL': 'https://www.dev.focusz.site',
+    "USE_SESSION_AUTH": False,
+    "VALIDATOR_URL": None,
+    "OPERATIONS_SORTER": None,
+    "TAGS_SORTER": None,
+    "DOC_EXPANSION": "none",
+    "DEFAULT_MODEL_RENDERING": "model",
+    "DEFAULT_INFO": None,
+    "DEFAULT_API_URL": "https://www.dev.focusz.site",
 }
