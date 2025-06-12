@@ -33,6 +33,9 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/users/", include("users.urls")),
+    path("api/cognitives/", include("cognitives.urls")),
+    path("api/cognitive-statistics/", include("cognitive_statistics.urls")),
     path("api/", include("management.urls")),
     path("api/", include("users.urls")),
     path("api/", include("sleep.urls")),
