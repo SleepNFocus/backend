@@ -8,10 +8,13 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "FocusZ",
-        "USER": "dev_user",
+        "USER": "postgres",
         "PASSWORD": "sleepNfocus",
         "HOST": "localhost",
         "PORT": "54324",
+        "OPTIONS": {
+            "client_encoding": "UTF8",
+        },
     }
 }
 

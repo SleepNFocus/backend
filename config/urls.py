@@ -6,5 +6,5 @@ urlpatterns = [
     path("", lambda request: HttpResponse("Hello, World!"), name="home"),
     path("admin/", admin.site.urls),
     path("api/tests/", include("cognitives.urls")),
-    path("api/cognitive-tests/", include("cognitive_statistics.urls")),
+    path("api/cognitive-statistics/", include("cognitive_statistics.urls"))
 ]
