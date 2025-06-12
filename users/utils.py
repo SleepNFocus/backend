@@ -1,3 +1,4 @@
+# 작성자: 한율
 import redis
 import requests
 from django.conf import settings

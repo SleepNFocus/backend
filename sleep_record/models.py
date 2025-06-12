@@ -1,3 +1,4 @@
+# 작성자: 한율
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 

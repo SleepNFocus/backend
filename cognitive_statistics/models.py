@@ -1,3 +1,4 @@
+# 작성자: 한율
 from django.conf import settings
 from django.db import models
 
