@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import redis
 from django.conf import settings
 
