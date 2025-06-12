@@ -11,7 +11,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "FocusZ",
-        "USER": "postgres",
+        "USER": "focusz",
         "PASSWORD": "sleepNfocus",
         "HOST": "localhost",
         "PORT": "54324",
