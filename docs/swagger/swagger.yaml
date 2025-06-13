@@ -215,11 +215,40 @@ paths:
                     example: 인증이 필요합니다.
 
   /api/mypage/profile/:
-  get:
-    ...
-    responses:
-      '200':
-        description: 조회 성공
+    get:
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nickname:
+                    type: string
+                  profile_image:
+                    type: string
+                    format: uri
+                    nullable: true
+                  gender:
+                    type: string
+                  birth_year:
+                    type: integer
+                  mbti:
+                    type: string
+                  cognitive_type:
+                    type: string
+                  cognitive_type_label:
+                    type: string
+                  work_time_pattern:
+                    type: string
+                  work_time_pattern_label:
+                    type: string
+                  email:
+                    type: string
+    patch:
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -229,7 +258,6 @@ paths:
                   type: string
                 profile_image:
                   type: string
-                  format: uri
                   nullable: true
                 gender:
                   type: string
@@ -239,56 +267,26 @@ paths:
                   type: string
                 cognitive_type:
                   type: string
-                cognitive_type_label:
-                  type: string
                 work_time_pattern:
                   type: string
-                work_time_pattern_label:
-                  type: string
-                email:
-                  type: string
-  patch:
-    ...
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              nickname:
-                type: string
-              profile_image:
-                type: string
-                nullable: true
-              gender:
-                type: string
-              birth_year:
-                type: integer
-              mbti:
-                type: string
-              cognitive_type:
-                type: string
-              work_time_pattern:
-                type: string
-    responses:
-      '200':
-        description: 수정 성공
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserProfileDetail'
-
-        '400':
-          description: 잘못된 요청
+      responses:
+        '200':
+          description: 수정 성공
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                    example: 잘못된 요청입니다.
+                $ref: '#/components/schemas/UserProfileDetail'
+
+          '400':
+            description: 잘못된 요청
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    detail:
+                      type: string
+                      example: 잘못된 요청입니다.
 
   /api/mypage/records/list/:
   get:
@@ -1287,4 +1285,3 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-
