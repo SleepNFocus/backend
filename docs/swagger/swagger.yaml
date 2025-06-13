@@ -20,32 +20,68 @@ tags:
     description: 관리자 및 시스템 로그 관리
 
 paths:
-  /api/users/login/:
-    get:
-      tags:
-        - 사용자
-      summary: 소셜 로그인 및 회원가입
-      description: 소셜 로그인 및 회원가입을 합니다.
-      deprecated: true
-      responses:
-        '200':
-          description: 로그인 성공
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
-        '401':
-          description: 유효하지 않은 로그인 정보
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                    example: 유효하지 않은 로그인 정보입니다.
+/api/users/social-login/:
+  post:
+    tags:
+      - 사용자
+    summary: 소셜 로그인 및 회원가입
+    description: 카카오 또는 구글 소셜 로그인과 동시에 회원가입을 처리합니다.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              provider:
+                type: string
+                enum: [kakao, google]
+                example: kakao
+              access_token:
+                type: string
+                example: "ya29.a0Af..."
+    responses:
+      '200':
+        description: 로그인 성공
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                access:
+                  type: string
+                refresh:
+                  type: string
+                user:
+                  type: object
+                  properties:
+                    user_id:
+                      type: integer
+                    social_type:
+                      type: string
+                      example: KAKAO
+                    social_id:
+                      type: string
+                    nickname:
+                      type: string
+                    email:
+                      type: string
+                    profile_img:
+                      type: string
+                      nullable: true
+                    status:
+                      type: string
+      '401':
+        description: 유효하지 않은 로그인 정보
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                detail:
+                  type: string
+                  example: 유효하지 않은 로그인 정보입니다.
+
 
     post:
       tags:
@@ -179,48 +215,70 @@ paths:
                     example: 인증이 필요합니다.
 
   /api/mypage/profile/:
-    get:
-      tags:
-        - 마이페이지
-      summary: 프로필 상세 정보 조회
-      description: 유저의 상세 프로필 정보를 조회합니다.
-      deprecated: true
-      responses:
-        '200':
-          description: 조회 성공
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '401':
-          description: 인증 실패
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  detail:
-                    type: string
-                    example: 인증이 필요합니다.
-    patch:
-      tags:
-        - 마이페이지
-      summary: 프로필 정보 수정
-      description: 유저의 프로필 정보를 수정합니다.
-      deprecated: true
-      requestBody:
-        required: true
+  get:
+    ...
+    responses:
+      '200':
+        description: 조회 성공
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserPartialUpdate'
-      responses:
-        '200':
-          description: 수정 성공
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
+              type: object
+              properties:
+                nickname:
+                  type: string
+                profile_image:
+                  type: string
+                  format: uri
+                  nullable: true
+                gender:
+                  type: string
+                birth_year:
+                  type: integer
+                mbti:
+                  type: string
+                cognitive_type:
+                  type: string
+                cognitive_type_label:
+                  type: string
+                work_time_pattern:
+                  type: string
+                work_time_pattern_label:
+                  type: string
+                email:
+                  type: string
+  patch:
+    ...
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              nickname:
+                type: string
+              profile_image:
+                type: string
+                nullable: true
+              gender:
+                type: string
+              birth_year:
+                type: integer
+              mbti:
+                type: string
+              cognitive_type:
+                type: string
+              work_time_pattern:
+                type: string
+    responses:
+      '200':
+        description: 수정 성공
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileDetail'
+
         '400':
           description: 잘못된 요청
           content:
@@ -233,74 +291,108 @@ paths:
                     example: 잘못된 요청입니다.
 
   /api/mypage/records/list/:
-    get:
-      tags:
-        - 마이페이지
-      summary: 일/주/월별 기록 조회
-      description: period를 기준으로 최근 기록을 리스트 형식으로 조회합니다.
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: period
-          in: query
-          required: true
-          schema:
-            type: string
-            enum: [day, week, month]
-            example: day
-      deprecated: true
-      responses:
-        '200':
-          description: 조회 성공
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - type: object
-                    description: 일별 조회 결과 (period=day)
-                    properties:
-                      results:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/SleepRecord'
-                  - type: object
-                    description: 주별 조회 결과 (period=week)
-                    properties:
-                      results:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            week:
-                              type: integer
-                            start_date:
-                              type: string
-                              format: date
-                            end_date:
-                              type: string
-                              format: date
-                            total_sleep_hours:
-                              type: number
-                            average_sleep_score:
-                              type: number
-                            average_cognitive_score:
-                              type: number
-                  - type: object
-                    description: 월별 조회 결과 (period=month)
-                    properties:
-                      results:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            month:
-                              type: string
-                            total_sleep_hours:
-                              type: number
-                            average_sleep_score:
-                              type: number
-                            average_cognitive_score:
-                              type: number
+  get:
+    tags:
+      - 마이페이지
+    summary: 일/주/월별 기록 조회
+    description: period를 기준으로 최근 기록을 리스트 형식으로 조회합니다.
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: period
+        in: query
+        required: true
+        schema:
+          type: string
+          enum: [day, week, month]
+          example: day
+    responses:
+      '200':
+        description: 조회 성공
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  description: 일별 기록 리스트 (최근 3개월치)
+                  properties:
+                    results:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          date:
+                            type: string
+                            format: date
+                            example: "2025-06-02"
+                          sleep_hour:
+                            type: number
+                            example: 7
+                          sleep_score:
+                            type: number
+                            example: 82
+                          cognitive_score:
+                            type: number
+                            example: 85
+                - type: object
+                  description: 주별 평균 기록 리스트 (최근 1개월치)
+                  properties:
+                    results:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          week:
+                            type: integer
+                            example: 1
+                          start_date:
+                            type: string
+                            format: date
+                            example: "2025-06-01"
+                          end_date:
+                            type: string
+                            format: date
+                            example: "2025-06-07"
+                          total_sleep_hours:
+                            type: number
+                            example: 46
+                          average_sleep_score:
+                            type: number
+                            example: 81.1
+                          average_cognitive_score:
+                            type: number
+                            example: 78.5
+                - type: object
+                  description: 월별 평균 기록 리스트 (최근 1년치)
+                  properties:
+                    results:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          month:
+                            type: string
+                            example: "2025-06"
+                          total_sleep_hours:
+                            type: number
+                            example: 184
+                          average_sleep_score:
+                            type: number
+                            example: 80.2
+                          average_cognitive_score:
+                            type: number
+                            example: 81.7
+      '404':
+        description: 해당 기간 기록 없음
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                detail:
+                  type: string
+                  example: 해당 기간 기록이 없습니다.
+
   
   /api/sleep/record/:
     post:
@@ -857,6 +949,33 @@ components:
         is_admin:
           type: boolean
           description: 관리자 권한 여부
+
+    UserProfileDetail:
+      type: object
+      properties:
+        nickname:
+          type: string
+        profile_image:
+          type: string
+          format: uri
+          nullable: true
+        gender:
+          type: string
+        birth_year:
+          type: integer
+        mbti:
+          type: string
+        cognitive_type:
+          type: string
+        cognitive_type_label:
+          type: string
+        work_time_pattern:
+          type: string
+        work_time_pattern_label:
+          type: string
+        email:
+          type: string
+
 
     SleepRecord:
       type: object
