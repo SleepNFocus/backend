@@ -68,7 +68,9 @@ paths:
                       type: string
                     profile_img:
                       type: string
+                      format: uri
                       nullable: true
+                      example: http://...
                     status:
                       type: string
       '401':
@@ -182,10 +184,11 @@ paths:
                 properties:
                   nickname:
                     type: string
-                    example: 콘치
+                    example: 현영
                   profile_image:
                     type: string
                     format: uri
+                    nullable: true
                     example: https://...
                   joined_at:
                     type: string
@@ -231,6 +234,7 @@ paths:
                   type: string
                   format: uri
                   nullable: true
+                  example: http://...
                 gender:
                   type: string
                 birth_year:
