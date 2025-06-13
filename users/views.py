@@ -70,7 +70,7 @@ class LogoutView(APIView):
         # 리프레시 토큰을 블랙리스트에 저장함
         add_token_to_blacklist(refresh_token)
 
-        return Response({"message": "로그아웃 완료"}, status=200)
+        return Response({"message": "정상적으로 로그아웃되었습니다."}, status=200)
 
 
 # 회원 탈퇴
@@ -81,7 +81,7 @@ class UserWithdrawalView(APIView):
         user = request.user
         user.status = UserStatus.WITHDRAWN
         user.save()
-        return Response({"message": "회원 탈퇴 완료"}, status=200)
+        return Response({"message": "계정이 삭제되었습니다."}, status=200)
 
 
 # 온보딩 설문
