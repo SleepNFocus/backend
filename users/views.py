@@ -7,10 +7,10 @@ from users.models import UserStatus
 
 from .serializers import (
     LogoutSerializer,
+    MypageMainSerializer,
     OnboardingBasicSerializer,
     OnboardingJobSerializer,
     SocialLoginSerializer,
-    MypageMainSerializer
 )
 from .services import SocialLoginService, get_mypage_main_data
 from .utils import add_token_to_blacklist, handle_social_login_error
