@@ -1,8 +1,11 @@
 # 작성자: 한율
 from django.db import transaction
 from django.utils import timezone
+from django.db.models import Sum, Avg, Count
 
 from .models import User, UserBlacklist, UserStatus
+from sleep_record.models import SleepRecord, SleepScorePrediction
+from cognitive_statistics.models import CognitiveTestResult
 from .utils import (
     generate_jwt_token_pair,
     get_access_token_from_code,
@@ -138,3 +141,35 @@ class SocialLoginService:
 
         tokens = generate_jwt_token_pair(user)
         return tokens, user
+
+
+# 마이페이지 메인 요약 정보
+def get_mypage_main_data(user):
+    # 모든 수면 기록
+    sleep_records = SleepRecord.objects.filter(user=user)
+    # 모든 인지 테스트 결과
+    cognitive_results = CognitiveTestResult.objects.filter(user=user)
+
+    # 수면 기록이 몇 일 저장됐는지 세기
+    tracking_days = sleep_records.count()
+    # 총 수면 시간 다 더하기
+    total_sleep_minutes = sleep_records.aggregate(total=Sum("sleep_duration"))["total"] or 0
+    # 분 단위 -> 시간 단위로 바꾸고 소수점 한자리로 반올림하기
+    total_sleep_hours = round(total_sleep_minutes / 60, 1)
+
+    # 수면 점수의 총 평균 구하기
+    average_sleep_score = SleepScorePrediction.objects.filter(
+        sleep_record__user=user
+    ).aggregate(avg=Avg("predicted_score"))["avg"] or 0.0
+    # 인지 테스트 점수의 총 평균 구하기
+    average_cognitive_score = cognitive_results.aggregate(avg=Avg("average_score"))["avg"] or 0.0
+
+    return {
+        "nickname": user.nickname,
+        "profile_img": user.profile_img,
+        "joined_at": user.joined_at,
+        "tracking_days": tracking_days,
+        "total_sleep_hours": total_sleep_hours,
+        "average_sleep_score": round(average_sleep_score, 1), # 소수점 한자리로
+        "average_cognitive_score": round(average_cognitive_score, 1), # 소수점 한자리로
+    }

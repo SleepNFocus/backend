@@ -10,6 +10,7 @@ from .views import (
     OnboardingJobView,
     SocialLoginView,
     UserWithdrawalView,
+    MypageMainView
 )
 
 urlpatterns: List[Union[URLPattern, URLResolver]] = [
@@ -19,4 +20,5 @@ urlpatterns: List[Union[URLPattern, URLResolver]] = [
     path("withdrawal/", UserWithdrawalView.as_view(), name="withdrawal"),
     path("onboarding/basic/", OnboardingBasicView.as_view(), name="onboarding-basic"),
     path("onboarding/job/", OnboardingJobView.as_view(), name="onboarding-job"),
+    path("mypage/main/", MypageMainView.as_view(), name="mypage-main")
 ]

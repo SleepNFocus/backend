@@ -1,4 +1,3 @@
-# 작성자: 한율
 from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -11,8 +10,9 @@ from .serializers import (
     OnboardingBasicSerializer,
     OnboardingJobSerializer,
     SocialLoginSerializer,
+    MypageMainSerializer
 )
-from .services import SocialLoginService
+from .services import SocialLoginService, get_mypage_main_data
 from .utils import add_token_to_blacklist, handle_social_login_error
 
 
@@ -109,3 +109,15 @@ class OnboardingJobView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=200)
+
+
+# 마이페이지 메인
+class MypageMainView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        data = get_mypage_main_data(user)
+        serializer = MypageMainSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data)
