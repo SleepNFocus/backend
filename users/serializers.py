@@ -91,3 +91,14 @@ class OnboardingJobSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context.get("request").user
         return JobSurvey.objects.create(user=user, **validated_data)
+
+
+# 마이페이지 메인
+class MypageMainSerializer(serializers.Serializer):
+    nickname = serializers.CharField()
+    profile_img = serializers.URLField(allow_null=True, required=True)
+    joined_at = serializers.DateTimeField()
+    tracking_days = serializers.IntegerField()
+    total_sleep_hours = serializers.FloatField()
+    average_sleep_score = serializers.FloatField()
+    average_cognitive_score = serializers.FloatField()

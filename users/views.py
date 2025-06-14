@@ -1,4 +1,3 @@
-# 작성자: 한율
 from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -8,11 +7,12 @@ from users.models import UserStatus
 
 from .serializers import (
     LogoutSerializer,
+    MypageMainSerializer,
     OnboardingBasicSerializer,
     OnboardingJobSerializer,
     SocialLoginSerializer,
 )
-from .services import SocialLoginService
+from .services import SocialLoginService, get_mypage_main_data
 from .utils import add_token_to_blacklist, handle_social_login_error
 
 
@@ -70,7 +70,7 @@ class LogoutView(APIView):
         # 리프레시 토큰을 블랙리스트에 저장함
         add_token_to_blacklist(refresh_token)
 
-        return Response({"message": "로그아웃 완료"}, status=200)
+        return Response({"message": "정상적으로 로그아웃되었습니다."}, status=200)
 
 
 # 회원 탈퇴
@@ -81,7 +81,7 @@ class UserWithdrawalView(APIView):
         user = request.user
         user.status = UserStatus.WITHDRAWN
         user.save()
-        return Response({"message": "회원 탈퇴 완료"}, status=200)
+        return Response({"message": "계정이 삭제되었습니다."}, status=200)
 
 
 # 온보딩 설문
@@ -109,3 +109,15 @@ class OnboardingJobView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=200)
+
+
+# 마이페이지 메인
+class MypageMainView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        data = get_mypage_main_data(user)
+        serializer = MypageMainSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data)
