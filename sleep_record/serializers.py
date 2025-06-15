@@ -14,7 +14,6 @@ class SleepRecordSerializer(serializers.ModelSerializer):
             "sleep_latency",
             "wake_count",
             "disturb_factors",
-            "score",
             "memo",
             "created_at",
             "updated_at",
