@@ -1,4 +1,3 @@
-# 작성자: 한율
 from django.db import transaction
 from django.db.models import Avg, Sum
 from django.utils import timezone
