@@ -87,7 +87,6 @@ paths:
       tags:
         - 사용자
       summary: JWT 리프레시 토큰 재발급
-      deprecated: true
       requestBody:
         required: true
         content:
@@ -124,7 +123,6 @@ paths:
         - 사용자
       summary: 리프레시 토큰 무효화, 로그아웃
       description: JWT 리프레시 토큰을 만료시켜 로그아웃합니다.
-      deprecated: true
       responses:
         '201':
           description: 정상적으로 로그아웃되었습니다.
@@ -137,7 +135,6 @@ paths:
         - 사용자
       summary: 회원탈퇴 및 개인정보 삭제
       description: 해당 사용자 계정을 삭제합니다.
-      deprecated: true
       responses:
         '204':
           description: 계정이 삭제되었습니다.
@@ -150,7 +147,6 @@ paths:
         - 마이페이지
       summary: 마이페이지 메인 정보 조회
       description: 유저의 프로필, 총 수면 시간, 평균 점수 등 마이페이지 메인 정보를 조회합니다.
-      deprecated: true
       responses:
         '200':
           description: 조회 성공
@@ -375,7 +371,6 @@ paths:
         - 수면
       summary: 수면 기록 등록
       description: 수면 기록을 등록합니다.
-      deprecated: true
       requestBody:
         required: true
         content:
@@ -405,7 +400,6 @@ paths:
         - 수면
       summary: 특정 수면 기록 조회
       description: 지정된 sleep_id를 가진 수면 기록의 상세 정보를 조회합니다.
-      deprecated: true
       responses:
         '200':
           description: 수면 기록 상세 정보 반환 성공
@@ -428,7 +422,6 @@ paths:
         - 수면
       summary: 수면 기록 부분 수정
       description: 지정된 sleep_id를 가진 수면 기록의 일부 정보를 수정합니다.
-      deprecated: true
       requestBody:
         required: true
         content:
@@ -451,7 +444,6 @@ paths:
         - 수면
       summary: 수면 기록 삭제
       description: 지정된 sleep_id를 가진 수면 기록을 삭제합니다.
-      deprecated: true
       responses:
         '204':
           description: 수면 기록 삭제 성공 (콘텐츠 없음)
@@ -464,7 +456,6 @@ paths:
         - 수면
       summary: 수면 점수 예측 및 저장
       description: AI를 사용하여 수면 점수를 예측하고 저장합니다.
-      deprecated: true
       requestBody:
         required: true
         content:
@@ -616,7 +607,6 @@ paths:
         - 인지
       summary: 인지 테스트 문제 목록 조회
       description: 인지 테스트 문제 목록을 조회합니다.
-      deprecated: true
       responses:
         '200':
           description: 조회 성공
@@ -633,7 +623,6 @@ paths:
         - 인지
       summary: 인지 테스트 유형 목록 조회
       description: 인지 테스트 유형 목록을 조회합니다.
-      deprecated: true
       responses:
         '200':
           description: 조회 성공
@@ -651,7 +640,6 @@ paths:
         - 인지
       summary: 인지 테스트 시간 조회
       description: 인지 테스트 시간 정보를 조회합니다.
-      deprecated: true
       responses:
         '200':
           description: 조회 성공
@@ -674,7 +662,6 @@ paths:
         - 인지
       summary: 인지 테스트 시간 가이드 조회
       description: 인지 테스트 시간 가이드 정보를 조회합니다.
-      deprecated: true
       responses:
         '200':
           description: 조회 성공
@@ -693,7 +680,6 @@ paths:
         - 인지
       summary: 인지 테스트 기본 결과 조회
       description: 인지 테스트의 기본 결과를 조회합니다.
-      deprecated: true
       responses:
         '200':
           description: 조회 성공
@@ -722,7 +708,6 @@ paths:
         - 인지
       summary: 인지 테스트 시각화 결과 조회
       description: 인지 테스트 결과의 시각화 데이터를 조회합니다.
-      deprecated: true
       responses:
         '200':
           description: 조회 성공
@@ -737,7 +722,6 @@ paths:
         - 로그
       summary: 시스템 로그 기록
       description: 관리자 및 시스템 이벤트를 로그로 기록합니다.
-      deprecated: true
       requestBody:
         required: true
         content:
