@@ -34,20 +34,9 @@ class SleepRecordView(APIView):
         return Response(serializer.data, status=200)
 
     def patch(self, request: Request, id) -> Response:
-        date = request.query_params.get("date")
 
         serializer = SleepRecordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        if not date:
-            return Response({"detail": "date는 필수입니다."}, status=400)
-
-        try:
-            date = datetime.strptime(date, "%Y-%m-%d").date()
-        except ValueError:
-            return Response(
-                {"detail": "날짜 형식은 YYYY-MM-DD여야 합니다."}, status=400
-            )
 
         update_sleep_record(
             user=request.user, data=serializer.validated_data, id=id
