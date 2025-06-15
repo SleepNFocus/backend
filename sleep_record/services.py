@@ -18,7 +18,7 @@ def create_sleep_record(user, data):
             sleep_latency=data["sleep_latency"],
             wake_count=data["wake_count"],
             disturb_factors=data["disturb_factors"],
-            score= calculate_sleep_score(data),
+            score=calculate_sleep_score(data),
             memo=data["memo"],
         )
 
@@ -83,7 +83,6 @@ def subjective_quality_score(subjective_quality: int) -> int:
     return mapping.get(subjective_quality, 0)  # 잘못된 값은 0 처리
 
 
-
 def sleep_latency_score(sleep_latency: int) -> int:
     if sleep_latency <= 15:
         return 15
@@ -98,20 +97,21 @@ def wake_count_score(wake_count: int) -> int:
         return 10
     elif wake_count <= 2:
         return 5
-    else :
+    else:
         return 0
 
 
 def disturb_factors_score(disturb_factors: list[str]) -> int:
     return max(0, 20 - 4 * len(disturb_factors))
 
-def calculate_sleep_score(data:dict) -> int:
+
+def calculate_sleep_score(data: dict) -> int:
     score = (
-            sleep_duration_score(data["sleep_duration"])
-            + subjective_quality_score(data["subjective_quality"])
-            + sleep_latency_score(data["sleep_latency"])
-            + wake_count_score(data["wake_count"])
-            + disturb_factors_score(data["disturb_factors"])
+        sleep_duration_score(data["sleep_duration"])
+        + subjective_quality_score(data["subjective_quality"])
+        + sleep_latency_score(data["sleep_latency"])
+        + wake_count_score(data["wake_count"])
+        + disturb_factors_score(data["disturb_factors"])
     )
 
     return min(score, 100)

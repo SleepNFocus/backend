@@ -27,7 +27,6 @@ class SleepRecordView(APIView):
 
     def get(self, request: Request, id) -> Response:
 
-
         record = get_sleep_record(user=request.user, id=id)
 
         serializer = SleepRecordSerializer(record)
@@ -38,8 +37,6 @@ class SleepRecordView(APIView):
         serializer = SleepRecordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        update_sleep_record(
-            user=request.user, data=serializer.validated_data, id=id
-        )
+        update_sleep_record(user=request.user, data=serializer.validated_data, id=id)
 
         return Response("message : 수면 기록이 수정 되었습니다.", status=200)
