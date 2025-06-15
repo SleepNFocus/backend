@@ -1,4 +1,3 @@
-# 작성자: 한율
 from django.apps import AppConfig
 
 

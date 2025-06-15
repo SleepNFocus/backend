@@ -1,4 +1,3 @@
-# 작성자: 한율
 from rest_framework.exceptions import ValidationError
 
 from sleep_record.models import SleepRecord

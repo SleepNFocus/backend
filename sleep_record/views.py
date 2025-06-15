@@ -1,6 +1,3 @@
-# 작성자: 한율
-from datetime import datetime
-
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
