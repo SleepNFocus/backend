@@ -834,24 +834,24 @@ paths:
         '404':
           description: 사용자 없음
 
-  /api/admin/logs/:
-    get:
-      tags:
-        - 로그
-      summary: 시스템 로그 조회
-      description: 시스템 로그 데이터를 조회합니다. (로그 모델이 현재는 관리 앱에서 직접 사용 가능하지 않음)
-      operationId: getAdminLogs
-      responses:
-        '200':
-          description: 로그 데이터 반환 성공
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: GET logs data
+#  /api/admin/logs/:
+#    get:
+#      tags:
+#        - 로그
+#      summary: 시스템 로그 조회
+#      description: 시스템 로그 데이터를 조회합니다. (로그 모델이 현재는 관리 앱에서 직접 사용 가능하지 않음)
+#      operationId: getAdminLogs
+#      responses:
+#        '200':
+#          description: 로그 데이터 반환 성공
+#          content:
+#            application/json:
+#              schema:
+#                type: object
+#                properties:
+#                  message:
+#                    type: string
+#                    example: GET logs data
 
 components:
   schemas:
