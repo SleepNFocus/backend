@@ -1,6 +1,9 @@
 from django.db import transaction
 from django.db.models import Avg, Sum
+from django.db.models.functions import TruncDate
 from django.utils import timezone
+
+from datetime import date, timedelta
 
 from cognitive_statistics.models import CognitiveTestResult
 from sleep_record.models import SleepRecord, SleepScorePrediction
@@ -180,3 +183,159 @@ def get_mypage_main_data(user):
         "average_sleep_score": round(average_sleep_score, 1),  # 소수점 한자리로
         "average_cognitive_score": round(average_cognitive_score, 1),  # 소수점 한자리로
     }
+
+
+# 마이페이지 기록 조회 (리스트뷰)
+# 공통 날짜별 데이터 매핑용
+def daterange(start_date, end_date):
+    for n in range(int((end_date - start_date).days) + 1):
+        yield start_date + timedelta(n)
+
+# 1. 일별(day)
+def get_record_day_list(user):
+    today = timezone.now().date()
+    start_date = today - timedelta(days=89)
+    end_date = today
+
+    # SleepRecord(날짜), SleepScorePrediction(점수), CognitiveTestResult(날짜별 평균)
+    sleep_map = {
+        r.date: r for r in SleepRecord.objects.filter(user=user, date__range=(start_date, end_date))
+    }
+
+    # SleepScorePrediction: sleep_record로 연결된 date 기준
+    score_map = {}
+    for sp in SleepScorePrediction.objects.filter(
+        sleep_record__user=user,
+        sleep_record__date__range=(start_date, end_date)
+    ):
+        # 날짜별로 예측 점수 매핑
+        score_map[sp.sleep_record.date] = sp
+
+    # CognitiveTestResult: 날짜 기준으로 집계 필요
+    cog_results = (
+        CognitiveTestResult.objects
+        .filter(user=user, timestamp__date__range=(start_date, end_date))
+        .annotate(date=TruncDate("timestamp"))
+        .values("date")
+        .annotate(average_score=Avg("average_score"))
+    )
+    cog_map = {r["date"]: r["average_score"] for r in cog_results}
+
+    results = []
+    for d in daterange(start_date, end_date):
+        sr = sleep_map.get(d)
+        sp = score_map.get(d)
+        cs = cog_map.get(d)
+        # 둘 중 하나라도 있으면 출력
+        if sr or sp or cs:
+            results.append({
+                "date": d,
+                "sleep_hour": round((sr.sleep_duration if sr else 0) / 60, 1),
+                "sleep_score": round(sp.predicted_score, 1) if sp else 0,
+                "cognitive_score": round(cs, 1) if cs is not None else 0,
+            })
+    return results
+
+# 2. 주별(week)
+def get_record_week_list(user):
+    today = timezone.now().date()
+    start_date = today - timedelta(days=27)
+    end_date = today
+
+    sleep_records = SleepRecord.objects.filter(user=user, date__range=(start_date, end_date))
+    sleep_score_preds = SleepScorePrediction.objects.filter(
+        sleep_record__user=user,
+        sleep_record__date__range=(start_date, end_date)
+    )
+    cog_results = (
+        CognitiveTestResult.objects
+        .filter(user=user, timestamp__date__range=(start_date, end_date))
+        .annotate(date=TruncDate("timestamp"))
+        .values("date")
+        .annotate(average_score=Avg("average_score"))
+    )
+    # 매핑
+    sleep_map = {r.date: r for r in sleep_records}
+    score_map = {sp.sleep_record.date: sp for sp in sleep_score_preds}
+    cog_map = {r["date"]: r["average_score"] for r in cog_results}
+
+    results = []
+    week_num = 1
+    d = start_date
+    while d <= end_date:
+        week_start = d
+        week_end = min(d + timedelta(days=6), end_date)
+        week_dates = list(daterange(week_start, week_end))
+
+        sleep_hours = []
+        sleep_scores = []
+        cog_scores = []
+
+        for wd in week_dates:
+            sr = sleep_map.get(wd)
+            sp = score_map.get(wd)
+            cs = cog_map.get(wd)
+            if sr:
+                sleep_hours.append((sr.sleep_duration or 0) / 60)
+            if sp:
+                sleep_scores.append(sp.predicted_score)
+            if cs is not None:
+                cog_scores.append(cs)
+
+        if sleep_hours or sleep_scores or cog_scores:
+            results.append({
+                "week": week_num,
+                "start_date": week_start,
+                "end_date": week_end,
+                "total_sleep_hours": round(sum(sleep_hours), 1) if sleep_hours else 0,
+                "average_sleep_score": round(sum(sleep_scores) / len(sleep_scores), 1) if sleep_scores else 0,
+                "average_cognitive_score": round(sum(cog_scores) / len(cog_scores), 1) if cog_scores else 0,
+            })
+        week_num += 1
+        d = week_end + timedelta(days=1)
+    return results
+
+# 3. 월별(month)
+def get_record_month_list(user):
+    today = timezone.now().date()
+    results = []
+    for i in range(12):
+        y = (today.year if today.month - i > 0 else today.year - 1)
+        m = (today.month - i) % 12 or 12
+        month_start = date(y, m, 1)
+        if m == 12:
+            month_end = date(y + 1, 1, 1) - timedelta(days=1)
+        else:
+            month_end = date(y, m + 1, 1) - timedelta(days=1)
+
+        sleep_records = SleepRecord.objects.filter(user=user, date__range=(month_start, month_end))
+        sleep_score_preds = SleepScorePrediction.objects.filter(
+            sleep_record__user=user,
+            sleep_record__date__range=(month_start, month_end)
+        )
+        cog_results = (
+            CognitiveTestResult.objects
+            .filter(user=user, timestamp__date__range=(month_start, month_end))
+            .annotate(date=TruncDate("timestamp"))
+            .values("date")
+            .annotate(average_score=Avg("average_score"))
+        )
+        sleep_hours = []
+        sleep_scores = []
+        cog_scores = []
+        for sr in sleep_records:
+            sleep_hours.append((sr.sleep_duration or 0) / 60)
+        for sp in sleep_score_preds:
+            sleep_scores.append(sp.predicted_score)
+        for r in cog_results:
+            cog_scores.append(r["average_score"])
+
+        if sleep_hours or sleep_scores or cog_scores:
+            results.append({
+                "month": f"{y}-{str(m).zfill(2)}",
+                "total_sleep_hours": round(sum(sleep_hours), 1) if sleep_hours else 0,
+                "average_sleep_score": round(sum(sleep_scores) / len(sleep_scores), 1) if sleep_scores else 0,
+                "average_cognitive_score": round(sum(cog_scores) / len(cog_scores), 1) if cog_scores else 0,
+            })
+    results.sort(key=lambda x: x["month"])
+    return results
