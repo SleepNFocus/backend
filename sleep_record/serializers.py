@@ -7,6 +7,17 @@ from sleep_record.models import SleepRecord
 class SleepRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = SleepRecord
-        fields = "__all__"
+        fields = [
+            "date",
+            "sleep_duration",
+            "subjective_quality",
+            "sleep_latency",
+            "wake_count",
+            "disturb_factors",
+            "score",
+            "memo",
+            "created_at",
+            "updated_at",
+        ]
 
         read_only_fields = ["id", "created_at", "updated_at"]
