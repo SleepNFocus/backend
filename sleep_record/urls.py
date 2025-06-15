@@ -9,6 +9,12 @@ urlpatterns: List[Union[URLPattern, URLResolver]] = [
     path(
         "",
         SleepRecordView.as_view(),
-        name="sleep_record",
+        name="sleep_record_create",
     ),
+
+    path(
+        "<int:id>/",
+        SleepRecordView.as_view(),
+        name="sleep_record",
+    )
 ]

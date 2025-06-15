@@ -15,8 +15,9 @@ class SleepRecordSerializer(serializers.ModelSerializer):
             "wake_count",
             "disturb_factors",
             "memo",
+            "score",
             "created_at",
             "updated_at",
         ]
 
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "score", "created_at", "updated_at"]

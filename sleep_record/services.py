@@ -27,9 +27,9 @@ def create_sleep_record(user, data):
         raise ValidationError({"detail": f"수면 기록 생성 실패: {str(e)}"})
 
 
-def get_sleep_record(user, date):
+def get_sleep_record(user, id):
     try:
-        sleep_record = SleepRecord.objects.get(user=user, date=date)
+        sleep_record = SleepRecord.objects.get(user=user, id=id)
 
         return sleep_record
     except Exception as e:
@@ -37,10 +37,10 @@ def get_sleep_record(user, date):
         raise ValidationError({"detail": f"수면 기록 조회 실패: {str(e)}"})
 
 
-def update_sleep_record(user, date, data):
+def update_sleep_record(user, data, id):
 
     try:
-        sleep_record = SleepRecord.objects.get(user=user, date=date)
+        sleep_record = SleepRecord.objects.get(user=user, id=id)
 
         sleep_record.sleep_duration = data["sleep_duration"]
         sleep_record.subjective_quality = data["subjective_quality"]
