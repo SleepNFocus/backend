@@ -1,8 +1,8 @@
-from datetime import datetime
 
 from rest_framework import serializers
 
-from users.models import User, JobSurvey, Gender, MBTIType
+from users.models import Gender, JobSurvey, MBTIType, User
+
 from .utils import normalize_mbti
 
 
@@ -50,7 +50,7 @@ class OnboardingBasicSerializer(serializers.ModelSerializer):
 
     # 기본 설문 정보 저장 시 db에 업데이트
     def update(self, instance, validated_data):
-        # mbti 선택안함 시 db에 null로 처리 
+        # mbti 선택안함 시 db에 null로 처리
         validated_data["mbti"] = normalize_mbti(validated_data.get("mbti"))
         # 필드 값을 유저 인스턴스에 저장
         for attr, value in validated_data.items():
@@ -90,10 +90,7 @@ class OnboardingJobSerializer(serializers.ModelSerializer):
 # 마이페이지 메인
 class MypageMainSerializer(serializers.Serializer):
     nickname = serializers.CharField()
-    profile_img = serializers.URLField(
-        allow_null=True,
-        required=True
-    )
+    profile_img = serializers.URLField(allow_null=True, required=True)
     joined_at = serializers.DateTimeField()
     tracking_days = serializers.IntegerField()
     total_sleep_hours = serializers.FloatField()
@@ -104,23 +101,19 @@ class MypageMainSerializer(serializers.Serializer):
 # 마이페이지 프로필 상세 조회 및 프로필 수정
 class MypageProfileSerializer(serializers.ModelSerializer):
     # User 필드
-    gender = serializers.ChoiceField(
-        choices=Gender, allow_null=True, required=True
-    )
-    mbti = serializers.ChoiceField(
-        choices=MBTIType, allow_null=True, required=True
-    )
+    gender = serializers.ChoiceField(choices=Gender, allow_null=True, required=True)
+    mbti = serializers.ChoiceField(choices=MBTIType, allow_null=True, required=True)
 
     # JobSurvey 입력용(쓰기) 필드
     cognitive_type = serializers.ChoiceField(
-        choices=[c[0] for c in JobSurvey._meta.get_field('cognitive_type').choices],
+        choices=[c[0] for c in JobSurvey._meta.get_field("cognitive_type").choices],
         required=False,
-        write_only=True
+        write_only=True,
     )
     work_time_pattern = serializers.ChoiceField(
-        choices=[c[0] for c in JobSurvey._meta.get_field('work_time_pattern').choices],
+        choices=[c[0] for c in JobSurvey._meta.get_field("work_time_pattern").choices],
         required=False,
-        write_only=True
+        write_only=True,
     )
 
     # JobSurvey 응답용 필드 (항상 최신 설문 값 반환)
@@ -138,9 +131,9 @@ class MypageProfileSerializer(serializers.ModelSerializer):
             "gender",
             "birth_year",
             "mbti",
-            "cognitive_type", # 요청: patch로 보내는 용도(write_only)
+            "cognitive_type",  # 요청: patch로 보내는 용도(write_only)
             "work_time_pattern",
-            "cognitive_type_out", # 응답: 항상 최신 설문값 반환(read_only)
+            "cognitive_type_out",  # 응답: 항상 최신 설문값 반환(read_only)
             "cognitive_type_label",
             "work_time_pattern_out",
             "work_time_pattern_label",
@@ -157,8 +150,10 @@ class MypageProfileSerializer(serializers.ModelSerializer):
 
     def get_latest_job_survey(self, user):
         # 유저의 가장 최근 직업 설문 값 반환
-        return self.context.get("latest_job_survey") or \
-               JobSurvey.objects.filter(user=user).order_by("-created_at").first()
+        return (
+            self.context.get("latest_job_survey")
+            or JobSurvey.objects.filter(user=user).order_by("-created_at").first()
+        )
 
     def get_cognitive_type_label(self, obj):
         # 최신 직업 설문 값의 라벨 반환
@@ -201,7 +196,7 @@ class MypageProfileSerializer(serializers.ModelSerializer):
             latest_survey = JobSurvey.objects.create(
                 user=instance,
                 cognitive_type=cognitive_type,
-                work_time_pattern=work_time_pattern
+                work_time_pattern=work_time_pattern,
             )
             # context에 최신 데이터 반영
             self.context["latest_job_survey"] = latest_survey

@@ -5,12 +5,12 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 from .views import (
     LogoutView,
+    MypageMainView,
+    MypageProfileView,
     OnboardingBasicView,
     OnboardingJobView,
     SocialLoginView,
     UserWithdrawalView,
-    MypageMainView,
-    MypageProfileView,
 )
 
 urlpatterns: List[Union[URLPattern, URLResolver]] = [
