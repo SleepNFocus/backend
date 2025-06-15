@@ -754,7 +754,7 @@ paths:
         '400':
           description: 잘못된 요청 데이터
 
-  /api/admin:
+  /api/admin/:
     get:
       tags:
         - 로그
@@ -773,7 +773,7 @@ paths:
                     type: string
                     example: Admin API Root
 
-  /api/admin/users:
+  /api/admin/users/:
     get:
       tags:
         - 로그
@@ -792,7 +792,7 @@ paths:
         '401':
           description: 인증 실패
 
-  /api/admin/users/{user_id}:
+  /api/admin/users/{user_id}/:
     parameters:
       - in: path
         name: user_id
@@ -850,7 +850,7 @@ paths:
         '404':
           description: 사용자 없음
 
-  /api/admin/logs:
+  /api/admin/logs/:
     get:
       tags:
         - 로그
