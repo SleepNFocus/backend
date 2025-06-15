@@ -1,4 +1,3 @@
-# 작성자: 한율
 import redis
 import requests
 from django.conf import settings
@@ -174,3 +173,10 @@ def add_token_to_blacklist(refresh_token):
 
     except Exception:
         pass  # 유효하지 않은 토큰일 경우 무시
+
+
+# mbti 선택안함 시 db에 null로 처리
+def normalize_mbti(value):
+    if value == "선택안함":
+        return None
+    return value

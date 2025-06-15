@@ -2,8 +2,9 @@ from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import RetrieveUpdateAPIView
 
-from users.models import UserStatus
+from users.models import UserStatus, JobSurvey
 
 from .serializers import (
     LogoutSerializer,
@@ -11,6 +12,7 @@ from .serializers import (
     OnboardingBasicSerializer,
     OnboardingJobSerializer,
     SocialLoginSerializer,
+    MypageProfileSerializer
 )
 from .services import SocialLoginService, get_mypage_main_data
 from .utils import add_token_to_blacklist, handle_social_login_error
@@ -121,3 +123,37 @@ class MypageMainView(APIView):
         serializer = MypageMainSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
+
+
+
+# 마이페이지 프로필 상세 조회 및 프로필 수정
+class MypageProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    # 프로필 상세 조회
+    def get(self, request):
+        user = request.user
+        # 최신 직업 설문 데이터를 조회하여 context로 전달
+        latest_survey = JobSurvey.objects.filter(user=user).order_by("-created_at").first()
+        serializer = MypageProfileSerializer(
+            user, context={"request": request, "latest_job_survey": latest_survey}
+        )
+        return Response(serializer.data)
+
+    # 프로필 수정
+    def patch(self, request):
+        user = request.user
+        serializer = MypageProfileSerializer(
+            user, data=request.data, partial=True, context={"request": request}
+        )
+        if serializer.is_valid():
+            serializer.save()
+            # 저장 후 최신 직업 설문 데이터 다시 조회
+            latest_survey = JobSurvey.objects.filter(user=user).order_by("-created_at").first()
+            # context에 최신 설문 데이터 포함 후 다시 직렬화
+            response_serializer = MypageProfileSerializer(
+                user, context={"request": request, "latest_job_survey": latest_survey}
+            )
+            return Response(response_serializer.data)
+        
+        return Response(serializer.errors, status=400)

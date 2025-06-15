@@ -1,4 +1,3 @@
-# 작성자: 한율
 from typing import List, Union
 
 from django.urls import URLPattern, URLResolver, path
@@ -6,11 +5,12 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 from .views import (
     LogoutView,
-    MypageMainView,
     OnboardingBasicView,
     OnboardingJobView,
     SocialLoginView,
     UserWithdrawalView,
+    MypageMainView,
+    MypageProfileView,
 )
 
 urlpatterns: List[Union[URLPattern, URLResolver]] = [
@@ -21,4 +21,5 @@ urlpatterns: List[Union[URLPattern, URLResolver]] = [
     path("onboarding/basic/", OnboardingBasicView.as_view(), name="onboarding-basic"),
     path("onboarding/job/", OnboardingJobView.as_view(), name="onboarding-job"),
     path("mypage/main/", MypageMainView.as_view(), name="mypage-main"),
+    path("mypage/profile/", MypageProfileView.as_view(), name="mypage-profile"),
 ]
