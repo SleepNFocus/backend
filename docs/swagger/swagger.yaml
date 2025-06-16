@@ -213,11 +213,11 @@ paths:
                     type: string
                   cognitive_type:
                     type: string
-                  cognitive_type_out:
+                  cognitive_type_out_label:
                     type: string
                   work_time_pattern:
                     type: string
-                  work_time_pattern_out:
+                  work_time_pattern_out_label:
                     type: string
                   email:
                     type: string
@@ -466,7 +466,7 @@ paths:
       summary: 기본 정보 저장
       description: "가입 시 사용자의 성별, 출생년도, MBTI 정보를 설정합니다."
       security:
-        - Bearer: []
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -514,7 +514,7 @@ paths:
       summary: 직업(직무, 근무 특성) 설정
       description: "사용자의 직무 유형과 근무 시간 패턴을 설정합니다."
       security:
-        - Bearer: []
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -1019,25 +1019,6 @@ paths:
         '404':
           description: 사용자 없음
 
-#  /api/admin/logs/:
-#    get:
-#      tags:
-#        - 로그
-#      summary: 시스템 로그 조회
-#      description: 시스템 로그 데이터를 조회합니다. (로그 모델이 현재는 관리 앱에서 직접 사용 가능하지 않음)
-#      operationId: getAdminLogs
-#      responses:
-#        '200':
-#          description: 로그 데이터 반환 성공
-#          content:
-#            application/json:
-#              schema:
-#                type: object
-#                properties:
-#                  message:
-#                    type: string
-#                    example: GET logs data
-
 components:
   schemas:
     UserDetail:
@@ -1106,122 +1087,6 @@ components:
         email: new_email@example.com
         nickname: NewNickname
         is_admin: true
-    User:
-      type: object
-      description: 사용자 계정 정보.
-      properties:
-        user_id:
-          type: integer
-          description: 사용자 고유 ID (PK)
-        social_id:
-          type: string
-          description: 소셜 로그인 고유 식별자
-        email:
-          type: string
-          description: 이메일 주소
-        nickname:
-          type: string
-          description: 사용자 닉네임
-        profile_img:
-          type: string
-          description: 프로필 이미지 URL
-        gender:
-          type: string
-          description: 성별
-        age_group:
-          type: string
-          description: 연령대
-        joined_at:
-          type: string
-          format: date-time
-          description: 계정 생성 시각
-        last_login_at:
-          type: string
-          format: date-time
-          description: 마지막 로그인 시각
-        deleted_at:
-          type: string
-          format: date-time
-          description: 계정 삭제(비활성화) 시각 (null일 경우 활성 상태)
-        is_active:
-          type: boolean
-          description: 계정 활성 상태
-        is_admin:
-          type: boolean
-          description: 관리자 권한 여부
-        mbti:
-          type: string
-          description: MBTI 유형
-      required:
-        - user_id
-        - social_id
-        - email
-        - nickname
-        - joined_at
-        - is_active
-        - is_admin
-
-    UserCreate:
-      type: object
-      description: 신규 사용자 생성 시 사용하는 요청 바디
-      properties:
-        social_id:
-          type: string
-          description: 소셜 로그인 고유 식별자 (필수)
-        email:
-          type: string
-          description: 이메일 주소 (필수)
-        nickname:
-          type: string
-          description: 닉네임 (필수)
-        profile_img:
-          type: string
-          description: 프로필 이미지 URL
-        gender:
-          type: string
-          description: 성별
-        age_group:
-          type: string
-          description: 연령대
-        mbti:
-          type: string
-          description: MBTI 유형
-      required:
-        - social_id
-        - email
-        - nickname
-
-    UserPartialUpdate:
-      type: object
-      description: 사용자 정보 부분 수정 시 사용하는 요청 바디 (필드별 선택)
-      properties:
-        social_id:
-          type: string
-          description: 소셜 로그인 고유 식별자
-        email:
-          type: string
-          description: 이메일 주소
-        nickname:
-          type: string
-          description: 닉네임
-        profile_img:
-          type: string
-          description: 프로필 이미지 URL
-        gender:
-          type: string
-          description: 성별
-        age_group:
-          type: string
-          description: 연령대
-        mbti:
-          type: string
-          description: MBTI 유형
-        is_active:
-          type: boolean
-          description: 계정 활성 상태
-        is_admin:
-          type: boolean
-          description: 관리자 권한 여부
 
     UserProfileDetail:
       type: object
@@ -1240,11 +1105,11 @@ components:
           type: string
         cognitive_type:
           type: string
-        cognitive_type_out:
+        cognitive_type_out_label:
           type: string
         work_time_pattern:
           type: string
-        work_time_pattern_out:
+        work_time_pattern_out_label:
           type: string
         email:
           type: string
