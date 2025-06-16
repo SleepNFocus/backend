@@ -6,27 +6,25 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from cognitives.models import CognitiveProblem
+
 from .models import (
     CognitiveSession,
     CognitiveSessionProblem,
     CognitiveTestFormat,
     CognitiveTestResult,
-    CognitiveTestTime,
     CognitiveTestType,
 )
 from .serializers import (
+    CognitiveResultPatternSerializer,
+    CognitiveResultSRTSerializer,
+    CognitiveResultSymbolSerializer,
     CognitiveSessionWithProblemsSerializer,
     CognitiveTestFormatSerializer,
     CognitiveTestResultSerializer,
     CognitiveTestTimeSerializer,
     CognitiveTestTypeSerializer,
-    CognitiveResultSRTSerializer,
-    CognitiveResultPatternSerializer,
-    CognitiveResultSymbolSerializer,
-
-
 )
-from cognitives.models import CognitiveProblem
 
 
 class CognitiveTestTypeListAPIView(generics.ListAPIView):
@@ -67,14 +65,20 @@ class CognitiveTestResultCorrelationAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        return Response({"detail": "Correlation feature not implemented yet."}, status=status.HTTP_501_NOT_IMPLEMENTED)
+        return Response(
+            {"detail": "Correlation feature not implemented yet."},
+            status=status.HTTP_501_NOT_IMPLEMENTED,
+        )
 
 
 class CognitiveTestResultVisualizationAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        return Response({"detail": "Visualization feature not implemented yet."}, status=status.HTTP_501_NOT_IMPLEMENTED)
+        return Response(
+            {"detail": "Visualization feature not implemented yet."},
+            status=status.HTTP_501_NOT_IMPLEMENTED,
+        )
 
 
 class CognitiveSessionCreateAPIView(APIView):
@@ -102,6 +106,7 @@ class CognitiveSessionCreateAPIView(APIView):
 
         serializer = CognitiveSessionWithProblemsSerializer(session)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 class CognitiveResultSRTAPIView(generics.CreateAPIView):
     serializer_class = CognitiveResultSRTSerializer

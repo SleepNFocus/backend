@@ -1,15 +1,14 @@
 from rest_framework import serializers
 
 from .models import (
-    CognitiveTestType,
-    CognitiveTestFormat,
-    CognitiveTestTime,
-    CognitiveTestResult,
-    CognitiveSession,
-    CognitiveResultSRT,
     CognitiveResultPattern,
+    CognitiveResultSRT,
     CognitiveResultSymbol,
-
+    CognitiveSession,
+    CognitiveTestFormat,
+    CognitiveTestResult,
+    CognitiveTestTime,
+    CognitiveTestType,
 )
 
 

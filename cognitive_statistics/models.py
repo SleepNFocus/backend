@@ -81,9 +81,7 @@ class CognitiveSessionProblem(models.Model):
     session = models.ForeignKey(
         "CognitiveSession", on_delete=models.CASCADE, related_name="problems"
     )
-    problem = models.ForeignKey(
-        "cognitives.CognitiveProblem", on_delete=models.CASCADE
-    )
+    problem = models.ForeignKey("cognitives.CognitiveProblem", on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ("session", "problem")
@@ -92,23 +90,24 @@ class CognitiveSessionProblem(models.Model):
         return f"{self.session_id} - {self.problem_id}"
 
 
-
 class CognitiveResultSRT(models.Model):
-    cognitive_session = models.ForeignKey('CognitiveSession', on_delete=models.CASCADE)
+    cognitive_session = models.ForeignKey("CognitiveSession", on_delete=models.CASCADE)
     score = models.IntegerField()
     reaction_avg_ms = models.FloatField()
     reaction_list = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+
 class CognitiveResultPattern(models.Model):
-    cognitive_session = models.ForeignKey('CognitiveSession', on_delete=models.CASCADE)
+    cognitive_session = models.ForeignKey("CognitiveSession", on_delete=models.CASCADE)
     score = models.IntegerField()
     pattern_correct = models.IntegerField()
     pattern_time_sec = models.FloatField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+
 class CognitiveResultSymbol(models.Model):
-    cognitive_session = models.ForeignKey('CognitiveSession', on_delete=models.CASCADE)
+    cognitive_session = models.ForeignKey("CognitiveSession", on_delete=models.CASCADE)
     score = models.IntegerField()
     symbol_correct = models.IntegerField()
     symbol_accuracy = models.FloatField()

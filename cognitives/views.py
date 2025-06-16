@@ -69,7 +69,9 @@ class TestSubmitAPIView(APIView):
         for k, v in raw_scores.items():
             normalized_scores[k] = round(min_time / v, 3) if v > 0 else 0
 
-        average_score = round(sum(normalized_scores.values()) / len(normalized_scores), 3)
+        average_score = round(
+            sum(normalized_scores.values()) / len(normalized_scores), 3
+        )
 
         CognitiveTestResult.objects.create(
             user=request.user,
