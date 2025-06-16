@@ -19,7 +19,7 @@ DATABASES = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:8081',  # 프론트 개발 서버
+    "http://localhost:8081",  # 프론트 개발 서버
 ]
 
 CORS_ALLOW_CREDENTIALS = True
