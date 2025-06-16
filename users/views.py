@@ -1,7 +1,8 @@
-from rest_framework import permissions
+from rest_framework import permissions, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from datetime import datetime
 
 from users.models import JobSurvey, UserStatus
 
@@ -15,6 +16,7 @@ from .serializers import (
     OnboardingBasicSerializer,
     OnboardingJobSerializer,
     SocialLoginSerializer,
+    MypageRecordDetailResponseSerializer,
 )
 from .services import (
     SocialLoginService,
@@ -22,6 +24,7 @@ from .services import (
     get_record_day_list,
     get_record_month_list,
     get_record_week_list,
+    get_selected_date_detail,
 )
 from .utils import add_token_to_blacklist, handle_social_login_error
 
@@ -199,3 +202,23 @@ class MypageRecordListView(APIView):
 
         serializer = serializer_class(results, many=True)
         return Response({"results": serializer.data})
+
+
+# 마이페이지 날짜별 상세 기록 조회
+class MypageRecordDateDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, date):
+        print("date:", repr(date))
+        # 날짜 포맷 검증
+        try:
+            date_obj = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            return Response({"detail": "날짜 형식이 올바르지 않습니다."}, status=400)
+
+        data = get_selected_date_detail(request.user, date_obj)
+        if not data:
+            return Response({"detail": "해당 기간 기록이 없습니다."}, status=404)
+
+        serializer = MypageRecordDetailResponseSerializer(data)
+        return Response(serializer.data, status=200)

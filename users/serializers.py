@@ -236,3 +236,39 @@ class MypageRecordMonthSerializer(serializers.Serializer):
     total_sleep_hours = serializers.FloatField()
     average_sleep_score = serializers.FloatField()
     average_cognitive_score = serializers.FloatField()
+
+
+# 마이페이지 선택 날짜 기록 상세 조회
+# Cognitive test 상세
+class MypageRecordDetailCognitiveSerializer(serializers.Serializer):
+    srt_score = serializers.FloatField()
+    srt_time_ms = serializers.IntegerField()
+    symbol_score = serializers.FloatField()
+    symbol_count = serializers.IntegerField()
+    symbol_accuracy = serializers.IntegerField()
+    pattern_score = serializers.FloatField()
+    pattern_count = serializers.IntegerField()
+    pattern_accuracy = serializers.IntegerField()
+    pattern_time_ms = serializers.FloatField()
+
+# detail 전체
+class MypageRecordDetailSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    total_sleep_hours = serializers.FloatField()
+    sleep_score = serializers.FloatField()
+    cognitive_test = MypageRecordDetailCognitiveSerializer()
+
+
+# graph 블록
+class MypageRecordGraphSerializer(serializers.Serializer):
+    dates = serializers.ListField(child=serializers.DateField())
+    sleep_hour_list = serializers.ListField(child=serializers.FloatField())
+    sleep_score_list = serializers.ListField(child=serializers.FloatField())
+    cognitive_score_list = serializers.ListField(child=serializers.FloatField())
+    selected_date = serializers.DateField()
+
+
+# 최상위 응답
+class MypageRecordDetailResponseSerializer(serializers.Serializer):
+    graph = MypageRecordGraphSerializer()
+    detail = MypageRecordDetailSerializer()

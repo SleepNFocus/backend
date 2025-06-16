@@ -211,7 +211,7 @@ def daterange(start_date, end_date):
         yield start_date + timedelta(n)
 
 
-# 날짜별로 SRT/Pattern/Symbol 점수 합산
+# 날짜별 인지 점수 합산
 def get_daily_cognitive_scores(user, start_date, end_date):
     daily_scores = defaultdict(float)
 
@@ -399,3 +399,105 @@ def get_record_month_list(user):
             # 오름차순으로 결과 정렬
     results.sort(key=lambda x: x["month"])
     return results
+
+
+# 마이페이지 선택 날짜 상세 조회
+# 월 전체 그래프 데이터
+def get_monthly_detail_date(user, year, month):
+    # 월 시작/끝 날짜
+    month_start = date(year, month, 1)
+    if month == 12:
+        month_end = date(year + 1, 1, 1) - timedelta(days=1)
+    else:
+        month_end = date(year, month + 1, 1) - timedelta(days=1)
+
+    # 날짜별 데이터 집계
+    date_list = []
+    sleep_hour_list = []
+    sleep_score_list = []
+    cognitive_score_list = []
+
+    sleep_records = {r.date: r for r in SleepRecord.objects.filter(user=user, date__range=(month_start, month_end))}
+    cognitive_scores = get_daily_cognitive_scores(user, month_start, month_end)
+
+    for d in daterange(month_start, month_end):
+        date_list.append(d)
+        sr = sleep_records.get(d)
+        cs = cognitive_scores.get(d)
+        sleep_hour_list.append(round((sr.sleep_duration if sr else 0) / 60, 1))
+        sleep_score_list.append(round(sr.score, 1) if sr else 0)
+        cognitive_score_list.append(round(cs, 1) if cs is not None else 0)
+
+    return {
+        "dates": [str(d) for d in date_list],
+        "sleep_hour_list": sleep_hour_list,
+        "sleep_score_list": sleep_score_list,
+        "cognitive_score_list": cognitive_score_list,
+    }
+    
+
+# 해당 날짜 수면 상세 기록
+def get_sleep_detail(user,date):
+    sr = SleepRecord.objects.filter(user=user, date=date).first()
+    if not sr:
+        return None
+    return {
+        "date": str(date),
+        "total_sleep_hours": round(sr.sleep_duration / 60, 1) if sr.sleep_duration else 0,
+        "sleep_score": round(sr.score, 1) if sr.score else 0,
+    }
+
+
+# 해당 날짜의 인지 기록 상세
+def get_cognitive_detail(user, date):
+    srt_qs = CognitiveResultSRT.objects.filter(cognitive_session__user=user, created_at__date=date)
+    pattern_qs = CognitiveResultPattern.objects.filter(cognitive_session__user=user, created_at__date=date)
+    symbol_qs = CognitiveResultSymbol.objects.filter(cognitive_session__user=user, created_at__date=date)
+
+    srt_score = srt_qs.aggregate(avg=Avg("score"))["avg"] or 0
+    srt_time_ms = srt_qs.aggregate(avg=Avg("reaction_avg_ms"))["avg"] or 0
+
+    symbol_score = symbol_qs.aggregate(avg=Avg("score"))["avg"] or 0
+    symbol_count = symbol_qs.aggregate(total=Sum("symbol_correct"))["total"] or 0
+    symbol_accuracy = symbol_qs.aggregate(avg=Avg("symbol_accuracy"))["avg"] or 0
+
+    pattern_score = pattern_qs.aggregate(avg=Avg("score"))["avg"] or 0
+    pattern_count = pattern_qs.aggregate(total=Sum("pattern_correct"))["total"] or 0
+    # 정확도가 없기 때문에 0으로 고정, 필요하다면 따로 계산
+    pattern_accuracy = 0
+    pattern_time_sec = pattern_qs.aggregate(avg=Avg("pattern_time_sec"))["avg"] or 0
+
+    total_score = srt_score + symbol_score + pattern_score
+
+    return {
+        "srt_score": round(srt_score, 1),
+        "srt_time_ms": int(srt_time_ms),
+        "symbol_score": round(symbol_score, 1),
+        "symbol_count": int(symbol_count),
+        "symbol_accuracy": int(symbol_accuracy),
+        "pattern_score": round(pattern_score, 1),
+        "pattern_count": int(pattern_count),
+        "pattern_accuracy": int(pattern_accuracy),
+        "pattern_time_ms": int(pattern_time_sec * 1000),  # 초 → 밀리초 변환
+        "total_score": round(total_score, 1),
+    }
+
+# 전체 합친 최종 기록
+def get_selected_date_detail(user, date):
+    year, month = date.year, date.month
+
+    graph = get_monthly_detail_date(user, year, month)
+    graph["selected_date"] = str(date)
+
+    sleep_detail = get_sleep_detail(user, date)
+    cognitive_detail = get_cognitive_detail(user, date)
+    if not sleep_detail:
+        return None
+    
+    detail = sleep_detail
+    detail["cognitive_test"] = cognitive_detail
+
+    return {
+        "graph": graph,
+        "detail": detail,
+    }
