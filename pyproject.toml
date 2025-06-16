@@ -22,6 +22,7 @@ django-redis = "^5.4.0"
 python-dotenv = "^1.1.0"
 djangorestframework = "^3.16.0"
 djangorestframework-simplejwt = "^5.5.0"
+django-cors-headers = "^4.7.0"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"
