@@ -38,15 +38,24 @@ class TestSubmitAPIView(APIView):
     def post(self, request, test_type):
         serializer = TestSubmitSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         answers = serializer.validated_data["answers"]
 
+        fmt = get_object_or_404(CognitiveTestFormat, name=test_type)
+
         raw_scores = {}
+        normalized_scores = {}
         total_time = 0
 
-        # 각 응답 저장
         for ans in answers:
             prob = get_object_or_404(CognitiveProblem, pk=ans["problem_id"])
+
+            if prob.test_format != fmt:
+                return Response(
+                    {"error": f"문제 {prob.pk}는 {test_type} 포맷에 속하지 않습니다."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # 저장
             resp = CognitiveResponse.objects.create(
                 user=request.user,
                 problem=prob,
@@ -56,13 +65,15 @@ class TestSubmitAPIView(APIView):
             raw_scores[str(prob.pk)] = resp.response_time_ms
             total_time += resp.response_time_ms
 
-        # TODO: 정규화 로직 적용 필요
-        normalized_scores = raw_scores
-        average_score = sum(normalized_scores.values()) / len(normalized_scores)
+        min_time = min(raw_scores.values()) if raw_scores else 1
+        for k, v in raw_scores.items():
+            normalized_scores[k] = round(min_time / v, 3) if v > 0 else 0
 
-        # 종합 결과 저장
+        average_score = round(sum(normalized_scores.values()) / len(normalized_scores), 3)
+
         CognitiveTestResult.objects.create(
             user=request.user,
+            test_format=fmt,
             raw_scores=raw_scores,
             normalized_scores=normalized_scores,
             average_score=average_score,

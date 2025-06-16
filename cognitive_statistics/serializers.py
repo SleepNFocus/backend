@@ -1,12 +1,15 @@
-# 작성자: 한율
 from rest_framework import serializers
 
 from .models import (
-    CognitiveSession,
-    CognitiveTestFormat,
-    CognitiveTestResult,
-    CognitiveTestTime,
     CognitiveTestType,
+    CognitiveTestFormat,
+    CognitiveTestTime,
+    CognitiveTestResult,
+    CognitiveSession,
+    CognitiveResultSRT,
+    CognitiveResultPattern,
+    CognitiveResultSymbol,
+
 )
 
 
@@ -55,3 +58,36 @@ class CognitiveSessionSerializer(serializers.ModelSerializer):
         model = CognitiveSession
         fields = ["id", "started_at", "ended_at", "summary"]
         read_only_fields = ["id", "started_at", "ended_at", "summary"]
+
+
+class CognitiveSessionWithProblemsSerializer(serializers.ModelSerializer):
+    problems = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CognitiveSession
+        fields = ["id", "started_at", "ended_at", "summary", "problems"]
+
+    def get_problems(self, obj):
+        from cognitives.serializers import CognitiveProblemSerializer
+
+        return CognitiveProblemSerializer(
+            [sp.problem for sp in obj.problems.all()], many=True
+        ).data
+
+
+class CognitiveResultSRTSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CognitiveResultSRT
+        fields = "__all__"
+
+
+class CognitiveResultPatternSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CognitiveResultPattern
+        fields = "__all__"
+
+
+class CognitiveResultSymbolSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CognitiveResultSymbol
+        fields = "__all__"
