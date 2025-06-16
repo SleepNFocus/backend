@@ -49,6 +49,7 @@ urlpatterns = [
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     # 각 앱 API 연결
     path("api/sleepRecord/", include("sleep_record.urls")),
+    path("api/ai-content/", include("ai.urls")),
     path("api/", include("management.urls")),
 ]
 
