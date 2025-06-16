@@ -190,8 +190,17 @@ class MypageProfileSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
 
-        # 직업 설문 값이 둘 다 있으면 JobSurvey 인스턴스 새로 생성
-        if cognitive_type is not None and work_time_pattern is not None:
+        # 직업 설문 값이 둘 중 하나라도 있으면 이전 값으로 채워서 JobSurvey 인스턴스 새로 생성
+        if cognitive_type is not None or work_time_pattern is not None:
+            latest = (
+                JobSurvey.objects.filter(user=instance).order_by("-created_at").first()
+            )
+            # 이전 값으로 채우기
+            if latest:
+                if cognitive_type is None:
+                    cognitive_type = latest.cognitive_type
+                if work_time_pattern is None:
+                    work_time_pattern = latest.work_time_pattern
             latest_survey = JobSurvey.objects.create(
                 user=instance,
                 cognitive_type=cognitive_type,
@@ -201,3 +210,29 @@ class MypageProfileSerializer(serializers.ModelSerializer):
             self.context["latest_job_survey"] = latest_survey
 
         return instance
+
+
+# 마이페이지 기록 조회 (리스트뷰-일별)
+class MypageRecordDaySerializer(serializers.Serializer):
+    date = serializers.DateField()
+    sleep_hour = serializers.FloatField()
+    sleep_score = serializers.FloatField()
+    cognitive_score = serializers.FloatField()
+
+
+# 마이페이지 기록 조회 (리스트뷰-주별)
+class MypageRecordWeekSerializer(serializers.Serializer):
+    week = serializers.IntegerField()
+    start_date = serializers.DateField()
+    end_date = serializers.DateField()
+    total_sleep_hours = serializers.FloatField()
+    average_sleep_score = serializers.FloatField()
+    average_cognitive_score = serializers.FloatField()
+
+
+# 마이페이지 기록 조회 (리스트뷰-월별)
+class MypageRecordMonthSerializer(serializers.Serializer):
+    month = serializers.CharField()
+    total_sleep_hours = serializers.FloatField()
+    average_sleep_score = serializers.FloatField()
+    average_cognitive_score = serializers.FloatField()

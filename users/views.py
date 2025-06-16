@@ -9,11 +9,20 @@ from .serializers import (
     LogoutSerializer,
     MypageMainSerializer,
     MypageProfileSerializer,
+    MypageRecordDaySerializer,
+    MypageRecordMonthSerializer,
+    MypageRecordWeekSerializer,
     OnboardingBasicSerializer,
     OnboardingJobSerializer,
     SocialLoginSerializer,
 )
-from .services import SocialLoginService, get_mypage_main_data
+from .services import (
+    SocialLoginService,
+    get_mypage_main_data,
+    get_record_day_list,
+    get_record_month_list,
+    get_record_week_list,
+)
 from .utils import add_token_to_blacklist, handle_social_login_error
 
 
@@ -159,3 +168,34 @@ class MypageProfileView(APIView):
             return Response(response_serializer.data)
 
         return Response(serializer.errors, status=400)
+
+
+# 마이페이지 기록 조회 (리스트뷰-일,주,월)
+class MypageRecordListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    # 각 기간별 처리 함수 및 시리얼라이저 연결
+    PERIOD_MAP = {
+        "day": (get_record_day_list, MypageRecordDaySerializer),
+        "week": (get_record_week_list, MypageRecordWeekSerializer),
+        "month": (get_record_month_list, MypageRecordMonthSerializer),
+    }
+
+    def get(self, request):
+        # 조회 기간 파라미터
+        period = request.GET.get("period")
+        if period not in self.PERIOD_MAP:
+            return Response(
+                {"detail": "period는 day, week, month 중 하나입니다."}, status=400
+            )
+
+        # 각 기간에 맞는 함수 및 시리얼라이저를 선택
+        get_func, serializer_class = self.PERIOD_MAP[period]
+
+        # 기간별 기록 데이터 조회
+        results = get_func(request.user)
+        if not results:
+            return Response({"detail": "해당 기간 기록이 없습니다."}, status=404)
+
+        serializer = serializer_class(results, many=True)
+        return Response({"results": serializer.data})
