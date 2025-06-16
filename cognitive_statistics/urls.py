@@ -1,8 +1,6 @@
-# 작성자: 한율
 from django.urls import path
 
 from . import views
-from .views import CognitiveSessionCreateAPIView
 
 urlpatterns = [
     path(
@@ -42,7 +40,22 @@ urlpatterns = [
     ),
     path(
         "session/start/",
-        CognitiveSessionCreateAPIView.as_view(),
+        views.CognitiveSessionCreateAPIView.as_view(),
         name="cognitive-session-start",
+    ),
+    path(
+        "result/srt/",
+        views.CognitiveResultSRTAPIView.as_view(),
+        name="cognitive-result-srt",
+    ),
+    path(
+        "result/pattern/",
+        views.CognitiveResultPatternAPIView.as_view(),
+        name="cognitive-result-pattern",
+    ),
+    path(
+        "result/symbol/",
+        views.CognitiveResultSymbolAPIView.as_view(),
+        name="cognitive-result-symbol",
     ),
 ]
