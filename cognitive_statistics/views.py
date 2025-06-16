@@ -5,8 +5,9 @@ from rest_framework import generics, permissions, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from sleep_record.models import SleepRecord
+
 from cognitives.models import CognitiveProblem
+from sleep_record.models import SleepRecord
 
 from .models import (
     CognitiveSession,
@@ -78,7 +79,9 @@ class CognitiveTestResultVisualizationAPIView(APIView):
         user = request.user
 
         # 가장 최근 테스트 결과 1개 가져오기
-        latest_results = CognitiveTestResult.objects.filter(user=user).order_by('-timestamp')
+        latest_results = CognitiveTestResult.objects.filter(user=user).order_by(
+            "-timestamp"
+        )
         if not latest_results.exists():
             return Response({"detail": "결과 없음"}, status=404)
 
@@ -95,7 +98,9 @@ class CognitiveTestResultVisualizationAPIView(APIView):
                 break
 
         # 최근 7일 평균 점수 및 수면 시간 추이 계산
-        recent_results = CognitiveTestResult.objects.filter(user=user).order_by("-timestamp")[:7]
+        recent_results = CognitiveTestResult.objects.filter(user=user).order_by(
+            "-timestamp"
+        )[:7]
         dates = []
         avg_scores = []
         sleep_hours = []
@@ -105,13 +110,23 @@ class CognitiveTestResultVisualizationAPIView(APIView):
             dates.append(date_str)
             avg_scores.append(round(result.average_score * 100, 2))
 
-            sleep_record = SleepRecord.objects.filter(user=user, date=result.timestamp.date()).first()
+            sleep_record = SleepRecord.objects.filter(
+                user=user, date=result.timestamp.date()
+            ).first()
             sleep_hours.append(sleep_record.sleep_duration if sleep_record else 0)
 
         calendar = {
             result.timestamp.strftime("%Y-%m-%d"): {
                 "score": round(result.average_score * 100, 2),
-                "sleep": sleep_record.sleep_duration if (sleep_record := SleepRecord.objects.filter(user=user, date=result.timestamp.date()).first()) else 0,
+                "sleep": (
+                    sleep_record.sleep_duration
+                    if (
+                        sleep_record := SleepRecord.objects.filter(
+                            user=user, date=result.timestamp.date()
+                        ).first()
+                    )
+                    else 0
+                ),
             }
             for result in recent_results
         }
