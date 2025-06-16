@@ -251,6 +251,7 @@ class MypageRecordDetailCognitiveSerializer(serializers.Serializer):
     pattern_accuracy = serializers.IntegerField()
     pattern_time_ms = serializers.FloatField()
 
+
 # detail 전체
 class MypageRecordDetailSerializer(serializers.Serializer):
     date = serializers.DateField()

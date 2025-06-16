@@ -417,7 +417,12 @@ def get_monthly_detail_date(user, year, month):
     sleep_score_list = []
     cognitive_score_list = []
 
-    sleep_records = {r.date: r for r in SleepRecord.objects.filter(user=user, date__range=(month_start, month_end))}
+    sleep_records = {
+        r.date: r
+        for r in SleepRecord.objects.filter(
+            user=user, date__range=(month_start, month_end)
+        )
+    }
     cognitive_scores = get_daily_cognitive_scores(user, month_start, month_end)
 
     for d in daterange(month_start, month_end):
@@ -434,25 +439,33 @@ def get_monthly_detail_date(user, year, month):
         "sleep_score_list": sleep_score_list,
         "cognitive_score_list": cognitive_score_list,
     }
-    
+
 
 # 해당 날짜 수면 상세 기록
-def get_sleep_detail(user,date):
+def get_sleep_detail(user, date):
     sr = SleepRecord.objects.filter(user=user, date=date).first()
     if not sr:
         return None
     return {
         "date": str(date),
-        "total_sleep_hours": round(sr.sleep_duration / 60, 1) if sr.sleep_duration else 0,
+        "total_sleep_hours": (
+            round(sr.sleep_duration / 60, 1) if sr.sleep_duration else 0
+        ),
         "sleep_score": round(sr.score, 1) if sr.score else 0,
     }
 
 
 # 해당 날짜의 인지 기록 상세
 def get_cognitive_detail(user, date):
-    srt_qs = CognitiveResultSRT.objects.filter(cognitive_session__user=user, created_at__date=date)
-    pattern_qs = CognitiveResultPattern.objects.filter(cognitive_session__user=user, created_at__date=date)
-    symbol_qs = CognitiveResultSymbol.objects.filter(cognitive_session__user=user, created_at__date=date)
+    srt_qs = CognitiveResultSRT.objects.filter(
+        cognitive_session__user=user, created_at__date=date
+    )
+    pattern_qs = CognitiveResultPattern.objects.filter(
+        cognitive_session__user=user, created_at__date=date
+    )
+    symbol_qs = CognitiveResultSymbol.objects.filter(
+        cognitive_session__user=user, created_at__date=date
+    )
 
     srt_score = srt_qs.aggregate(avg=Avg("score"))["avg"] or 0
     srt_time_ms = srt_qs.aggregate(avg=Avg("reaction_avg_ms"))["avg"] or 0
@@ -482,6 +495,7 @@ def get_cognitive_detail(user, date):
         "total_score": round(total_score, 1),
     }
 
+
 # 전체 합친 최종 기록
 def get_selected_date_detail(user, date):
     year, month = date.year, date.month
@@ -493,7 +507,7 @@ def get_selected_date_detail(user, date):
     cognitive_detail = get_cognitive_detail(user, date)
     if not sleep_detail:
         return None
-    
+
     detail = sleep_detail
     detail["cognitive_test"] = cognitive_detail
 

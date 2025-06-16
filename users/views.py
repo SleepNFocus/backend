@@ -1,8 +1,9 @@
-from rest_framework import permissions, status
+from datetime import datetime
+
+from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from datetime import datetime
 
 from users.models import JobSurvey, UserStatus
 
@@ -11,12 +12,12 @@ from .serializers import (
     MypageMainSerializer,
     MypageProfileSerializer,
     MypageRecordDaySerializer,
+    MypageRecordDetailResponseSerializer,
     MypageRecordMonthSerializer,
     MypageRecordWeekSerializer,
     OnboardingBasicSerializer,
     OnboardingJobSerializer,
     SocialLoginSerializer,
-    MypageRecordDetailResponseSerializer,
 )
 from .services import (
     SocialLoginService,
