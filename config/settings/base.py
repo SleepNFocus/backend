@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "sleep_record",
     "cognitives",
     "cognitive_statistics",
+    "ai",
     "management",
     "drf_yasg",
     "corsheaders",

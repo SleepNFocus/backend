@@ -12,6 +12,7 @@ packages = [
   { include = "config" },
   { include = "sleep_record" },
   { include = "users" },
+  { include = "ai"}
 ]
 
 [tool.poetry.dependencies]
