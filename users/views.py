@@ -186,6 +186,7 @@ class MypageRecordListView(APIView):
             return Response({"detail": "period는 day, week, month 중 하나입니다."}, status=400)
         
         get_func, serializer_class = self.PERIOD_MAP[period]
+        
         results = get_func(request.user)
         if not results:
             return Response({"detail": "해당 기간 기록이 없습니다."}, status=404)
