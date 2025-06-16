@@ -7,6 +7,7 @@ from .views import (
     LogoutView,
     MypageMainView,
     MypageProfileView,
+    MypageRecordDateDetailView,
     MypageRecordListView,
     OnboardingBasicView,
     OnboardingJobView,
@@ -27,5 +28,10 @@ urlpatterns: List[Union[URLPattern, URLResolver]] = [
         "mypage/records/list/",
         MypageRecordListView.as_view(),
         name="mypage-record-list",
+    ),
+    path(
+        "mypage/records/<str:date>/detail/",
+        MypageRecordDateDetailView.as_view(),
+        name="mypage-record-date-detail",
     ),
 ]
