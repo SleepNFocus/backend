@@ -213,11 +213,11 @@ paths:
                     type: string
                   cognitive_type:
                     type: string
-                  cognitive_type_out:
+                  cognitive_type_out_label:
                     type: string
                   work_time_pattern:
                     type: string
-                  work_time_pattern_out:
+                  work_time_pattern_out_label:
                     type: string
                   email:
                     type: string
@@ -1105,11 +1105,11 @@ components:
           type: string
         cognitive_type:
           type: string
-        cognitive_type_out:
+        cognitive_type_out_label:
           type: string
         work_time_pattern:
           type: string
-        work_time_pattern_out:
+        work_time_pattern_out_label:
           type: string
         email:
           type: string
