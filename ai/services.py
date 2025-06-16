@@ -70,6 +70,7 @@ def generate_sleep_ai_prompt(sleep_data, test_scores, date):
    - 설명
 """
 
+
 # views에서 실제로 호출하는 api
 def generate_ai_recommendation(user, date_str):
     sleep, test_scores, error = get_sleep_and_cognitive_data(user, date_str)
