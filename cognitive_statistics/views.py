@@ -5,8 +5,14 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import CognitiveTestFormat, CognitiveTestResult, CognitiveTestType
+from .models import (
+    CognitiveSession,
+    CognitiveTestFormat,
+    CognitiveTestResult,
+    CognitiveTestType,
+)
 from .serializers import (
+    CognitiveSessionSerializer,
     CognitiveTestFormatSerializer,
     CognitiveTestResultSerializer,
     CognitiveTestTimeSerializer,
@@ -63,6 +69,15 @@ class CognitiveTestResultCorrelationAPIView(APIView):
             {"detail": "Correlation feature not implemented yet."},
             status=status.HTTP_501_NOT_IMPLEMENTED,
         )
+
+
+class CognitiveSessionCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        session = CognitiveSession.objects.create(user=request.user)
+        serializer = CognitiveSessionSerializer(session)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 # 시각화 데이터 제공 (REQ-018)

@@ -2,6 +2,7 @@
 from rest_framework import serializers
 
 from .models import (
+    CognitiveSession,
     CognitiveTestFormat,
     CognitiveTestResult,
     CognitiveTestTime,
@@ -47,3 +48,10 @@ class CognitiveTestResultSerializer(serializers.ModelSerializer):
             "total_duration_sec",
         ]
         read_only_fields = ["id", "timestamp"]
+
+
+class CognitiveSessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CognitiveSession
+        fields = ["id", "started_at", "ended_at", "summary"]
+        read_only_fields = ["id", "started_at", "ended_at", "summary"]

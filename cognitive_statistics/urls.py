@@ -2,6 +2,7 @@
 from django.urls import path
 
 from . import views
+from .views import CognitiveSessionCreateAPIView
 
 urlpatterns = [
     path(
@@ -38,5 +39,10 @@ urlpatterns = [
         "result/visualization/",
         views.CognitiveTestResultVisualizationAPIView.as_view(),
         name="cognitive-test-result-visualization",
+    ),
+    path(
+        "session/start/",
+        CognitiveSessionCreateAPIView.as_view(),
+        name="cognitive-session-start",
     ),
 ]
