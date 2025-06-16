@@ -2,9 +2,10 @@
 
 import django.db.models.deletion
 import django.utils.timezone
-import users.models
 from django.conf import settings
 from django.db import migrations, models
+
+import users.models
 
 
 class Migration(migrations.Migration):
