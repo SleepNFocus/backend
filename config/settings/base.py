@@ -161,5 +161,5 @@ SWAGGER_SETTINGS = {
     "DEFAULT_MODEL_RENDERING": "model",
     "DEFAULT_INFO": None,
     "DEFAULT_API_URL": "https://www.dev.focusz.site",
-    "SPEC_URL": '/swagger.yaml',
+    "SPEC_URL": "/swagger.yaml",
 }
