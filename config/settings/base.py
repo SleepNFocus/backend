@@ -27,6 +27,7 @@ AUTH_USER_MODEL = "users.User"
 
 load_dotenv()
 KAKAO_CLIENT_ID = os.getenv("KAKAO_CLIENT_ID")
+KAKAO_REDIRECT_URI = os.getenv("KAKAO_REDIRECT_URI")
 
 
 # Application definition
