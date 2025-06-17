@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -164,4 +165,3 @@ SWAGGER_SETTINGS = {
     "DEFAULT_INFO": None,
     "DEFAULT_API_URL": "https://www.dev.focusz.site",
 }
-
