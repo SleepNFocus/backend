@@ -86,7 +86,6 @@ def get_access_token_from_code(provider, code):
                 "code": code,
             },
             headers={"Content-type": "application/x-www-form-urlencoded"},
-
         )
         print("토큰 응답:", resp.status_code)
         print(resp.text)
@@ -96,7 +95,6 @@ def get_access_token_from_code(provider, code):
         if "access_token" not in data:
             raise Exception(f"Kakao 토큰 요청 실패: {data}")
         return data["access_token"]
-
 
     elif provider == "google":
         # 구글로 토큰 요청
