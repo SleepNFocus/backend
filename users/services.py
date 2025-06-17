@@ -163,33 +163,17 @@ def get_mypage_main_data(user):
     total_sleep_hours = round(total_sleep_minutes / 60, 1)
     average_sleep_score = sleep_records.aggregate(avg=Avg("score"))["avg"] or 0.0
 
-    # 인지 관련
-    # SRT
-    srt_avg = (
-        CognitiveResultSRT.objects.filter(cognitive_session__user=user).aggregate(
-            avg=Avg("score")
-        )["avg"]
-        or 0.0
-    )
-    # Pattern
-    pattern_avg = (
-        CognitiveResultPattern.objects.filter(cognitive_session__user=user).aggregate(
-            avg=Avg("score")
-        )["avg"]
-        or 0.0
-    )
-    # Symbol
-    symbol_avg = (
-        CognitiveResultSymbol.objects.filter(cognitive_session__user=user).aggregate(
-            avg=Avg("score")
-        )["avg"]
-        or 0.0
-    )
+    # 90일치 일별 인지 점수(평균)
+    today = timezone.now().date()
+    start_date = today - timedelta(days=89)
+    end_date = today
+    cognitive_scores = get_daily_cognitive_scores(user, start_date, end_date)
+    cognitive_score_list = list(cognitive_scores.values())
 
-    # 세 점수의 평균 구하기 (3개 다 있으면 3으로 나누고 일부만 있으면 일부 개수로 나눔)
-    cognitive_avgs = [v for v in [srt_avg, pattern_avg, symbol_avg] if v > 0]
-    if cognitive_avgs:
-        average_cognitive_score = round(sum(cognitive_avgs) / len(cognitive_avgs), 1)
+    if cognitive_score_list:
+        average_cognitive_score = round(
+            sum(cognitive_score_list) / len(cognitive_score_list), 1
+        )
     else:
         average_cognitive_score = 0.0
 
@@ -213,41 +197,43 @@ def daterange(start_date, end_date):
 
 # 날짜별 인지 점수 합산
 def get_daily_cognitive_scores(user, start_date, end_date):
-    daily_scores = defaultdict(float)
+    daily_srt = defaultdict(list)
+    daily_pattern = defaultdict(list)
+    daily_symbol = defaultdict(list)
 
     # SRT
-    srt_scores = (
-        CognitiveResultSRT.objects.filter(
-            cognitive_session__user=user, created_at__date__range=(start_date, end_date)
-        )
-        .values("created_at__date")
-        .annotate(score=Avg("score"))
-    )
-    for r in srt_scores:
-        daily_scores[r["created_at__date"]] += r["score"] or 0
+    for r in CognitiveResultSRT.objects.filter(
+        cognitive_session__user=user, created_at__date__range=(start_date, end_date)
+    ).values("created_at__date", "score"):
+        daily_srt[r["created_at__date"]].append(r["score"])
 
     # Pattern
-    pattern_scores = (
-        CognitiveResultPattern.objects.filter(
-            cognitive_session__user=user, created_at__date__range=(start_date, end_date)
-        )
-        .values("created_at__date")
-        .annotate(score=Avg("score"))
-    )
-    for r in pattern_scores:
-        daily_scores[r["created_at__date"]] += r["score"] or 0
+    for r in CognitiveResultPattern.objects.filter(
+        cognitive_session__user=user, created_at__date__range=(start_date, end_date)
+    ).values("created_at__date", "score"):
+        daily_pattern[r["created_at__date"]].append(r["score"])
 
     # Symbol
-    symbol_scores = (
-        CognitiveResultSymbol.objects.filter(
-            cognitive_session__user=user, created_at__date__range=(start_date, end_date)
-        )
-        .values("created_at__date")
-        .annotate(score=Avg("score"))
-    )
-    for r in symbol_scores:
-        daily_scores[r["created_at__date"]] += r["score"] or 0
+    for r in CognitiveResultSymbol.objects.filter(
+        cognitive_session__user=user, created_at__date__range=(start_date, end_date)
+    ).values("created_at__date", "score"):
+        daily_symbol[r["created_at__date"]].append(r["score"])
 
+    # 날짜별 평균 계산
+    daily_scores = {}
+    all_dates = set(daily_srt) | set(daily_pattern) | set(daily_symbol)
+
+    for d in all_dates:
+        scores = []
+        for lst in [
+            daily_srt.get(d, []),
+            daily_pattern.get(d, []),
+            daily_symbol.get(d, []),
+        ]:
+            if lst:
+                scores.append(sum(lst) / len(lst))
+        if scores:
+            daily_scores[d] = sum(scores) / len(scores)  # [각 테스트별 평균]의 평균
     return daily_scores
 
 
