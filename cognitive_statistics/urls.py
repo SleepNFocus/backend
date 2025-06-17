@@ -58,4 +58,9 @@ urlpatterns = [
         views.CognitiveResultSymbolAPIView.as_view(),
         name="cognitive-result-symbol",
     ),
+    path(
+        "result/daily-summary/",
+        views.CognitiveResultDailySummaryAPIView.as_view(),
+        name="cognitive-result-daily-summary",
+    ),
 ]

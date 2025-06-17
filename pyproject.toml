@@ -12,6 +12,7 @@ packages = [
   { include = "config" },
   { include = "sleep_record" },
   { include = "users" },
+  { include = "ai"}
 ]
 
 [tool.poetry.dependencies]
@@ -23,6 +24,8 @@ python-dotenv = "^1.1.0"
 djangorestframework = "^3.16.0"
 djangorestframework-simplejwt = "^5.5.0"
 drf-yasg = "^1.21.10"
+django-cors-headers = "^4.7.0"
+google-generativeai = "^0.8.5"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"
