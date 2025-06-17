@@ -1,4 +1,3 @@
-# 작성자: 한율
 import os
 from pathlib import Path
 
@@ -22,6 +21,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 AUTH_USER_MODEL = "users.User"
+
+
+KAKAO_CLIENT_ID = os.getenv("KAKAO_CLIENT_ID")
 
 
 # Application definition
@@ -160,3 +162,4 @@ SWAGGER_SETTINGS = {
     "DEFAULT_INFO": None,
     "DEFAULT_API_URL": "https://www.dev.focusz.site",
 }
+
