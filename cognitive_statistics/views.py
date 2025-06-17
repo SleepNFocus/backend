@@ -22,7 +22,7 @@ from .serializers import (
     CognitiveResultSymbolSerializer,
     CognitiveSessionWithProblemsSerializer,
     CognitiveTestFormatSerializer,
-    CognitiveTestResultSerializer,
+    CognitiveTestResultDetailedSerializer,
     CognitiveTestTimeSerializer,
     CognitiveTestTypeSerializer,
 )
@@ -55,8 +55,8 @@ class CognitiveTestTimeGuideAPIView(generics.ListAPIView):
 
 
 class CognitiveTestResultBasicAPIView(generics.ListAPIView):
-    serializer_class = CognitiveTestResultSerializer
     permission_classes = [IsAuthenticated]
+    serializer_class = CognitiveTestResultDetailedSerializer
 
     def get_queryset(self):
         return CognitiveTestResult.objects.filter(user=self.request.user)
