@@ -1,6 +1,16 @@
-# 작성자: 한율
+from collections import defaultdict
+from datetime import date, timedelta
+
 from django.db import transaction
+from django.db.models import Avg, Sum
 from django.utils import timezone
+
+from cognitive_statistics.models import (
+    CognitiveResultPattern,
+    CognitiveResultSRT,
+    CognitiveResultSymbol,
+)
+from sleep_record.models import SleepRecord
 
 from .models import User, UserBlacklist, UserStatus
 from .utils import (
@@ -138,3 +148,356 @@ class SocialLoginService:
 
         tokens = generate_jwt_token_pair(user)
         return tokens, user
+
+
+# 마이페이지 메인 요약 정보
+def get_mypage_main_data(user):
+    # 모든 수면 기록
+    sleep_records = SleepRecord.objects.filter(user=user)
+
+    # 수면 관련
+    tracking_days = sleep_records.count()
+    total_sleep_minutes = (
+        sleep_records.aggregate(total=Sum("sleep_duration"))["total"] or 0
+    )
+    total_sleep_hours = round(total_sleep_minutes / 60, 1)
+    average_sleep_score = sleep_records.aggregate(avg=Avg("score"))["avg"] or 0.0
+
+    # 90일치 일별 인지 점수(평균)
+    today = timezone.now().date()
+    start_date = today - timedelta(days=89)
+    end_date = today
+    cognitive_scores = get_daily_cognitive_scores(user, start_date, end_date)
+    cognitive_score_list = list(cognitive_scores.values())
+
+    if cognitive_score_list:
+        average_cognitive_score = round(
+            sum(cognitive_score_list) / len(cognitive_score_list), 1
+        )
+    else:
+        average_cognitive_score = 0.0
+
+    return {
+        "nickname": user.nickname,
+        "profile_img": user.profile_img,
+        "joined_at": user.joined_at,
+        "tracking_days": tracking_days,
+        "total_sleep_hours": total_sleep_hours,
+        "average_sleep_score": round(average_sleep_score, 1),
+        "average_cognitive_score": average_cognitive_score,
+    }
+
+
+# 마이페이지 기록 조회 (리스트뷰)
+# 공통 날짜 매핑용
+def daterange(start_date, end_date):
+    for n in range((end_date - start_date).days + 1):
+        yield start_date + timedelta(n)
+
+
+# 날짜별 인지 점수 합산
+def get_daily_cognitive_scores(user, start_date, end_date):
+    daily_srt = defaultdict(list)
+    daily_pattern = defaultdict(list)
+    daily_symbol = defaultdict(list)
+
+    # SRT
+    for r in CognitiveResultSRT.objects.filter(
+        cognitive_session__user=user, created_at__date__range=(start_date, end_date)
+    ).values("created_at__date", "score"):
+        daily_srt[r["created_at__date"]].append(r["score"])
+
+    # Pattern
+    for r in CognitiveResultPattern.objects.filter(
+        cognitive_session__user=user, created_at__date__range=(start_date, end_date)
+    ).values("created_at__date", "score"):
+        daily_pattern[r["created_at__date"]].append(r["score"])
+
+    # Symbol
+    for r in CognitiveResultSymbol.objects.filter(
+        cognitive_session__user=user, created_at__date__range=(start_date, end_date)
+    ).values("created_at__date", "score"):
+        daily_symbol[r["created_at__date"]].append(r["score"])
+
+    # 날짜별 평균 계산
+    daily_scores = {}
+    all_dates = set(daily_srt) | set(daily_pattern) | set(daily_symbol)
+
+    for d in all_dates:
+        scores = []
+        for lst in [
+            daily_srt.get(d, []),
+            daily_pattern.get(d, []),
+            daily_symbol.get(d, []),
+        ]:
+            if lst:
+                scores.append(sum(lst) / len(lst))
+        if scores:
+            daily_scores[d] = sum(scores) / len(scores)  # [각 테스트별 평균]의 평균
+    return daily_scores
+
+
+# 일별 기록 (최근 3개월, 90일)
+def get_record_day_list(user):
+    # 수면/인지 기록 조회 (90일 기준)
+    today = timezone.now().date()
+    start_date = today - timedelta(days=89)
+    end_date = today
+
+    # 해당 기간의 수면 기록 조회 (date별로 연결)
+    sleep_records = {
+        r.date: r
+        for r in SleepRecord.objects.filter(
+            user=user, date__range=(start_date, end_date)
+        )
+    }
+    # 해당 기간의 날짜별 인지 점수 합산
+    cognitive_scores = get_daily_cognitive_scores(user, start_date, end_date)
+
+    results = []
+    # 기간 내 각 날짜별로 집계
+    for d in daterange(start_date, end_date):
+        sr = sleep_records.get(d)
+        cs = cognitive_scores.get(d)
+        # 수면/인지 기록이 하나라도 있으면 결과 추가
+        if sr or cs is not None:
+            results.append(
+                {
+                    "date": d,
+                    "sleep_hour": round((sr.sleep_duration if sr else 0) / 60, 1),
+                    "sleep_score": round(sr.score, 1) if sr else 0,
+                    "cognitive_score": round(cs, 1) if cs is not None else 0,
+                }
+            )
+    return results
+
+
+# 주별 기록 (최근 4주)
+def get_record_week_list(user):
+    # 주별 기록 조회 (4주 기준)
+    today = timezone.now().date()
+    start_date = today - timedelta(days=27)
+    end_date = today
+
+    sleep_records = {
+        r.date: r
+        for r in SleepRecord.objects.filter(
+            user=user, date__range=(start_date, end_date)
+        )
+    }
+    daily_scores = get_daily_cognitive_scores(user, start_date, end_date)
+
+    results = []
+    week_num = 1
+    d = start_date
+    while d <= end_date:
+        week_start = d
+        week_end = min(d + timedelta(days=6), end_date)
+        week_dates = list(daterange(week_start, week_end))
+
+        sleep_hours = []
+        sleep_scores = []
+        cog_scores = []
+
+        for wd in week_dates:
+            sr = sleep_records.get(wd)
+            cs = daily_scores.get(wd)
+            if sr:
+                sleep_hours.append((sr.sleep_duration or 0) / 60)
+                sleep_scores.append(sr.score)
+            if cs is not None:
+                cog_scores.append(cs)
+
+        if sleep_hours or sleep_scores or cog_scores:
+            results.append(
+                {
+                    "week": week_num,
+                    "start_date": week_start,
+                    "end_date": week_end,
+                    "total_sleep_hours": (
+                        round(sum(sleep_hours), 1) if sleep_hours else 0
+                    ),
+                    "average_sleep_score": (
+                        round(sum(sleep_scores) / len(sleep_scores), 1)
+                        if sleep_scores
+                        else 0
+                    ),
+                    "average_cognitive_score": (
+                        round(sum(cog_scores) / len(cog_scores), 1) if cog_scores else 0
+                    ),
+                }
+            )
+        week_num += 1
+        d = week_end + timedelta(days=1)
+    return results
+
+
+# 월별 (최근 1년, 12개월)
+def get_record_month_list(user):
+    # 월별 기록 조회 (12개월 기준)
+    today = timezone.now().date()
+    results = []
+    for i in range(12):
+        # 해당 월의 시작/끝 날짜 계산
+        y = today.year if today.month - i > 0 else today.year - 1
+        m = (today.month - i) % 12 or 12
+        month_start = date(y, m, 1)
+        if m == 12:
+            month_end = date(y + 1, 1, 1) - timedelta(days=1)
+        else:
+            month_end = date(y, m + 1, 1) - timedelta(days=1)
+
+        # 수면 기록 월별 조회
+        sleep_records = [
+            r
+            for r in SleepRecord.objects.filter(
+                user=user, date__range=(month_start, month_end)
+            )
+        ]
+
+        # 해당 월의 모든 날짜별 인지 점수 구하기
+        daily_scores = get_daily_cognitive_scores(user, month_start, month_end)
+        # 점수만 리스트로 추출 (월 전체)
+        cog_scores = [score for score in daily_scores.values()]
+
+        # 월별 수면 시간/점수 리스트
+        sleep_hours = [(r.sleep_duration or 0) / 60 for r in sleep_records]
+        sleep_scores = [r.score for r in sleep_records]
+
+        # 데이터가 하나라도 있으면 결과 추가
+        if sleep_hours or sleep_scores or cog_scores:
+            results.append(
+                {
+                    "month": f"{y}-{str(m).zfill(2)}",
+                    "total_sleep_hours": (
+                        round(sum(sleep_hours), 1) if sleep_hours else 0
+                    ),
+                    "average_sleep_score": (
+                        round(sum(sleep_scores) / len(sleep_scores), 1)
+                        if sleep_scores
+                        else 0
+                    ),
+                    "average_cognitive_score": (
+                        round(sum(cog_scores) / len(cog_scores), 1) if cog_scores else 0
+                    ),
+                }
+            )
+            # 오름차순으로 결과 정렬
+    results.sort(key=lambda x: x["month"])
+    return results
+
+
+# 마이페이지 선택 날짜 상세 조회
+# 월 전체 그래프 데이터
+def get_monthly_detail_date(user, year, month):
+    # 월 시작/끝 날짜
+    month_start = date(year, month, 1)
+    if month == 12:
+        month_end = date(year + 1, 1, 1) - timedelta(days=1)
+    else:
+        month_end = date(year, month + 1, 1) - timedelta(days=1)
+
+    # 날짜별 데이터 집계
+    date_list = []
+    sleep_hour_list = []
+    sleep_score_list = []
+    cognitive_score_list = []
+
+    sleep_records = {
+        r.date: r
+        for r in SleepRecord.objects.filter(
+            user=user, date__range=(month_start, month_end)
+        )
+    }
+    cognitive_scores = get_daily_cognitive_scores(user, month_start, month_end)
+
+    for d in daterange(month_start, month_end):
+        date_list.append(d)
+        sr = sleep_records.get(d)
+        cs = cognitive_scores.get(d)
+        sleep_hour_list.append(round((sr.sleep_duration if sr else 0) / 60, 1))
+        sleep_score_list.append(round(sr.score, 1) if sr else 0)
+        cognitive_score_list.append(round(cs, 1) if cs is not None else 0)
+
+    return {
+        "dates": [str(d) for d in date_list],
+        "sleep_hour_list": sleep_hour_list,
+        "sleep_score_list": sleep_score_list,
+        "cognitive_score_list": cognitive_score_list,
+    }
+
+
+# 해당 날짜 수면 상세 기록
+def get_sleep_detail(user, date):
+    sr = SleepRecord.objects.filter(user=user, date=date).first()
+    if not sr:
+        return None
+    return {
+        "date": str(date),
+        "total_sleep_hours": (
+            round(sr.sleep_duration / 60, 1) if sr.sleep_duration else 0
+        ),
+        "sleep_score": round(sr.score, 1) if sr.score else 0,
+    }
+
+
+# 해당 날짜의 인지 기록 상세
+def get_cognitive_detail(user, date):
+    srt_qs = CognitiveResultSRT.objects.filter(
+        cognitive_session__user=user, created_at__date=date
+    )
+    pattern_qs = CognitiveResultPattern.objects.filter(
+        cognitive_session__user=user, created_at__date=date
+    )
+    symbol_qs = CognitiveResultSymbol.objects.filter(
+        cognitive_session__user=user, created_at__date=date
+    )
+
+    srt_score = srt_qs.aggregate(avg=Avg("score"))["avg"] or 0
+    srt_time_ms = srt_qs.aggregate(avg=Avg("reaction_avg_ms"))["avg"] or 0
+
+    symbol_score = symbol_qs.aggregate(avg=Avg("score"))["avg"] or 0
+    symbol_count = symbol_qs.aggregate(total=Sum("symbol_correct"))["total"] or 0
+    symbol_accuracy = symbol_qs.aggregate(avg=Avg("symbol_accuracy"))["avg"] or 0
+
+    pattern_score = pattern_qs.aggregate(avg=Avg("score"))["avg"] or 0
+    pattern_count = pattern_qs.aggregate(total=Sum("pattern_correct"))["total"] or 0
+    # 정확도가 없기 때문에 0으로 고정, 필요하다면 따로 계산
+    pattern_accuracy = 0
+    pattern_time_sec = pattern_qs.aggregate(avg=Avg("pattern_time_sec"))["avg"] or 0
+
+    total_score = srt_score + symbol_score + pattern_score
+
+    return {
+        "srt_score": round(srt_score, 1),
+        "srt_time_ms": int(srt_time_ms),
+        "symbol_score": round(symbol_score, 1),
+        "symbol_count": int(symbol_count),
+        "symbol_accuracy": int(symbol_accuracy),
+        "pattern_score": round(pattern_score, 1),
+        "pattern_count": int(pattern_count),
+        "pattern_accuracy": int(pattern_accuracy),
+        "pattern_time_ms": int(pattern_time_sec * 1000),  # 초 → 밀리초 변환
+        "total_score": round(total_score, 1),
+    }
+
+
+# 전체 합친 최종 기록
+def get_selected_date_detail(user, date):
+    year, month = date.year, date.month
+
+    graph = get_monthly_detail_date(user, year, month)
+    graph["selected_date"] = str(date)
+
+    sleep_detail = get_sleep_detail(user, date)
+    cognitive_detail = get_cognitive_detail(user, date)
+    if not sleep_detail:
+        return None
+
+    detail = sleep_detail
+    detail["cognitive_test"] = cognitive_detail
+
+    return {
+        "graph": graph,
+        "detail": detail,
+    }

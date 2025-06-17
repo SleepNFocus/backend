@@ -1,6 +1,6 @@
-# 작성자: 한율
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 
 from django.contrib.auth.models import (
@@ -8,8 +8,18 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
+
+
+# 출생년도 유효성 검사용 함수 (birth_year에 사용)
+def validate_birth_year(value):
+    # 현재 연도를 가져옴
+    current_year = datetime.now().year
+    # 출생년도가 1900년보다 작거나 현재 연도보다 크면 에러
+    if value < 1900 or value > current_year:
+        raise ValidationError(f"1900년부터 {current_year}년 사이로 입력해주세요.")
 
 
 # User ENUM 필드 (선택지 제한용)
@@ -117,7 +127,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     gender = models.CharField(
         max_length=5, choices=Gender.choices, null=True, blank=True
     )
-    birth_year = models.PositiveSmallIntegerField(null=True, blank=True)
+    birth_year = models.PositiveSmallIntegerField(
+        null=True, blank=True, validators=[validate_birth_year]
+    )
     mbti = models.CharField(
         max_length=10, choices=MBTIType.choices, null=True, blank=True
     )  # 시리얼라이저에서 null로 변환 처리
