@@ -1,6 +1,7 @@
 # cognitive_statistics/views.py
 from random import randint
 
+from django.db.models import Avg, Sum
 from rest_framework import generics, permissions, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -10,6 +11,9 @@ from cognitives.models import CognitiveProblem
 from sleep_record.models import SleepRecord
 
 from .models import (
+    CognitiveResultPattern,
+    CognitiveResultSRT,
+    CognitiveResultSymbol,
     CognitiveSession,
     CognitiveSessionProblem,
     CognitiveTestFormat,
@@ -185,3 +189,83 @@ class CognitiveResultPatternAPIView(generics.CreateAPIView):
 class CognitiveResultSymbolAPIView(generics.CreateAPIView):
     serializer_class = CognitiveResultSymbolSerializer
     permission_classes = [IsAuthenticated]
+
+
+class CognitiveResultSummaryAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        sessions = CognitiveSession.objects.filter(user=user)
+
+        srt_qs = CognitiveResultSRT.objects.filter(cognitive_session__in=sessions)
+        symbol_qs = CognitiveResultSymbol.objects.filter(cognitive_session__in=sessions)
+        pattern_qs = CognitiveResultPattern.objects.filter(
+            cognitive_session__in=sessions
+        )
+
+        srt_data = {
+            "avg_ms": round(
+                srt_qs.aggregate(avg=Avg("reaction_avg_ms"))["avg"] or 0, 2
+            ),
+            "total_duration_sec": round(
+                srt_qs.count()
+                * (srt_qs.aggregate(avg=Avg("reaction_avg_ms"))["avg"] or 0)
+                / 1000,
+                2,
+            ),
+            "average_score": round(srt_qs.aggregate(avg=Avg("score"))["avg"] or 0, 2),
+        }
+
+        symbol_data = {
+            "correct": symbol_qs.aggregate(total=Sum("symbol_correct"))["total"] or 0,
+            "avg_ms": round(
+                symbol_qs.aggregate(avg=Avg("symbol_accuracy"))["avg"] or 0 * 1000, 2
+            ),
+            "symbol_accuracy": round(
+                symbol_qs.aggregate(avg=Avg("symbol_accuracy"))["avg"] or 0, 2
+            ),
+            "total_duration_sec": symbol_qs.aggregate(total=Sum("symbol_correct"))[
+                "total"
+            ]
+            or 0,
+            "average_score": round(
+                symbol_qs.aggregate(avg=Avg("score"))["avg"] or 0, 2
+            ),
+        }
+
+        pattern_data = {
+            "correct": pattern_qs.aggregate(total=Sum("pattern_correct"))["total"] or 0,
+            "total_duration_sec": round(
+                pattern_qs.aggregate(total=Sum("pattern_time_sec"))["total"] or 0, 2
+            ),
+            "average_score": round(
+                pattern_qs.aggregate(avg=Avg("score"))["avg"] or 0, 2
+            ),
+        }
+
+        normalized_scores = {
+            "srt": srt_data["average_score"],
+            "symbol": symbol_data["average_score"],
+            "pattern": pattern_data["average_score"],
+        }
+
+        average_score = round(sum(normalized_scores.values()) / 3, 2)
+        total_duration_sec = (
+            srt_data["total_duration_sec"]
+            + symbol_data["total_duration_sec"]
+            + pattern_data["total_duration_sec"]
+        )
+
+        return Response(
+            {
+                "raw_scores": {
+                    "srt": srt_data,
+                    "symbol": symbol_data,
+                    "pattern": pattern_data,
+                },
+                "normalized_scores": normalized_scores,
+                "average_score": average_score,
+                "total_duration_sec": total_duration_sec,
+            }
+        )
