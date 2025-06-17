@@ -57,7 +57,9 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "docs"],
+        "DIRS": [
+            BASE_DIR.parent / "docs",
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -159,4 +161,5 @@ SWAGGER_SETTINGS = {
     "DEFAULT_MODEL_RENDERING": "model",
     "DEFAULT_INFO": None,
     "DEFAULT_API_URL": "https://www.dev.focusz.site",
+    "SPEC_URL": '/swagger.yaml',
 }
