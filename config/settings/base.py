@@ -23,7 +23,6 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]
 AUTH_USER_MODEL = "users.User"
 
-
 load_dotenv()
 KAKAO_CLIENT_ID = os.getenv("KAKAO_CLIENT_ID")
 
@@ -42,11 +41,14 @@ INSTALLED_APPS = [
     "sleep_record",
     "cognitives",
     "cognitive_statistics",
+    "ai",
     "management",
     "drf_yasg",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
