@@ -18,6 +18,9 @@ DATABASES = {
     }
 }
 
+KAKAO_CLIENT_ID = os.getenv("KAKAO_CLIENT_ID")
+KAKAO_REDIRECT_URI = os.getenv("KAKAO_REDIRECT_URI")
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8081",  # 프론트 개발 서버
 ]

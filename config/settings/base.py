@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv(dotenv_path=BASE_DIR / ".env")
+load_dotenv(dotenv_path=BASE_DIR.parent / ".env")
 
 KAKAO_CLIENT_ID = os.getenv("KAKAO_CLIENT_ID")
 KAKAO_REDIRECT_URI = os.getenv("KAKAO_REDIRECT_URI")
@@ -172,4 +172,15 @@ SWAGGER_SETTINGS = {
     "DEFAULT_INFO": None,
     "DEFAULT_API_URL": "https://www.dev.focusz.site",
     "SPEC_URL": "/swagger.yaml",
+}
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "USER_ID_FIELD": "user_id",
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "BLACKLIST_AFTER_ROTATION": True,
+    "ROTATE_REFRESH_TOKENS": True,
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
