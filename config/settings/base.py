@@ -3,10 +3,13 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-load_dotenv()
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(dotenv_path=BASE_DIR / ".env")
+
+KAKAO_CLIENT_ID = os.getenv("KAKAO_CLIENT_ID")
+KAKAO_REDIRECT_URI = os.getenv("KAKAO_REDIRECT_URI")
 
 
 # Quick-start development settings - unsuitable for production
@@ -14,10 +17,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-_n+j%pjb%=!u4zcaeu$5h^xuit^$q)2ql5nchwo*#u)hs&+x@="
-
-
-KAKAO_CLIENT_ID = os.getenv("KAKAO_CLIENT_ID")
-KAKAO_REDIRECT_URI = os.getenv("KAKAO_REDIRECT_URI")
 
 
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
