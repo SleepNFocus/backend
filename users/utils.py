@@ -85,10 +85,18 @@ def get_access_token_from_code(provider, code):
                 "redirect_uri": settings.KAKAO_REDIRECT_URI,
                 "code": code,
             },
+            headers={"Content-type": "application/x-www-form-urlencoded"},
+
         )
+        print("토큰 응답:", resp.status_code)
+        print(resp.text)
+
         # 응답에서 액세스 토큰만 반환
         data = resp.json()
+        if "access_token" not in data:
+            raise Exception(f"Kakao 토큰 요청 실패: {data}")
         return data["access_token"]
+
 
     elif provider == "google":
         # 구글로 토큰 요청
