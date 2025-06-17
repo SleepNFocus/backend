@@ -24,6 +24,9 @@ ALLOWED_HOSTS = ["*"]
 AUTH_USER_MODEL = "users.User"
 
 
+KAKAO_CLIENT_ID = os.getenv("KAKAO_CLIENT_ID")
+
+
 # Application definition
 
 INSTALLED_APPS = [
