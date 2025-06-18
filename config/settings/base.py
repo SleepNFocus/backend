@@ -201,3 +201,7 @@ if SENTRY_DSN:
         # 이벤트당 사용자 컨텍스트 수집 여부
         send_default_pii=True,
     )
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
