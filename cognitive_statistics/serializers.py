@@ -5,7 +5,21 @@ from .models import (
     CognitiveResultSRT,
     CognitiveResultSymbol,
     CognitiveSession,
+    CognitiveTestFormat,
 )
+
+
+class CognitiveTestFormatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CognitiveTestFormat
+        fields = [
+            "id",
+            "test_type",
+            "name",
+            "description",
+            "estimated_duration_sec",
+            "order",
+        ]
 
 
 class CognitiveSessionWithProblemsSerializer(serializers.ModelSerializer):
