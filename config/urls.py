@@ -11,8 +11,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from config.health_check import HealthCheckView
 
+
 def trigger_error(request):
     1 / 0
+
+
 urlpatterns = [
     path("", lambda request: HttpResponse("Hello, World!"), name="home"),
     path("admin/", admin.site.urls),
@@ -67,6 +70,5 @@ if settings.DEBUG:
             ),
             name="schema-yaml",
         ),
-
         path("sentry-debug/", trigger_error, name="sentry-debug"),
     ]
