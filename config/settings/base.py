@@ -1,7 +1,10 @@
 import os
+from datetime import timedelta
 from pathlib import Path
 
+import sentry_sdk
 from dotenv import load_dotenv
+from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -174,8 +177,6 @@ SWAGGER_SETTINGS = {
     "SPEC_URL": "/swagger.yaml",
 }
 
-from datetime import timedelta
-
 SIMPLE_JWT = {
     "USER_ID_FIELD": "user_id",
     "AUTH_HEADER_TYPES": ("Bearer",),
@@ -184,3 +185,19 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
+
+
+SENTRY_DSN = os.getenv("SENTRY_DSN", "")
+SENTRY_ENVIRONMENT = os.getenv("SENTRY_ENVIRONMENT", "development")
+SENTRY_TRACES_SAMPLE_RATE = float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", 0.0))
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        environment=SENTRY_ENVIRONMENT,
+        # 성능 모니터링 활성화
+        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
+        # 이벤트당 사용자 컨텍스트 수집 여부
+        send_default_pii=True,
+    )
