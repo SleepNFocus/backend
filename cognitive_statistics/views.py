@@ -153,7 +153,7 @@ class CognitiveResultDailySummaryAPIView(APIView):
             result.append(
                 {
                     "date": date,
-                    "userId": user.id,
+                    "userId": user.user_id,
                     "average_score": avg_score,
                     "raw_scores": {
                         "srt": {
