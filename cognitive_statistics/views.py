@@ -1,4 +1,3 @@
-# cognitive_statistics/views.py
 from collections import defaultdict
 from random import randint
 
