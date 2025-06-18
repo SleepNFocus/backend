@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import sentry_sdk
@@ -175,8 +176,6 @@ SWAGGER_SETTINGS = {
     "DEFAULT_API_URL": "https://www.dev.focusz.site",
     "SPEC_URL": "/swagger.yaml",
 }
-
-from datetime import timedelta
 
 SIMPLE_JWT = {
     "USER_ID_FIELD": "user_id",
