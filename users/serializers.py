@@ -49,7 +49,12 @@ class OnboardingBasicSerializer(serializers.ModelSerializer):
 
     # 기본 설문 정보 저장 시 db에 업데이트
     def update(self, instance, validated_data):
-        # mbti 선택안함 시 db에 null로 처리
+        # gender 선택안함 선택 시 null 처리
+        gender = validated_data.get("gender")
+        if gender == "선택안함":
+            validated_data["gender"] = None
+
+        # mbti 선택안함 선택 시 null 처리
         validated_data["mbti"] = normalize_mbti(validated_data.get("mbti"))
         # 필드 값을 유저 인스턴스에 저장
         for attr, value in validated_data.items():

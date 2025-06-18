@@ -31,6 +31,7 @@ class SocialType(models.TextChoices):
 class Gender(models.TextChoices):
     MALE = "남"
     FEMALE = "여"
+    NONE = "선택안함"
 
 
 class MBTIType(models.TextChoices):

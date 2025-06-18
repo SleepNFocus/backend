@@ -76,10 +76,10 @@ def handle_social_login_error(detail):
 # 소셜 인가 코드로 액세스 토큰 요청
 def get_access_token_from_code(provider, code):
     if provider == "kakao":
-        print("🟡 [Kakao 디버깅] 요청 직전 설정 확인:")
-        print("    client_id:", settings.KAKAO_CLIENT_ID)
-        print("    redirect_uri:", settings.KAKAO_REDIRECT_URI)
-        print("    code:", code)
+        print("[Kakao 디버깅] 요청 직전 설정 확인:")
+        print("client_id:", settings.KAKAO_CLIENT_ID)
+        print("redirect_uri:", settings.KAKAO_REDIRECT_URI)
+        print("code:", code)
         # 카카오로 토큰 요청
         resp = requests.post(
             "https://kauth.kakao.com/oauth/token",
@@ -91,8 +91,8 @@ def get_access_token_from_code(provider, code):
             },
             headers={"Content-type": "application/x-www-form-urlencoded"},
         )
-        print("토큰 응답:", resp.status_code)
-        print(resp.text)
+        "토큰 응답:", resp.status_code
+        resp.text
 
         # 응답에서 액세스 토큰만 반환
         data = resp.json()
