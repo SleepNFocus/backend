@@ -87,6 +87,7 @@ class CognitiveResultSRTAPIView(APIView):
             reaction_avg_ms=data.get("reactionAvgMs"),
             reaction_list=",".join(map(str, data.get("reactionList", []))),
         )
+        try_create_test_result(request.user, session)
         return Response({"detail": "SRT 저장 완료", "id": result.id}, status=201)
 
 
@@ -108,6 +109,7 @@ class CognitiveResultPatternAPIView(APIView):
             pattern_correct=data.get("patternCorrect"),
             pattern_time_sec=data.get("patternTimeSec"),
         )
+        try_create_test_result(request.user, session)
         return Response({"detail": "Pattern 저장 완료", "id": result.id}, status=201)
 
 
@@ -129,6 +131,7 @@ class CognitiveResultSymbolAPIView(APIView):
             symbol_correct=data.get("symbolCorrect"),
             symbol_accuracy=data.get("symbolAccuracy"),
         )
+        try_create_test_result(request.user, session)
         return Response({"detail": "Symbol 저장 완료", "id": result.id}, status=201)
 
 
@@ -241,3 +244,37 @@ class CognitiveResultDailySummaryAPIView(APIView):
             )
 
         return Response(result)
+
+
+def try_create_test_result(user, session):
+    srt = CognitiveResultSRT.objects.filter(cognitive_session=session).first()
+    symbol = CognitiveResultSymbol.objects.filter(cognitive_session=session).first()
+    pattern = CognitiveResultPattern.objects.filter(cognitive_session=session).first()
+
+    if not (srt and symbol and pattern):
+        return  # 아직 하나라도 없음
+
+    if CognitiveTestResult.objects.filter(
+        user=user, test_format=session.test_format
+    ).exists():
+        return  # 이미 생성됨
+
+    avg_score = round((srt.score + symbol.score + pattern.score) / 3, 2)
+    duration = (
+        int(srt.reaction_avg_ms * 10 / 1000)
+        + int(symbol.symbol_correct)
+        + int(pattern.pattern_time_sec)
+    )
+
+    CognitiveTestResult.objects.create(
+        user=user,
+        test_format=session.test_format,
+        raw_scores={
+            "srt": srt.score,
+            "symbol": symbol.score,
+            "pattern": pattern.score,
+        },
+        normalized_scores={},
+        average_score=avg_score,
+        total_duration_sec=duration,
+    )
