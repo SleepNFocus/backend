@@ -12,8 +12,9 @@ from cognitive_statistics.models import (
     CognitiveResultSRT,
     CognitiveResultSymbol,
 )
+from sleep_record.models import SleepRecord
 
-from .models import SleepRecord, User, UserBlacklist, UserStatus
+from .models import User, UserBlacklist, UserStatus
 from .utils import (
     daterange,
     download_and_save_profile_image,
