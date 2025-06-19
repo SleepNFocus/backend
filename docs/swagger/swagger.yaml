@@ -141,7 +141,7 @@ paths:
         '404':
           description: 인증이 필요합니다.
 
-  /api/mypage/main/:
+  /api/users/mypage/main/:
     get:
       tags:
         - 마이페이지
@@ -189,7 +189,7 @@ paths:
                     type: string
                     example: 인증이 필요합니다.
 
-  /api/mypage/profile/:
+  /api/users/mypage/profile/:
     get:
       responses:
         '200':
@@ -262,7 +262,7 @@ paths:
                     type: string
                     example: 잘못된 요청입니다.
 
-  /api/mypage/records/list/:
+  /api/users/mypage/records/list/:
     get:
       tags:
         - 마이페이지
@@ -365,7 +365,7 @@ paths:
                     type: string
                     example: 해당 기간 기록이 없습니다.
 
-  /api/mypage/records/{date}/detail/:
+  /api/users/mypage/records/{date}/detail/:
     get:
       tags:
         - 마이페이지
