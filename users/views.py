@@ -157,9 +157,7 @@ class MypageProfileView(APIView):
     def patch(self, request):
         user = request.user
         serializer = MypageProfileSerializer(
-            user,
-            data=request.data,
-            partial=True, context={"request": request}
+            user, data=request.data, partial=True, context={"request": request}
         )
         if serializer.is_valid():
             serializer.save()
