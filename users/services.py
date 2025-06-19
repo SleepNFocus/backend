@@ -12,9 +12,8 @@ from cognitive_statistics.models import (
     CognitiveResultSRT,
     CognitiveResultSymbol,
 )
-from sleep_record.models import SleepRecord
 
-from .models import User, UserBlacklist, UserStatus, SleepRecord
+from .models import SleepRecord, User, UserBlacklist, UserStatus
 from .utils import (
     daterange,
     download_and_save_profile_image,
@@ -285,7 +284,9 @@ def get_record_day_list(user):
     # 유저의 최근 7일 수면 기록 조회 후 date를 문자열로 키 설정
     sleep_records = {
         str(r.date): r
-        for r in SleepRecord.objects.filter(user=user, date__range=(start_date, end_date))
+        for r in SleepRecord.objects.filter(
+            user=user, date__range=(start_date, end_date)
+        )
     }
 
     results = []
@@ -293,13 +294,18 @@ def get_record_day_list(user):
         date_str = str(d)  # 날짜 문자열 변환
         sleep = sleep_records.get(date_str)
 
-        results.append({
-            "date": date_str,
-            "total_sleep_hours": round((sleep.sleep_duration or 0) / 60, 1) if sleep else 0,
-            "sleep_score": sleep.score if sleep else 0,
-            "cognitive_score": 0,  # 인지 점수 로직 제거 후 기본값 0 반환
-        })
+        results.append(
+            {
+                "date": date_str,
+                "total_sleep_hours": (
+                    round((sleep.sleep_duration or 0) / 60, 1) if sleep else 0
+                ),
+                "sleep_score": sleep.score if sleep else 0,
+                "cognitive_score": 0,  # 인지 점수 로직 제거 후 기본값 0 반환
+            }
+        )
     return results
+
 
 # 주별 (최근 4주)
 def get_record_week_list(user):
@@ -310,28 +316,42 @@ def get_record_week_list(user):
     # 유저의 최근 4주 수면 기록 조회 후 date를 문자열로 키 설정
     sleep_records = {
         str(r.date): r
-        for r in SleepRecord.objects.filter(user=user, date__range=(start_date, end_date))
+        for r in SleepRecord.objects.filter(
+            user=user, date__range=(start_date, end_date)
+        )
     }
 
     results = []
-    for week_start, week_end in weekrange(start_date, end_date):  # 튜플 언팩 지원하도록 변경된 weekrange 사용
+    for week_start, week_end in weekrange(
+        start_date, end_date
+    ):  # 튜플 언팩 지원하도록 변경된 weekrange 사용
         week_dates = list(daterange(week_start, week_end))
-        normalized_dates = [str(d if isinstance(d, date) else d.date()) for d in week_dates]  # 날짜 문자열 변환
+        normalized_dates = [
+            str(d if isinstance(d, date) else d.date()) for d in week_dates
+        ]  # 날짜 문자열 변환
 
-        weekly_sleeps = [sleep_records.get(d) for d in normalized_dates if sleep_records.get(d)]
+        weekly_sleeps = [
+            sleep_records.get(d) for d in normalized_dates if sleep_records.get(d)
+        ]
 
-        total_sleep_minutes = sum(r.sleep_duration for r in weekly_sleeps if r and r.sleep_duration)
+        total_sleep_minutes = sum(
+            r.sleep_duration for r in weekly_sleeps if r and r.sleep_duration
+        )
         avg_sleep_score = (
-            sum(r.score for r in weekly_sleeps if r and r.score is not None) / len(weekly_sleeps)
-            if weekly_sleeps else 0
+            sum(r.score for r in weekly_sleeps if r and r.score is not None)
+            / len(weekly_sleeps)
+            if weekly_sleeps
+            else 0
         )
 
-        results.append({
-            "week": f"{week_start} ~ {week_end}",
-            "total_sleep_hours": round(total_sleep_minutes / 60, 1),
-            "average_sleep_score": round(avg_sleep_score, 1),
-            "average_cognitive_score": 0,  # 인지 점수 로직 제거 후 기본값 0 반환
-        })
+        results.append(
+            {
+                "week": f"{week_start} ~ {week_end}",
+                "total_sleep_hours": round(total_sleep_minutes / 60, 1),
+                "average_sleep_score": round(avg_sleep_score, 1),
+                "average_cognitive_score": 0,  # 인지 점수 로직 제거 후 기본값 0 반환
+            }
+        )
 
     return results
 
