@@ -279,10 +279,9 @@ def get_daily_cognitive_scores(user, start_date, end_date):
 # 일별 (최근 7일)
 def get_record_day_list(user):
     today = date.today()
-    start_date = today - timedelta(days=6)
-    end_date = today
+    start_date = today - timedelta(days=6)  # 최근 7일 시작 날짜
+    end_date = today  # 오늘 날짜
 
-    # 유저의 최근 7일 수면 기록 조회 후 date를 문자열로 키 설정
     sleep_records = {
         str(r.date): r
         for r in SleepRecord.objects.filter(
@@ -290,19 +289,23 @@ def get_record_day_list(user):
         )
     }
 
+    # 일별 인지 점수 합산
+    cognitive_scores = get_daily_cognitive_scores(user, start_date, end_date)
+
     results = []
     for d in daterange(start_date, end_date):
         date_str = str(d)  # 날짜 문자열 변환
         sleep = sleep_records.get(date_str)
+        cognitive_score = cognitive_scores.get(d, 0)
 
         results.append(
             {
                 "date": date_str,
-                "total_sleep_hours": (
+                "sleep_hour": (
                     round((sleep.sleep_duration or 0) / 60, 1) if sleep else 0
-                ),
-                "sleep_score": sleep.score if sleep else 0,
-                "cognitive_score": 0,  # 인지 점수 로직 제거 후 기본값 0 반환
+                ),  # 수면 시간(시간 단위, 소수점 한 자리)
+                "sleep_score": sleep.score if sleep else 0,  # 수면 점수
+                "cognitive_score": round(cognitive_score, 1),  # 인지 점수
             }
         )
     return results
@@ -311,33 +314,29 @@ def get_record_day_list(user):
 # 주별 (최근 4주)
 def get_record_week_list(user):
     today = date.today()
-    start_date = today - timedelta(weeks=3)
-    end_date = today
+    start_date = today - timedelta(weeks=3)  # 최근 4주 시작 날짜
+    end_date = today  # 오늘 날짜
 
-    # 유저의 최근 4주 수면 기록 조회 후 date를 문자열로 키 설정
     sleep_records = {
-        str(r.date): r
+        r.date: r
         for r in SleepRecord.objects.filter(
             user=user, date__range=(start_date, end_date)
         )
     }
 
     results = []
-    for week_start, week_end in weekrange(
-        start_date, end_date
-    ):  # 튜플 언팩 지원하도록 변경된 weekrange 사용
+    week_number = 1  # 최근 주가 1번
+    for week_start, week_end in weekrange(start_date, end_date):
         week_dates = list(daterange(week_start, week_end))
-        normalized_dates = [
-            str(d if isinstance(d, date) else d.date()) for d in week_dates
-        ]  # 날짜 문자열 변환
 
         weekly_sleeps = [
-            sleep_records.get(d) for d in normalized_dates if sleep_records.get(d)
+            sleep_records.get(d) for d in week_dates if sleep_records.get(d)
         ]
 
         total_sleep_minutes = sum(
             r.sleep_duration for r in weekly_sleeps if r and r.sleep_duration
         )
+
         avg_sleep_score = (
             sum(r.score for r in weekly_sleeps if r and r.score is not None)
             / len(weekly_sleeps)
@@ -345,14 +344,30 @@ def get_record_week_list(user):
             else 0
         )
 
+        # 주별 인지 점수 합산
+        weekly_cognitive_scores = get_daily_cognitive_scores(user, week_start, week_end)
+        cognitive_score_list = list(weekly_cognitive_scores.values())
+        avg_cognitive_score = (
+            sum(cognitive_score_list) / len(cognitive_score_list)
+            if cognitive_score_list
+            else 0
+        )
+
         results.append(
             {
-                "week": f"{week_start} ~ {week_end}",
-                "total_sleep_hours": round(total_sleep_minutes / 60, 1),
-                "average_sleep_score": round(avg_sleep_score, 1),
-                "average_cognitive_score": 0,  # 인지 점수 로직 제거 후 기본값 0 반환
+                "week": week_number,  # 주차 번호 (정수형)
+                "start_date": week_start,  # 주 시작 날짜
+                "end_date": week_end,  # 주 끝 날짜
+                "total_sleep_hours": round(
+                    total_sleep_minutes / 60, 1
+                ),  # 주간 총 수면 시간
+                "average_sleep_score": round(avg_sleep_score, 1),  # 주간 평균 수면 점수
+                "average_cognitive_score": round(
+                    avg_cognitive_score, 1
+                ),  # 주간 평균 인지 점수
             }
         )
+        week_number += 1
 
     return results
 
