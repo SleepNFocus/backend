@@ -71,6 +71,9 @@ paths:
                         nullable: true
                       status:
                         type: string
+                      has_completed_onboarding:
+                        type: boolean
+                        example: false
         '401':
           description: 유효하지 않은 로그인 정보
           content:
