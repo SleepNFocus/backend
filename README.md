@@ -13,6 +13,8 @@
 
 🔗 https://www.dev.focusz.site (개발자용)
 
+🔗 https://dev.focusz.site (개발자용)
+
 수면과 인지 기능의 상관관계를 지원하는 API 서버
 ---
 
