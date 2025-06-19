@@ -153,6 +153,8 @@ class SocialLoginService:
 
 
 # 마이페이지 메인 요약 정보
+
+
 def get_mypage_main_data(user):
     # 탈퇴한 계정일 경우 마이페이지 접근 차단
     if user.status == UserStatus.WITHDRAWN:
@@ -167,7 +169,10 @@ def get_mypage_main_data(user):
         sleep_records.aggregate(total=Sum("sleep_duration"))["total"] or 0
     )
     total_sleep_hours = round(total_sleep_minutes / 60, 1)
-    average_sleep_score = sleep_records.aggregate(avg=Avg("score"))["avg"] or 0.0
+
+    # score가 모두 null일 수 있으므로 None 처리 방어
+    avg_score = sleep_records.aggregate(avg=Avg("score"))["avg"]
+    average_sleep_score = round(avg_score, 1) if avg_score is not None else 0.0
 
     # 90일치 일별 인지 점수(평균)
     today = timezone.now().date()
@@ -185,11 +190,15 @@ def get_mypage_main_data(user):
 
     return {
         "nickname": user.nickname,
-        "profile_img": user.profile_img,
-        "joined_at": user.joined_at,
+        "profile_img": (
+            user.profile_img.url
+            if hasattr(user.profile_img, "url")
+            else user.profile_img
+        ),
+        "joined_at": user.joined_at if user.joined_at else None,
         "tracking_days": tracking_days,
         "total_sleep_hours": total_sleep_hours,
-        "average_sleep_score": round(average_sleep_score, 1),
+        "average_sleep_score": average_sleep_score,
         "average_cognitive_score": average_cognitive_score,
     }
 
