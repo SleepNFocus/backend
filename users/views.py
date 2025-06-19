@@ -1,6 +1,8 @@
 from datetime import datetime
 
-from rest_framework import permissions
+import sentry_sdk
+from rest_framework import permissions, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -135,10 +137,21 @@ class MypageMainView(APIView):
 
     def get(self, request):
         user = request.user
-        data = get_mypage_main_data(user)
-        serializer = MypageMainSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.data)
+        try:
+            data = get_mypage_main_data(user)
+            serializer = MypageMainSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            return Response(serializer.data)
+        except ValidationError as ve:
+            # 유효성 검사 실패 → 400 응답
+            return Response({"detail": str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # Sentry에 예외 전송 + 500 응답
+            sentry_sdk.capture_exception(e)
+            return Response(
+                {"detail": "서버 오류가 발생했습니다.", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 # 마이페이지 프로필 상세 조회 및 프로필 수정
