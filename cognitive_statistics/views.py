@@ -32,6 +32,18 @@ class CognitiveTestResultBasicAPIView(generics.ListAPIView):
     def get_queryset(self):
         return CognitiveTestResult.objects.filter(user=self.request.user)
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        if not queryset.exists():
+            return Response(
+                {"has_data": False, "detail": "인지 검사 결과가 없습니다."},
+                status=status.HTTP_200_OK,
+            )
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
 
 class CognitiveSessionCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
