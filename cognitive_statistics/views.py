@@ -1,4 +1,5 @@
 from collections import defaultdict
+from datetime import datetime
 from random import randint
 
 from rest_framework import generics, status
@@ -31,15 +32,26 @@ class CognitiveTestResultBasicAPIView(generics.ListAPIView):
         return CognitiveTestResult.objects.filter(user=self.request.user)
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
+        all_results = self.get_queryset()
 
-        if not queryset.exists():
+        if not all_results.exists():
             return Response(
                 {"has_data": False, "detail": "인지 검사 결과가 없습니다."},
                 status=status.HTTP_200_OK,
             )
 
-        serializer = self.get_serializer(queryset, many=True)
+        # 최신 하나 분리
+        latest_result = all_results.first()
+
+        # 오늘 날짜 (Y-m-d 기준)
+        today = datetime.now().date()
+        today_others = all_results.exclude(id=latest_result.id).filter(
+            timestamp__date=today
+        )
+
+        serializer = self.get_serializer(
+            [latest_result] + list(today_others), many=True
+        )
         return Response({"has_data": True, "results": serializer.data})
 
 
