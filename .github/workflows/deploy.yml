@@ -22,6 +22,9 @@ jobs:
           script: |
             set -e
             cd ~/backend
+            set -o allexport
+            source .env
+            set +o allexport
             source ~/.bashrc || true
             export PATH="$HOME/.poetry/bin:$HOME/.local/bin:$PATH"
 
@@ -49,10 +52,13 @@ jobs:
           script: |
             set -e
             cd ~/backend
+            set -o allexport
+            source .env
+            set +o allexport
             source ~/.bashrc || true
             export PATH="$HOME/.poetry/bin:$HOME/.local/bin:$PATH"
 
-            git pull origin main
+            git pull origin dev
             poetry install
             poetry run python manage.py migrate
             poetry run python manage.py collectstatic --noinput
