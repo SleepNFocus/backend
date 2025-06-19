@@ -246,7 +246,7 @@ class MypageRecordListView(APIView):
         # 기간별 기록 데이터 조회
         results = get_func(request.user)
         if not results:
-            return Response({"detail": "해당 기간 기록이 없습니다."}, status=404)
+            raise ValidationError("해당 기간 기록이 없습니다.")
 
         serializer = serializer_class(results, many=True)
         return Response({"results": serializer.data})
