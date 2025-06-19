@@ -12,9 +12,8 @@ from cognitive_statistics.models import (
     CognitiveResultSRT,
     CognitiveResultSymbol,
 )
-from sleep_record.models import SleepRecord
 
-from .models import User, UserBlacklist, UserStatus
+from .models import SleepRecord, User, UserBlacklist, UserStatus
 from .utils import (
     daterange,
     download_and_save_profile_image,
@@ -276,13 +275,13 @@ def get_daily_cognitive_scores(user, start_date, end_date):
     return daily_scores
 
 
-# 일별 (최근 3개월, 90일)
+# 일별 (최근 7일)
 def get_record_day_list(user):
-    today = timezone.now().date()
-    start_date = today - timedelta(days=89)
+    today = date.today()
+    start_date = today - timedelta(days=6)
     end_date = today
 
-    # 수면 기록 불러오기 (문자열 키로 변경하여 키 타입 이슈 방지)
+    # 유저의 최근 7일 수면 기록 조회 후 date를 문자열로 키 설정
     sleep_records = {
         str(r.date): r
         for r in SleepRecord.objects.filter(
@@ -290,40 +289,31 @@ def get_record_day_list(user):
         )
     }
 
-    # 해당 기간의 일자 리스트 순회하며 결과 구성
     results = []
-    cognitive_scores = get_daily_cognitive_scores(user, start_date, end_date)
     for d in daterange(start_date, end_date):
-        d = d if isinstance(d, date) else d.date()  # 날짜 타입 통일 처리
-        sleep = sleep_records.get(str(d))  # 문자열 키로 조회하도록 변경
-        cog = cognitive_scores.get(d)
+        date_str = str(d)  # 날짜 문자열 변환
+        sleep = sleep_records.get(date_str)
 
-        # 수면 및 인지 점수 데이터 결과에 포함
         results.append(
             {
-                "date": d,
-                "sleep_hour": sleep.sleep_duration if sleep else 0,
-                "sleep_score": sleep.score if sleep and sleep.score is not None else 0,
-                "cognitive_score": cog if cog is not None else 0,
+                "date": date_str,
+                "total_sleep_hours": (
+                    round((sleep.sleep_duration or 0) / 60, 1) if sleep else 0
+                ),
+                "sleep_score": sleep.score if sleep else 0,
+                "cognitive_score": 0,  # 인지 점수 로직 제거 후 기본값 0 반환
             }
         )
-
-    # 모든 결과가 0이면 기록 없음 예외 처리
-    if not results or all(
-        (r["sleep_hour"] == 0 and r["cognitive_score"] == 0) for r in results
-    ):
-        raise ValidationError("해당 기간 기록이 없습니다.")
-
     return results
 
 
-# 주별 (최근 12주)
+# 주별 (최근 4주)
 def get_record_week_list(user):
-    today = timezone.now().date()
-    start_date = today - timedelta(weeks=11)
+    today = date.today()
+    start_date = today - timedelta(weeks=3)
     end_date = today
 
-    # 수면 기록 불러오기 (문자열 키로 변경하여 키 타입 이슈 방지)
+    # 유저의 최근 4주 수면 기록 조회 후 date를 문자열로 키 설정
     sleep_records = {
         str(r.date): r
         for r in SleepRecord.objects.filter(
@@ -331,51 +321,37 @@ def get_record_week_list(user):
         )
     }
 
-    # 주 단위로 그룹핑하여 결과 생성
     results = []
-    cognitive_scores_by_day = get_daily_cognitive_scores(user, start_date, end_date)
-    for week_start, week_end in weekrange(start_date, end_date):
+    for week_start, week_end in weekrange(
+        start_date, end_date
+    ):  # 튜플 언팩 지원하도록 변경된 weekrange 사용
         week_dates = list(daterange(week_start, week_end))
         normalized_dates = [
             str(d if isinstance(d, date) else d.date()) for d in week_dates
-        ]  # 날짜 정규화 후 문자열 처리
+        ]  # 날짜 문자열 변환
+
         weekly_sleeps = [
             sleep_records.get(d) for d in normalized_dates if sleep_records.get(d)
         ]
 
-        # 집계된 수면 시간 및 평균 점수 계산
-        total_sleep_minutes = sum(s.sleep_duration for s in weekly_sleeps)
-        total_sleep_hours = (
-            round(total_sleep_minutes / 60, 1) if total_sleep_minutes else 0.0
+        total_sleep_minutes = sum(
+            r.sleep_duration for r in weekly_sleeps if r and r.sleep_duration
         )
-        scores = [s.score for s in weekly_sleeps if s.score is not None]
-        average_sleep_score = round(sum(scores) / len(scores), 1) if scores else 0.0
-
-        cog_scores = [
-            cognitive_scores_by_day.get(d if isinstance(d, date) else d.date())
-            for d in week_dates
-        ]  # 날짜 키 타입 통일 처리 추가
-        cog_scores = [s for s in cog_scores if s is not None]
-        average_cognitive_score = (
-            round(sum(cog_scores) / len(cog_scores), 1) if cog_scores else 0.0
+        avg_sleep_score = (
+            sum(r.score for r in weekly_sleeps if r and r.score is not None)
+            / len(weekly_sleeps)
+            if weekly_sleeps
+            else 0
         )
 
-        # 수면 및 인지 점수 데이터 결과에 포함
         results.append(
             {
-                "week": week_start,
-                "total_sleep_hours": total_sleep_hours,
-                "average_sleep_score": average_sleep_score,
-                "average_cognitive_score": average_cognitive_score,
+                "week": f"{week_start} ~ {week_end}",
+                "total_sleep_hours": round(total_sleep_minutes / 60, 1),
+                "average_sleep_score": round(avg_sleep_score, 1),
+                "average_cognitive_score": 0,  # 인지 점수 로직 제거 후 기본값 0 반환
             }
         )
-
-    # 모든 결과가 0이면 기록 없음 예외 처리
-    if not results or all(
-        (r["total_sleep_hours"] == 0 and r["average_cognitive_score"] == 0)
-        for r in results
-    ):
-        raise ValidationError("해당 기간 기록이 없습니다.")
 
     return results
 

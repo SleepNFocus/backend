@@ -225,7 +225,9 @@ def daterange(start_date: date, end_date: date):
 
 # 주 단위로 날짜 범위를 반환
 def weekrange(start_date: date, end_date: date):
-    current = start_date - timedelta(days=start_date.weekday())
+    current = start_date - timedelta(days=start_date.weekday())  # 그 주의 월요일
     while current <= end_date:
-        yield current
+        week_start = current
+        week_end = current + timedelta(days=6)
+        yield (week_start, week_end)
         current += timedelta(weeks=1)
