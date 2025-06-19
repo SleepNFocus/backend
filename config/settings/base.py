@@ -214,3 +214,7 @@ if SENTRY_DSN:
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
+
+# media 파일 설정 (사용자 업로드 파일)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
