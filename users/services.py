@@ -230,12 +230,6 @@ def create_or_update_user_by_social(
 
 
 # 마이페이지 기록 조회 (리스트뷰)
-# 공통 날짜 매핑용
-def daterange(start_date, end_date):
-    for n in range((end_date - start_date).days + 1):
-        yield start_date + timedelta(n)
-
-
 # 날짜별 인지 점수 합산
 def get_daily_cognitive_scores(user, start_date, end_date):
     daily_srt = defaultdict(list)
