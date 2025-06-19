@@ -57,15 +57,12 @@ class CognitiveResultSymbolSerializer(serializers.ModelSerializer):
 
 class CognitiveTestResultDetailedSerializer(serializers.Serializer):
     detailed_raw_scores = serializers.SerializerMethodField()
-    average_score = serializers.SerializerMethodField()
+    normalized_scores = serializers.JSONField()
+    average_score = serializers.FloatField()
     total_duration_sec = serializers.IntegerField()
 
     def get_detailed_raw_scores(self, obj):
-        user = obj.user
-        session = (
-            CognitiveSession.objects.filter(user=user).order_by("-started_at").first()
-        )
-
+        session = obj.cognitive_session
         srt = CognitiveResultSRT.objects.filter(cognitive_session=session).first()
         sym = CognitiveResultSymbol.objects.filter(cognitive_session=session).first()
         pat = CognitiveResultPattern.objects.filter(cognitive_session=session).first()
@@ -73,14 +70,14 @@ class CognitiveTestResultDetailedSerializer(serializers.Serializer):
         return {
             "srt": {
                 "avg_ms": srt.reaction_avg_ms if srt else 0,
-                "total_duration_sec": (srt.reaction_avg_ms * 10 // 1000 if srt else 0),
+                "total_duration_sec": (srt.reaction_avg_ms * 10 // 1000) if srt else 0,
                 "average_score": srt.score if srt else 0,
             },
             "symbol": {
                 "correct": sym.symbol_correct if sym else 0,
                 "avg_ms": sym.symbol_accuracy * 1000 if sym else 0,
                 "symbol_accuracy": sym.symbol_accuracy if sym else 0,
-                "total_duration_sec": sym.symbol_correct * 1 if sym else 0,
+                "total_duration_sec": sym.symbol_correct if sym else 0,
                 "average_score": sym.score if sym else 0,
             },
             "pattern": {
