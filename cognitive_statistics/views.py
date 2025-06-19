@@ -42,16 +42,13 @@ class CognitiveTestResultBasicAPIView(generics.ListAPIView):
             )
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response({"has_data": True, "results": serializer.data})
 
 
 class CognitiveSessionCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        print(
-            "Authorization Header:", request.headers.get("Authorization")
-        )  # 삭제 예정 테스트용
         format_id = request.data.get("format_id")
         if not format_id:
             return Response({"error": "format_id is required"}, status=400)
