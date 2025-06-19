@@ -278,9 +278,9 @@ def get_record_day_list(user):
     start_date = today - timedelta(days=89)
     end_date = today
 
-    # 수면 기록 불러오기
+    # 수면 기록 불러오기 (문자열 키로 변경하여 키 타입 이슈 방지)
     sleep_records = {
-        (r.date if isinstance(r.date, date) else r.date.date()): r
+        str(r.date): r
         for r in SleepRecord.objects.filter(
             user=user, date__range=(start_date, end_date)
         )
@@ -291,7 +291,7 @@ def get_record_day_list(user):
     cognitive_scores = get_daily_cognitive_scores(user, start_date, end_date)
     for d in daterange(start_date, end_date):
         d = d if isinstance(d, date) else d.date()  # 날짜 타입 통일 처리
-        sleep = sleep_records.get(d)
+        sleep = sleep_records.get(str(d))  # 문자열 키로 조회하도록 변경
         cog = cognitive_scores.get(d)
 
         # 수면 및 인지 점수 데이터 결과에 포함
@@ -319,9 +319,9 @@ def get_record_week_list(user):
     start_date = today - timedelta(weeks=11)
     end_date = today
 
-    # 수면 기록 불러오기
+    # 수면 기록 불러오기 (문자열 키로 변경하여 키 타입 이슈 방지)
     sleep_records = {
-        (r.date if isinstance(r.date, date) else r.date.date()): r
+        str(r.date): r
         for r in SleepRecord.objects.filter(
             user=user, date__range=(start_date, end_date)
         )
@@ -332,10 +332,9 @@ def get_record_week_list(user):
     cognitive_scores_by_day = get_daily_cognitive_scores(user, start_date, end_date)
     for week_start, week_end in weekrange(start_date, end_date):
         week_dates = list(daterange(week_start, week_end))
-        # 날짜 키 타입 통일 처리 및 sleep 데이터 필터링 분리
         normalized_dates = [
-            d if isinstance(d, date) else d.date() for d in week_dates
-        ]  # 날짜 정규화 리스트 분리
+            str(d if isinstance(d, date) else d.date()) for d in week_dates
+        ]  # 날짜 정규화 후 문자열 처리
         weekly_sleeps = [
             sleep_records.get(d) for d in normalized_dates if sleep_records.get(d)
         ]
