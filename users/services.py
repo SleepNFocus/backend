@@ -311,7 +311,6 @@ def get_record_day_list(user):
     return results
 
 
-
 # 주별 기록 (최근 4주)
 def get_record_week_list(user):
     # 주별 기록 조회 (4주 기준)
