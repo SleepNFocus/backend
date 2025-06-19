@@ -62,6 +62,10 @@ def get_or_create_active_user(provider, social_id, email, nickname, profile_img)
                 status=UserStatus.ACTIVE,
                 is_active=True,
             )
+        # 기존 이미지가 있으면 덮지 않음
+        if user.profile_img:
+            profile_img = user.profile_img
+
     # 유저가 없으면 회원가입
     if not user:
         with transaction.atomic():
