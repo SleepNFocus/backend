@@ -6,7 +6,6 @@ from django.db.models import Avg, Sum
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied
 
-
 from cognitive_statistics.models import (
     CognitiveResultPattern,
     CognitiveResultSRT,
@@ -158,7 +157,7 @@ def get_mypage_main_data(user):
     # 탈퇴한 계정일 경우 마이페이지 접근 차단
     if user.status == UserStatus.WITHDRAWN:
         raise PermissionDenied("탈퇴된 유저입니다.")
-    
+
     # 모든 수면 기록
     sleep_records = SleepRecord.objects.filter(user=user)
 
