@@ -153,8 +153,6 @@ class SocialLoginService:
 
 
 # 마이페이지 메인 요약 정보
-
-
 def get_mypage_main_data(user):
     # 탈퇴한 계정일 경우 마이페이지 접근 차단
     if user.status == UserStatus.WITHDRAWN:
