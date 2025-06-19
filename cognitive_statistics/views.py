@@ -55,6 +55,7 @@ class CognitiveSessionCreateAPIView(APIView):
             test_format = CognitiveTestFormat.objects.get(id=format_id)
         except CognitiveTestFormat.DoesNotExist:
             return Response({"error": "존재하지 않는 format_id"}, status=400)
+
         session = CognitiveSession.objects.create(
             user=request.user, test_format=test_format
         )
@@ -73,7 +74,11 @@ class CognitiveSessionCreateAPIView(APIView):
             CognitiveSessionProblem.objects.create(session=session, problem=problem)
 
         serializer = CognitiveSessionWithProblemsSerializer(session)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(
+            {"session_id": session.id, "session": serializer.data},
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class CognitiveResultSRTAPIView(APIView):
