@@ -1,12 +1,11 @@
 from collections import defaultdict
 from datetime import date, timedelta
 
+from django.core.files.storage import default_storage
 from django.db import transaction
 from django.db.models import Avg, Sum
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied
-from django.core.files.storage import default_storage
-
 
 from cognitive_statistics.models import (
     CognitiveResultPattern,
@@ -192,7 +191,8 @@ def get_mypage_main_data(user):
         "nickname": user.nickname,
         "profile_img": (
             user.profile_img.url
-            if hasattr(user.profile_img, "url") and default_storage.exists(user.profile_img.name)
+            if hasattr(user.profile_img, "url")
+            and default_storage.exists(user.profile_img.name)
             else str(user.profile_img) if user.profile_img else None
         ),
         "joined_at": user.joined_at if user.joined_at else None,
