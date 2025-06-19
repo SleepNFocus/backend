@@ -9,16 +9,16 @@ jobs:
   deploy-dev:
     # dev 브랜치로 머지되었을 때만 실행
     if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'dev'
-    name: Deploy to NCP Dev Server
+    name: Deploy to AWS Dev EC2
     runs-on: ubuntu-latest
 
     steps:
       - name: SSH to Dev Server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.DEV_NCP_HOST }}
-          username: ${{ secrets.DEV_NCP_USER }}
-          key: ${{ secrets.DEV_NCP_SSH_KEY }}
+          host: ${{ secrets.DEV_AWS_HOST }}
+          username: ${{ secrets.DEV_AWS_USER }}
+          key: ${{ secrets.DEV_AWS_SSH_KEY }}
           script: |
             set -e
             cd ~/backend
@@ -36,16 +36,16 @@ jobs:
   deploy-live:
     # main 브랜치로 머지되었을 때만 실행
     if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
-    name: Deploy to NCP Live Server
+    name: Deploy to AWS Prod EC2
     runs-on: ubuntu-latest
 
     steps:
       - name: SSH to Live Server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.LIVE_NCP_HOST }}
-          username: ${{ secrets.LIVE_NCP_USER }}
-          key: ${{ secrets.LIVE_NCP_SSH_KEY }}
+          host: ${{ secrets.LIVE_AWS_HOST }}
+          username: ${{ secrets.LIVE_AWS_USER }}
+          key: ${{ secrets.LIVE_AWS_SSH_KEY }}
           script: |
             set -e
             cd ~/backend
