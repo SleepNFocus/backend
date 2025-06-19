@@ -299,7 +299,7 @@ def get_record_day_list(user):
         sr = sleep_records.get(d)
         cs = cognitive_scores.get(d)
         # 수면/인지 기록이 하나라도 있으면 결과 추가
-        if sr or cs is not None:
+        if sr or cs is not None:  # cs is not None 으로 비교 보강
             results.append(
                 {
                     "date": d,
@@ -309,6 +309,7 @@ def get_record_day_list(user):
                 }
             )
     return results
+
 
 
 # 주별 기록 (최근 4주)
@@ -344,7 +345,7 @@ def get_record_week_list(user):
             if sr:
                 sleep_hours.append((sr.sleep_duration or 0) / 60)
                 sleep_scores.append(sr.score)
-            if cs is not None:
+            if cs is not None:  # None check 명시적으로 보강
                 cog_scores.append(cs)
 
         if sleep_hours or sleep_scores or cog_scores:
