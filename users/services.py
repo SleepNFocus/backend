@@ -154,7 +154,7 @@ class SocialLoginService:
 
 
 # 마이페이지 메인 요약 정보
-def get_mypage_main_data(user):
+def get_mypage_main_data(user, request):
     # 탈퇴한 계정일 경우 마이페이지 접근 차단
     if user.status == UserStatus.WITHDRAWN:
         raise PermissionDenied("탈퇴된 유저입니다.")
@@ -190,7 +190,8 @@ def get_mypage_main_data(user):
     return {
         "nickname": user.nickname,
         "profile_img": (
-            user.profile_img.url
+            # 수정: 절대 URL로 반환되도록 처리
+            request.build_absolute_uri(user.profile_img.url)
             if hasattr(user.profile_img, "url")
             and default_storage.exists(user.profile_img.name)
             else str(user.profile_img) if user.profile_img else None
