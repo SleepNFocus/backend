@@ -66,6 +66,7 @@ class SocialLoginView(APIView):
                     "email": user.email,
                     "profile_img": user.profile_img.url if user.profile_img else None,
                     "status": user.status,
+                    "has_completed_onboarding": user.has_completed_onboarding,
                 },
             },
             status=200,
@@ -105,11 +106,21 @@ class UserWithdrawalView(APIView):
 
 
 # 온보딩 설문
-# 기본 정보 저장
+# 기본
 class OnboardingBasicView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        user = request.user
+
+        # 이미 온보딩 완료한 경우 차단
+        if user.has_completed_onboarding:
+            return Response(
+                {"detail": "온보딩은 최초 로그인 시 1회만 진행 가능합니다."},
+                status=400,
+            )
+
+        # 온보딩 기본 정보 저장
         serializer = OnboardingBasicSerializer(
             instance=request.user, data=request.data, partial=True
         )
@@ -118,16 +129,31 @@ class OnboardingBasicView(APIView):
         return Response(OnboardingBasicSerializer(user).data, status=200)
 
 
-# 직업 설문 저장
+# 직업
 class OnboardingJobView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        user = request.user
+
+        # 이미 온보딩 완료한 경우 차단
+        if user.has_completed_onboarding:
+            return Response(
+                {"detail": "온보딩은 최초 로그인 시 1회만 진행 가능합니다."},
+                status=400,
+            )
+
+        # 직업 설문 저장
         serializer = OnboardingJobSerializer(
             data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        # 온보딩 완료 처리
+        user.has_completed_onboarding = True
+        user.save(update_fields=["has_completed_onboarding"])
+
         return Response(serializer.data, status=200)
 
 
