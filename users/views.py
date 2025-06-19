@@ -93,6 +93,10 @@ class UserWithdrawalView(APIView):
 
     def delete(self, request):
         user = request.user
+        # 리프레시 토큰 헤더에서 가져와 무효화
+        refresh_token = request.data.get("refresh")
+        if refresh_token:
+            add_token_to_blacklist(refresh_token)
         user.status = UserStatus.WITHDRAWN
         user.save()
         return Response({"message": "계정이 삭제되었습니다."}, status=200)
