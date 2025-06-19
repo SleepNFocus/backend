@@ -1,7 +1,7 @@
 from collections import defaultdict
-from datetime import datetime
 from random import randint
 
+from django.utils import timezone
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -29,29 +29,23 @@ class CognitiveTestResultBasicAPIView(generics.ListAPIView):
     serializer_class = CognitiveTestResultDetailedSerializer
 
     def get_queryset(self):
-        return CognitiveTestResult.objects.filter(user=self.request.user)
+        today = timezone.localdate()  # ✅ 오늘 날짜 기준 (한국 시간)
+        return CognitiveTestResult.objects.filter(
+            user=self.request.user, timestamp__date=today
+        ).order_by(
+            "-timestamp"
+        )  # 최신 순 정렬
 
     def list(self, request, *args, **kwargs):
-        all_results = self.get_queryset()
+        queryset = self.get_queryset()
 
-        if not all_results.exists():
+        if not queryset.exists():
             return Response(
-                {"has_data": False, "detail": "인지 검사 결과가 없습니다."},
+                {"has_data": False, "detail": "오늘의 인지 검사 결과가 없습니다."},
                 status=status.HTTP_200_OK,
             )
 
-        # 최신 하나 분리
-        latest_result = all_results.first()
-
-        # 오늘 날짜 (Y-m-d 기준)
-        today = datetime.now().date()
-        today_others = all_results.exclude(id=latest_result.id).filter(
-            timestamp__date=today
-        )
-
-        serializer = self.get_serializer(
-            [latest_result] + list(today_others), many=True
-        )
+        serializer = self.get_serializer(queryset, many=True)
         return Response({"has_data": True, "results": serializer.data})
 
 
@@ -306,41 +300,21 @@ class CognitiveResultDailySummaryAPIView(APIView):
 
 
 def try_create_test_result(user, session):
+    if hasattr(session, "result"):
+        return {"status": "이미 생성됨", "already_created": True}
+
+    # 결과들 가져오기
     srt = CognitiveResultSRT.objects.filter(cognitive_session=session).first()
     symbol = CognitiveResultSymbol.objects.filter(cognitive_session=session).first()
     pattern = CognitiveResultPattern.objects.filter(cognitive_session=session).first()
 
-    result_info = {
-        "srt_exists": bool(srt),
-        "symbol_exists": bool(symbol),
-        "pattern_exists": bool(pattern),
-        "has_test_format": bool(session.test_format),
-        "already_created": CognitiveTestResult.objects.filter(
-            user=user, test_format=session.test_format
-        ).exists(),
-    }
-
-    if not all(
-        [
-            result_info["srt_exists"],
-            result_info["symbol_exists"],
-            result_info["pattern_exists"],
-        ]
-    ):
-        result_info["status"] = "조건 부족으로 CognitiveTestResult 생성 안됨"
-        return result_info
-
-    if not result_info["has_test_format"]:
-        result_info["status"] = "test_format 없음"
-        return result_info
-
-    if result_info["already_created"]:
-        result_info["status"] = "이미 생성됨"
-        return result_info
+    if not all([srt, symbol, pattern]):
+        return {"status": "SRT/Symbol/Pattern 부족", "ready": False}
 
     result = CognitiveTestResult.objects.create(
         user=user,
         test_format=session.test_format,
+        cognitive_session=session,
         raw_scores={
             "srt": srt.score,
             "symbol": symbol.score,
@@ -353,6 +327,4 @@ def try_create_test_result(user, session):
         + int(pattern.pattern_time_sec),
     )
 
-    result_info["status"] = "✅ CognitiveTestResult 생성 완료"
-    result_info["created_id"] = result.id
-    return result_info
+    return {"status": "✅ 생성 완료", "created_id": result.id}

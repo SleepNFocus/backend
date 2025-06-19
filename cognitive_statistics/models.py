@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 
+from cognitive_statistics.models import CognitiveSession
+
 
 class CognitiveTestType(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -52,6 +54,9 @@ class CognitiveTestResult(models.Model):
         CognitiveTestFormat,
         on_delete=models.CASCADE,
         related_name="results",
+    )
+    cognitive_session = models.OneToOneField(  # ✅ 추가
+        CognitiveSession, on_delete=models.CASCADE, related_name="result"
     )
     timestamp = models.DateTimeField(auto_now_add=True)
     raw_scores = models.JSONField()
