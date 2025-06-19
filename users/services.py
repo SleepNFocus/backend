@@ -152,8 +152,6 @@ class SocialLoginService:
         return tokens, user
 
 
-
-
 # 마이페이지 메인 요약 정보
 
 
