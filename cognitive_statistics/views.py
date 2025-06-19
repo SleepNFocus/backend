@@ -14,6 +14,7 @@ from .models import (
     CognitiveResultSymbol,
     CognitiveSession,
     CognitiveSessionProblem,
+    CognitiveTestFormat,
     CognitiveTestResult,
 )
 from .serializers import (
@@ -50,7 +51,13 @@ class CognitiveSessionCreateAPIView(APIView):
         if not format_id:
             return Response({"error": "format_id is required"}, status=400)
 
-        session = CognitiveSession.objects.create(user=request.user)
+        try:
+            test_format = CognitiveTestFormat.objects.get(id=format_id)
+        except CognitiveTestFormat.DoesNotExist:
+            return Response({"error": "존재하지 않는 format_id"}, status=400)
+        session = CognitiveSession.objects.create(
+            user=request.user, test_format=test_format
+        )
 
         for i in range(5):
             parameters = {

@@ -73,6 +73,14 @@ class CognitiveSession(models.Model):
     ended_at = models.DateTimeField(null=True, blank=True)
     summary = models.JSONField(null=True, blank=True)
 
+    test_format = models.ForeignKey(
+        CognitiveTestFormat,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sessions",
+    )
+
     def __str__(self):
         return f"{self.user} - Session from {self.started_at.strftime('%Y-%m-%d %H:%M:%S')}"
 
