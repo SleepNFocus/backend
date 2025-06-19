@@ -56,35 +56,29 @@ class CognitiveResultSymbolSerializer(serializers.ModelSerializer):
 
 
 class CognitiveTestResultDetailedSerializer(serializers.Serializer):
-    raw_scores = serializers.SerializerMethodField()
-    normalized_scores = serializers.SerializerMethodField()
-    average_score = serializers.FloatField()
+    detailed_raw_scores = serializers.SerializerMethodField()
+    average_score = serializers.SerializerMethodField()
     total_duration_sec = serializers.IntegerField()
 
-    def get_raw_scores(self, obj):
+    def get_detailed_raw_scores(self, obj):
         user = obj.user
         session = (
             CognitiveSession.objects.filter(user=user).order_by("-started_at").first()
         )
 
-        # SRT
         srt = CognitiveResultSRT.objects.filter(cognitive_session=session).first()
-        # Symbol
         sym = CognitiveResultSymbol.objects.filter(cognitive_session=session).first()
-        # Pattern
         pat = CognitiveResultPattern.objects.filter(cognitive_session=session).first()
 
         return {
             "srt": {
                 "avg_ms": srt.reaction_avg_ms if srt else 0,
-                "total_duration_sec": (
-                    srt.reaction_avg_ms * 10 // 1000 if srt else 0
-                ),  # 예시 로직
+                "total_duration_sec": (srt.reaction_avg_ms * 10 // 1000 if srt else 0),
                 "average_score": srt.score if srt else 0,
             },
             "symbol": {
                 "correct": sym.symbol_correct if sym else 0,
-                "avg_ms": sym.symbol_accuracy * 1000 if sym else 0,  # 예시
+                "avg_ms": sym.symbol_accuracy * 1000 if sym else 0,
                 "symbol_accuracy": sym.symbol_accuracy if sym else 0,
                 "total_duration_sec": sym.symbol_correct * 1 if sym else 0,
                 "average_score": sym.score if sym else 0,
@@ -96,5 +90,14 @@ class CognitiveTestResultDetailedSerializer(serializers.Serializer):
             },
         }
 
-    def get_normalized_scores(self, obj):
-        return obj.normalized_scores
+    def get_average_score(self, obj):
+        raw = self.get_detailed_raw_scores(obj)
+        return round(
+            (
+                raw["srt"]["average_score"]
+                + raw["symbol"]["average_score"]
+                + raw["pattern"]["average_score"]
+            )
+            / 3,
+            2,
+        )
