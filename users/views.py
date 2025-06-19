@@ -119,7 +119,7 @@ class OnboardingBasicView(APIView):
                 {"detail": "온보딩은 최초 로그인 시 1회만 진행 가능합니다."},
                 status=400,
             )
-        
+
         # 온보딩 기본 정보 저장
         serializer = OnboardingBasicSerializer(
             instance=request.user, data=request.data, partial=True
@@ -127,6 +127,7 @@ class OnboardingBasicView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         return Response(OnboardingBasicSerializer(user).data, status=200)
+
 
 # 직업
 class OnboardingJobView(APIView):
