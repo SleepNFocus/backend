@@ -152,11 +152,10 @@ class SocialLoginService:
         return tokens, user
 
 
+
+
 # 마이페이지 메인 요약 정보
-from rest_framework.exceptions import PermissionDenied
-from datetime import timedelta
-from django.utils import timezone
-from django.db.models import Sum, Avg
+
 
 def get_mypage_main_data(user):
     # 탈퇴한 계정일 경우 마이페이지 접근 차단
@@ -194,7 +193,9 @@ def get_mypage_main_data(user):
     return {
         "nickname": user.nickname,
         "profile_img": (
-            user.profile_img.url if hasattr(user.profile_img, "url") else user.profile_img
+            user.profile_img.url
+            if hasattr(user.profile_img, "url")
+            else user.profile_img
         ),
         "joined_at": user.joined_at if user.joined_at else None,
         "tracking_days": tracking_days,
