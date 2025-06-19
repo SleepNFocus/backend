@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import google.generativeai as genai
+from django.conf import settings
 from django.utils.timezone import make_aware
 
 from cognitive_statistics.models import (
@@ -90,9 +91,7 @@ def generate_ai_recommendation(user, date_str):
         date=str(sleep.date),
     )
 
-    genai.configure(
-        api_key="AIzaSyDEDJPq51bdDrL-CPJeHIzdTJUztJXtPiE"
-    )  # 환경변수나 secrets로 바꾸는 걸 추천
+    genai.configure(api_key=settings.GOOGLE_GENAI_API_KEY)
     model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
     response = model.generate_content(prompt)
 
