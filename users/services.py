@@ -278,7 +278,7 @@ def get_daily_cognitive_scores(user, start_date, end_date):
 
 # 일별 (최근 3개월, 90일)
 def get_record_day_list(user):
-    today = date.today()
+    today = timezone.now().date()  # [수정] Django timezone 사용
     start_date = today - timedelta(days=89)
     end_date = today
 
@@ -298,7 +298,7 @@ def get_record_day_list(user):
         sleep = sleep_records.get(d)
         cognitive_score = cognitive_scores.get(d, None)
 
-        # [추가] 수면 기록 또는 인지 기록이 하나라도 있을 경우만 결과에 추가
+        # 수면 기록 또는 인지 기록이 하나라도 있을 경우만 결과에 추가
         if sleep or cognitive_score is not None:
             results.append(
                 {
@@ -313,7 +313,6 @@ def get_record_day_list(user):
                 }
             )
 
-    # 데이터가 없으면 예외 처리
     if not results:
         raise ValidationError("해당 기간 기록이 없습니다.")
 
@@ -322,7 +321,7 @@ def get_record_day_list(user):
 
 # 주별 (최근 4주)
 def get_record_week_list(user):
-    today = date.today()
+    today = timezone.now().date()  # [수정] Django timezone 사용
     start_date = today - timedelta(weeks=3)  # 최근 4주 시작 날짜
     end_date = today  # 오늘 날짜
 
@@ -380,7 +379,6 @@ def get_record_week_list(user):
         )
         week_number += 1
 
-    # 데이터가 없으면 예외 처리
     if not results:
         raise ValidationError("해당 기간 기록이 없습니다.")
 
