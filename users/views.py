@@ -62,7 +62,7 @@ class SocialLoginView(APIView):
                     "social_id": user.social_id,
                     "nickname": user.nickname,
                     "email": user.email,
-                    "profile_img": user.profile_img,
+                    "profile_img": user.profile_img.url if user.profile_img else None,
                     "status": user.status,
                 },
             },

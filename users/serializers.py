@@ -94,7 +94,7 @@ class OnboardingJobSerializer(serializers.ModelSerializer):
 # 마이페이지 메인
 class MypageMainSerializer(serializers.Serializer):
     nickname = serializers.CharField()
-    profile_img = serializers.URLField(allow_null=True, required=True)
+    profile_img = serializers.ImageField(allow_null=True, required=False)
     joined_at = serializers.DateTimeField()
     tracking_days = serializers.IntegerField()
     total_sleep_hours = serializers.FloatField()
@@ -107,6 +107,9 @@ class MypageProfileSerializer(serializers.ModelSerializer):
     # User 필드
     gender = serializers.ChoiceField(choices=Gender, allow_null=True, required=True)
     mbti = serializers.ChoiceField(choices=MBTIType, allow_null=True, required=True)
+    profile_img = serializers.ImageField(
+        required=False, allow_null=True
+    )  # 파일 업로드용
 
     # JobSurvey 입력용(쓰기) 필드
     cognitive_type = serializers.ChoiceField(
@@ -181,6 +184,11 @@ class MypageProfileSerializer(serializers.ModelSerializer):
 
     # User & JobSurvey 필드 수정
     def update(self, instance, validated_data):
+        # gender '선택안함' 처리
+        gender = validated_data.get("gender")
+        if gender == "선택안함":
+            validated_data["gender"] = None
+
         # mbti '선택안함' 처리
         mbti = validated_data.get("mbti")
         if mbti == "선택안함":
