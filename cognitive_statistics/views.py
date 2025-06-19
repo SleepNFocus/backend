@@ -1,8 +1,9 @@
 from collections import defaultdict
 from random import randint
 
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import generics, status
+from rest_framework import generics, permissions, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -88,86 +89,35 @@ class CognitiveSessionCreateAPIView(APIView):
 
 
 class CognitiveResultSRTAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         data = request.data
         session_id = data.get("cognitiveSession") or data.get("cognitive_session")
-        score = data.get("score")
-        avg_ms = data.get("reactionAvgMs") or data.get("reaction_avg_ms")
-        reaction_raw = data.get("reactionList") or data.get("reaction_list") or []
-        reaction_list_str = (
-            ",".join(map(str, reaction_raw))
-            if isinstance(reaction_raw, list)
-            else reaction_raw
-        )
-
-        try:
-            session = CognitiveSession.objects.get(id=session_id, user=request.user)
-        except CognitiveSession.DoesNotExist:
-            return Response({"error": "세션을 찾을 수 없습니다."}, status=404)
+        session = get_object_or_404(CognitiveSession, id=session_id, user=request.user)
 
         result = CognitiveResultSRT.objects.create(
             cognitive_session=session,
-            score=score,
-            reaction_avg_ms=avg_ms,
-            reaction_list=reaction_list_str,
-        )
-
-        result_info = try_create_test_result(request.user, session)
-
-        return Response(
-            {
-                "detail": "SRT 저장 완료",
-                "result_id": result.id,
-                "test_result_debug": result_info,
-            },
-            status=201,
-        )
-
-
-class CognitiveResultPatternAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        data = request.data
-        session_id = data.get("cognitiveSession") or data.get("cognitive_session")
-
-        try:
-            session = CognitiveSession.objects.get(id=session_id, user=request.user)
-        except CognitiveSession.DoesNotExist:
-            return Response({"error": "세션을 찾을 수 없습니다."}, status=404)
-
-        result = CognitiveResultPattern.objects.create(
-            cognitive_session=session,
             score=data.get("score"),
-            pattern_correct=data.get("patternCorrect") or data.get("pattern_correct"),
-            pattern_time_sec=data.get("patternTimeSec") or data.get("pattern_time_sec"),
+            reaction_avg_ms=data.get("reactionAvgMs") or data.get("reaction_avg_ms"),
+            reaction_list=",".join(map(str, data.get("reactionList", []))),
         )
 
-        result_info = try_create_test_result(request.user, session)
+        debug = try_create_test_result(request.user, session)
 
         return Response(
-            {
-                "detail": "Pattern 저장 완료",
-                "result_id": result.id,
-                "test_result_debug": result_info,
-            },
-            status=201,
+            {"detail": "SRT 저장 완료", "result_id": result.id, "debug": debug},
+            status=status.HTTP_201_CREATED,
         )
 
 
 class CognitiveResultSymbolAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         data = request.data
         session_id = data.get("cognitiveSession") or data.get("cognitive_session")
-
-        try:
-            session = CognitiveSession.objects.get(id=session_id, user=request.user)
-        except CognitiveSession.DoesNotExist:
-            return Response({"error": "세션을 찾을 수 없습니다."}, status=404)
+        session = get_object_or_404(CognitiveSession, id=session_id, user=request.user)
 
         result = CognitiveResultSymbol.objects.create(
             cognitive_session=session,
@@ -176,15 +126,34 @@ class CognitiveResultSymbolAPIView(APIView):
             symbol_accuracy=data.get("symbolAccuracy") or data.get("symbol_accuracy"),
         )
 
-        result_info = try_create_test_result(request.user, session)
+        debug = try_create_test_result(request.user, session)
 
         return Response(
-            {
-                "detail": "Symbol 저장 완료",
-                "result_id": result.id,
-                "test_result_debug": result_info,
-            },
-            status=201,
+            {"detail": "Symbol 저장 완료", "result_id": result.id, "debug": debug},
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class CognitiveResultPatternAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        session_id = data.get("cognitiveSession") or data.get("cognitive_session")
+        session = get_object_or_404(CognitiveSession, id=session_id, user=request.user)
+
+        result = CognitiveResultPattern.objects.create(
+            cognitive_session=session,
+            score=data.get("score"),
+            pattern_correct=data.get("patternCorrect") or data.get("pattern_correct"),
+            pattern_time_sec=data.get("patternTimeSec") or data.get("pattern_time_sec"),
+        )
+
+        debug = try_create_test_result(request.user, session)
+
+        return Response(
+            {"detail": "Pattern 저장 완료", "result_id": result.id, "debug": debug},
+            status=status.HTTP_201_CREATED,
         )
 
 
@@ -301,15 +270,13 @@ class CognitiveResultDailySummaryAPIView(APIView):
 
 def try_create_test_result(user, session):
     if hasattr(session, "result"):
-        return {"status": "이미 생성됨", "already_created": True}
+        return {"status": "이미 생성됨", "session_id": session.id}
 
-    # 결과들 가져오기
     srt = CognitiveResultSRT.objects.filter(cognitive_session=session).first()
-    symbol = CognitiveResultSymbol.objects.filter(cognitive_session=session).first()
-    pattern = CognitiveResultPattern.objects.filter(cognitive_session=session).first()
-
-    if not all([srt, symbol, pattern]):
-        return {"status": "SRT/Symbol/Pattern 부족", "ready": False}
+    sym = CognitiveResultSymbol.objects.filter(cognitive_session=session).first()
+    pat = CognitiveResultPattern.objects.filter(cognitive_session=session).first()
+    if not all([srt, sym, pat]):
+        return {"status": "결과 미완성", "session_id": session.id}
 
     result = CognitiveTestResult.objects.create(
         user=user,
@@ -317,14 +284,15 @@ def try_create_test_result(user, session):
         cognitive_session=session,
         raw_scores={
             "srt": srt.score,
-            "symbol": symbol.score,
-            "pattern": pattern.score,
+            "symbol": sym.score,
+            "pattern": pat.score,
         },
         normalized_scores={},
-        average_score=round((srt.score + symbol.score + pattern.score) / 3, 2),
-        total_duration_sec=int(srt.reaction_avg_ms * 10 / 1000)
-        + symbol.symbol_correct
-        + int(pattern.pattern_time_sec),
+        average_score=round((srt.score + sym.score + pat.score) / 3, 2),
+        total_duration_sec=(
+            int(srt.reaction_avg_ms * 10 // 1000)
+            + sym.symbol_correct
+            + int(pat.pattern_time_sec)
+        ),
     )
-
-    return {"status": "✅ 생성 완료", "created_id": result.id}
+    return {"status": "생성 완료", "result_id": result.id, "session_id": session.id}

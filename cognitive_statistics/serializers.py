@@ -58,7 +58,7 @@ class CognitiveResultSymbolSerializer(serializers.ModelSerializer):
 class CognitiveTestResultDetailedSerializer(serializers.Serializer):
     detailed_raw_scores = serializers.SerializerMethodField()
     normalized_scores = serializers.JSONField()
-    average_score = serializers.FloatField()
+    average_score = serializers.FloatField()  # DB의 average_score 필드를 그대로 노출
     total_duration_sec = serializers.IntegerField()
 
     def get_detailed_raw_scores(self, obj):
@@ -86,15 +86,3 @@ class CognitiveTestResultDetailedSerializer(serializers.Serializer):
                 "average_score": pat.score if pat else 0,
             },
         }
-
-    def get_average_score(self, obj):
-        raw = self.get_detailed_raw_scores(obj)
-        return round(
-            (
-                raw["srt"]["average_score"]
-                + raw["symbol"]["average_score"]
-                + raw["pattern"]["average_score"]
-            )
-            / 3,
-            2,
-        )
