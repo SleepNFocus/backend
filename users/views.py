@@ -66,7 +66,8 @@ class SocialLoginView(APIView):
                     "email": user.email,
                     "profile_img": (
                         request.build_absolute_uri(user.profile_img.url)
-                        if user.profile_img else None
+                        if user.profile_img
+                        else None
                     ),
                     "status": user.status,
                     "has_completed_onboarding": user.has_completed_onboarding,
