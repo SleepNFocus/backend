@@ -137,6 +137,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     joined_at = models.DateTimeField(default=timezone.now)
     last_login_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
+    has_completed_onboarding = models.BooleanField(default=False)
     status = models.CharField(
         max_length=10, choices=UserStatus.choices, default=UserStatus.ACTIVE
     )
