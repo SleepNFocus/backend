@@ -81,5 +81,4 @@ class TestSubmitAPIView(APIView):
             average_score=average_score,
             total_duration_sec=total_time // 1000,
         )
-        print("✅ 테스트 결과 저장됨:", request.user, fmt.name)
         return Response({"detail": "Submitted"}, status=status.HTTP_201_CREATED)
