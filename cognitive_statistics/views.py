@@ -81,7 +81,15 @@ class CognitiveResultSRTAPIView(APIView):
 
     def post(self, request):
         data = request.data
-        session_id = data.get("cognitiveSession")
+        session_id = data.get("cognitiveSession") or data.get("cognitive_session")
+        score = data.get("score")
+        avg_ms = data.get("reactionAvgMs") or data.get("reaction_avg_ms")
+        reaction_raw = data.get("reactionList") or data.get("reaction_list") or []
+        reaction_list_str = (
+            ",".join(map(str, reaction_raw))
+            if isinstance(reaction_raw, list)
+            else reaction_raw
+        )
 
         try:
             session = CognitiveSession.objects.get(id=session_id, user=request.user)
@@ -90,12 +98,21 @@ class CognitiveResultSRTAPIView(APIView):
 
         result = CognitiveResultSRT.objects.create(
             cognitive_session=session,
-            score=data.get("score"),
-            reaction_avg_ms=data.get("reactionAvgMs"),
-            reaction_list=",".join(map(str, data.get("reactionList", []))),
+            score=score,
+            reaction_avg_ms=avg_ms,
+            reaction_list=reaction_list_str,
         )
-        try_create_test_result(request.user, session)
-        return Response({"detail": "SRT 저장 완료", "id": result.id}, status=201)
+
+        result_info = try_create_test_result(request.user, session)
+
+        return Response(
+            {
+                "detail": "SRT 저장 완료",
+                "result_id": result.id,
+                "test_result_debug": result_info,
+            },
+            status=201,
+        )
 
 
 class CognitiveResultPatternAPIView(APIView):
@@ -103,7 +120,7 @@ class CognitiveResultPatternAPIView(APIView):
 
     def post(self, request):
         data = request.data
-        session_id = data.get("cognitiveSession")
+        session_id = data.get("cognitiveSession") or data.get("cognitive_session")
 
         try:
             session = CognitiveSession.objects.get(id=session_id, user=request.user)
@@ -113,11 +130,20 @@ class CognitiveResultPatternAPIView(APIView):
         result = CognitiveResultPattern.objects.create(
             cognitive_session=session,
             score=data.get("score"),
-            pattern_correct=data.get("patternCorrect"),
-            pattern_time_sec=data.get("patternTimeSec"),
+            pattern_correct=data.get("patternCorrect") or data.get("pattern_correct"),
+            pattern_time_sec=data.get("patternTimeSec") or data.get("pattern_time_sec"),
         )
-        try_create_test_result(request.user, session)
-        return Response({"detail": "Pattern 저장 완료", "id": result.id}, status=201)
+
+        result_info = try_create_test_result(request.user, session)
+
+        return Response(
+            {
+                "detail": "Pattern 저장 완료",
+                "result_id": result.id,
+                "test_result_debug": result_info,
+            },
+            status=201,
+        )
 
 
 class CognitiveResultSymbolAPIView(APIView):
@@ -125,7 +151,7 @@ class CognitiveResultSymbolAPIView(APIView):
 
     def post(self, request):
         data = request.data
-        session_id = data.get("cognitiveSession")
+        session_id = data.get("cognitiveSession") or data.get("cognitive_session")
 
         try:
             session = CognitiveSession.objects.get(id=session_id, user=request.user)
@@ -135,11 +161,20 @@ class CognitiveResultSymbolAPIView(APIView):
         result = CognitiveResultSymbol.objects.create(
             cognitive_session=session,
             score=data.get("score"),
-            symbol_correct=data.get("symbolCorrect"),
-            symbol_accuracy=data.get("symbolAccuracy"),
+            symbol_correct=data.get("symbolCorrect") or data.get("symbol_correct"),
+            symbol_accuracy=data.get("symbolAccuracy") or data.get("symbol_accuracy"),
         )
-        try_create_test_result(request.user, session)
-        return Response({"detail": "Symbol 저장 완료", "id": result.id}, status=201)
+
+        result_info = try_create_test_result(request.user, session)
+
+        return Response(
+            {
+                "detail": "Symbol 저장 완료",
+                "result_id": result.id,
+                "test_result_debug": result_info,
+            },
+            status=201,
+        )
 
 
 class CognitiveResultDailySummaryAPIView(APIView):
@@ -258,22 +293,35 @@ def try_create_test_result(user, session):
     symbol = CognitiveResultSymbol.objects.filter(cognitive_session=session).first()
     pattern = CognitiveResultPattern.objects.filter(cognitive_session=session).first()
 
-    if not (srt and symbol and pattern):
-        return  # 아직 하나라도 없음
+    result_info = {
+        "srt_exists": bool(srt),
+        "symbol_exists": bool(symbol),
+        "pattern_exists": bool(pattern),
+        "has_test_format": bool(session.test_format),
+        "already_created": CognitiveTestResult.objects.filter(
+            user=user, test_format=session.test_format
+        ).exists(),
+    }
 
-    if CognitiveTestResult.objects.filter(
-        user=user, test_format=session.test_format
-    ).exists():
-        return  # 이미 생성됨
+    if not all(
+        [
+            result_info["srt_exists"],
+            result_info["symbol_exists"],
+            result_info["pattern_exists"],
+        ]
+    ):
+        result_info["status"] = "조건 부족으로 CognitiveTestResult 생성 안됨"
+        return result_info
 
-    avg_score = round((srt.score + symbol.score + pattern.score) / 3, 2)
-    duration = (
-        int(srt.reaction_avg_ms * 10 / 1000)
-        + int(symbol.symbol_correct)
-        + int(pattern.pattern_time_sec)
-    )
+    if not result_info["has_test_format"]:
+        result_info["status"] = "test_format 없음"
+        return result_info
 
-    CognitiveTestResult.objects.create(
+    if result_info["already_created"]:
+        result_info["status"] = "이미 생성됨"
+        return result_info
+
+    result = CognitiveTestResult.objects.create(
         user=user,
         test_format=session.test_format,
         raw_scores={
@@ -282,6 +330,12 @@ def try_create_test_result(user, session):
             "pattern": pattern.score,
         },
         normalized_scores={},
-        average_score=avg_score,
-        total_duration_sec=duration,
+        average_score=round((srt.score + symbol.score + pattern.score) / 3, 2),
+        total_duration_sec=int(srt.reaction_avg_ms * 10 / 1000)
+        + symbol.symbol_correct
+        + int(pattern.pattern_time_sec),
     )
+
+    result_info["status"] = "✅ CognitiveTestResult 생성 완료"
+    result_info["created_id"] = result.id
+    return result_info
