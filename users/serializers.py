@@ -94,7 +94,7 @@ class OnboardingJobSerializer(serializers.ModelSerializer):
 # 마이페이지 메인
 class MypageMainSerializer(serializers.Serializer):
     nickname = serializers.CharField()
-    profile_img = serializers.ImageField(allow_null=True, required=False)
+    profile_img = serializers.CharField(allow_null=True, required=False)
     joined_at = serializers.DateTimeField()
     tracking_days = serializers.IntegerField()
     total_sleep_hours = serializers.FloatField()
