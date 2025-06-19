@@ -17,9 +17,6 @@ from .models import (
     CognitiveTestResult,
 )
 from .serializers import (
-    CognitiveResultPatternSerializer,
-    CognitiveResultSRTSerializer,
-    CognitiveResultSymbolSerializer,
     CognitiveSessionWithProblemsSerializer,
     CognitiveTestResultDetailedSerializer,
 )
@@ -72,19 +69,67 @@ class CognitiveSessionCreateAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class CognitiveResultSRTAPIView(generics.CreateAPIView):
-    serializer_class = CognitiveResultSRTSerializer
+class CognitiveResultSRTAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def post(self, request):
+        data = request.data
+        session_id = data.get("cognitiveSession")
 
-class CognitiveResultPatternAPIView(generics.CreateAPIView):
-    serializer_class = CognitiveResultPatternSerializer
+        try:
+            session = CognitiveSession.objects.get(id=session_id, user=request.user)
+        except CognitiveSession.DoesNotExist:
+            return Response({"error": "세션을 찾을 수 없습니다."}, status=404)
+
+        result = CognitiveResultSRT.objects.create(
+            cognitive_session=session,
+            score=data.get("score"),
+            reaction_avg_ms=data.get("reactionAvgMs"),
+            reaction_list=",".join(map(str, data.get("reactionList", []))),
+        )
+        return Response({"detail": "SRT 저장 완료", "id": result.id}, status=201)
+
+
+class CognitiveResultPatternAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def post(self, request):
+        data = request.data
+        session_id = data.get("cognitiveSession")
 
-class CognitiveResultSymbolAPIView(generics.CreateAPIView):
-    serializer_class = CognitiveResultSymbolSerializer
+        try:
+            session = CognitiveSession.objects.get(id=session_id, user=request.user)
+        except CognitiveSession.DoesNotExist:
+            return Response({"error": "세션을 찾을 수 없습니다."}, status=404)
+
+        result = CognitiveResultPattern.objects.create(
+            cognitive_session=session,
+            score=data.get("score"),
+            pattern_correct=data.get("patternCorrect"),
+            pattern_time_sec=data.get("patternTimeSec"),
+        )
+        return Response({"detail": "Pattern 저장 완료", "id": result.id}, status=201)
+
+
+class CognitiveResultSymbolAPIView(APIView):
     permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        session_id = data.get("cognitiveSession")
+
+        try:
+            session = CognitiveSession.objects.get(id=session_id, user=request.user)
+        except CognitiveSession.DoesNotExist:
+            return Response({"error": "세션을 찾을 수 없습니다."}, status=404)
+
+        result = CognitiveResultSymbol.objects.create(
+            cognitive_session=session,
+            score=data.get("score"),
+            symbol_correct=data.get("symbolCorrect"),
+            symbol_accuracy=data.get("symbolAccuracy"),
+        )
+        return Response({"detail": "Symbol 저장 완료", "id": result.id}, status=201)
 
 
 class CognitiveResultDailySummaryAPIView(APIView):
