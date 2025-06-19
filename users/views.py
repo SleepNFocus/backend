@@ -138,7 +138,7 @@ class MypageMainView(APIView):
     def get(self, request):
         user = request.user
         try:
-            data = get_mypage_main_data(user)
+            data = get_mypage_main_data(user, request)
             serializer = MypageMainSerializer(data=data)
             serializer.is_valid(raise_exception=True)
             return Response(serializer.data)
