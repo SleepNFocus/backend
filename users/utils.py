@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 from urllib.request import urlopen
 from uuid import uuid4
 
@@ -214,3 +215,9 @@ def download_and_save_profile_image(user, url):
         user.profile_img.save(file_name, ContentFile(response.read()), save=True)
     except Exception as e:
         print(f"[ERROR] 프로필 이미지 다운로드 실패: {e}")
+
+
+# 공통 날짜 매핑
+def daterange(start_date: date, end_date: date):
+    for n in range((end_date - start_date).days + 1):
+        yield start_date + timedelta(n)
