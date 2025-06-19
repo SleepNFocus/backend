@@ -19,6 +19,7 @@ from .utils import (
     get_google_user_info,
     get_kakao_user_info,
     normalize_profile_img,
+    download_and_save_profile_image,
 )
 
 
@@ -186,6 +187,27 @@ def get_mypage_main_data(user):
         "average_sleep_score": round(average_sleep_score, 1),
         "average_cognitive_score": average_cognitive_score,
     }
+
+
+# 사용자 정보 가져온 뒤 프로필 이미지 처리
+def create_or_update_user_by_social(provider, social_id, email, nickname, profile_img_url):
+    user, created = User.objects.get_or_create(
+        social_type=provider,
+        social_id=social_id,
+        defaults={
+            "nickname": nickname,
+            "email": email,
+            "status": UserStatus.ACTIVE,
+        },
+    )
+
+    if created:
+        # 소셜 url 이미지가 기본 이미지면 None 처리
+        profile_img_url = normalize_profile_img(provider, profile_img_url)
+
+        # 소셜 url 이미지가 유효하면 서버에 저장
+        download_and_save_profile_image(user, profile_img_url)
+    return user
 
 
 # 마이페이지 기록 조회 (리스트뷰)

@@ -1,7 +1,11 @@
 import redis
 import requests
+import os
 from django.conf import settings
 from django.core.cache import cache
+from django.core.files.base import ContentFile
+from urllib.request import urlopen
+from uuid import uuid4
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -190,3 +194,23 @@ def normalize_mbti(value):
     if value == "선택안함":
         return None
     return value
+
+# gender 선택안함 시 db에 null로 처리
+def normalize_gender(value):
+    if value == "선택안함":
+        return None
+    return value
+
+
+# 소셜 프로필 이미지 URL -> 백엔드에서 다운 후 파일로 저장
+def download_and_save_profile_image(user, url):  
+    if not url:
+        return
+    try:
+        # 파일 이름을 uuid4로 고유하게 생성해서 저장 (충돌 방지)
+        file_name = f"{uuid4().hex}.jpg"
+        response = urlopen(url)
+        user.profile_img.save(file_name, ContentFile(response.read()), save=True)
+    except Exception as e:
+        print(f"[ERROR] 프로필 이미지 다운로드 실패: {e}")
+
