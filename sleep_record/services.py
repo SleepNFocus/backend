@@ -1,6 +1,9 @@
 from rest_framework.exceptions import ValidationError
 
 from sleep_record.models import SleepRecord
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def create_sleep_record(user, data):
@@ -22,7 +25,7 @@ def create_sleep_record(user, data):
         )
 
     except Exception as e:
-        print("💥 수면 기록 생성 오류:", e)
+        logger.error("💥 수면 기록 생성 오류: %s", e)
         raise ValidationError({"detail": f"수면 기록 생성 실패: {str(e)}"})
 
 
@@ -32,7 +35,7 @@ def get_sleep_record(user, date):
 
         return sleep_record
     except Exception as e:
-        print("💥 수면 기록 조회 오류:", e)
+        logger.error("💥 수면 기록 조회 오류: %s", e)
         raise ValidationError({"detail": f"수면 기록 조회 실패: {str(e)}"})
 
 
@@ -54,7 +57,7 @@ def update_sleep_record(user, data, date):
 
         return sleep_record
     except Exception as e:
-        print("💥 수면 기록 수정 오류:", e)
+        logger.error("💥 수면 기록 수정 오류: %s", e)
         raise ValidationError({"detail": f"수면 기록 수정 실패: {str(e)}"})
 
 
