@@ -541,10 +541,21 @@ def get_selected_date_detail(user, date):
 
     sleep_detail = get_sleep_detail(user, date)
     cognitive_detail = get_cognitive_detail(user, date)
-    if not sleep_detail:
+
+    # 수면/인지 둘 다 없을 때만 None
+    if not sleep_detail and not cognitive_detail:
         return None
 
-    detail = sleep_detail
+    # 수면 데이터가 없으면 기본값으로 대체
+    detail = (
+        sleep_detail
+        if sleep_detail
+        else {
+            "date": str(date),
+            "total_sleep_hours": 0,
+            "sleep_score": 0,
+        }
+    )
     detail["cognitive_test"] = cognitive_detail
 
     return {
