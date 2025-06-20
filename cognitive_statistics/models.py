@@ -126,4 +126,5 @@ class CognitiveResultSymbol(models.Model):
     score = models.IntegerField()
     symbol_correct = models.IntegerField()
     symbol_accuracy = models.FloatField()
+    reaction_avg_ms = models.FloatField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
