@@ -208,10 +208,10 @@ def download_and_save_profile_image(user, url):
     if not url:
         return
     try:
-        # [덮어쓰기] 프로필 이미지는 유저별로 항상 같은 이름(profile/{user_id}.jpg)으로 저장
-        file_name = f"profile/{user.user_id}.jpg"
+        # 프로필 이미지는 유저별로 항상 같은 이름(profile/{user_id}.jpg)으로 저장 (덮어쓰기)
+        file_name = f"{user.user_id}.jpg"
         response = urlopen(url)
-        # [덮어쓰기] 기존 파일 있으면 삭제
+        # 기존 파일 있으면 삭제
         if user.profile_img:
             user.profile_img.delete(save=False)
         user.profile_img.save(file_name, ContentFile(response.read()), save=True)
