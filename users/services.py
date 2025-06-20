@@ -1,7 +1,6 @@
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 
-from django.core.files.storage import default_storage
 from django.db import transaction
 from django.db.models import Avg, Sum
 from django.utils import timezone
@@ -201,11 +200,12 @@ def get_mypage_main_data(user, request):
     return {
         "nickname": user.nickname,
         "profile_img": (
-            # 수정: 절대 URL로 반환되도록 처리
+            # 절대 url로 반환되도록
             request.build_absolute_uri(user.profile_img.url)
-            if hasattr(user.profile_img, "url")
-            and default_storage.exists(user.profile_img.name)
-            else str(user.profile_img) if user.profile_img else None
+            if user.profile_img
+            and hasattr(user.profile_img, "url")
+            and user.profile_img.name
+            else None
         ),
         "joined_at": user.joined_at if user.joined_at else None,
         "tracking_days": tracking_days,
