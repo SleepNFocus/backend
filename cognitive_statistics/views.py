@@ -157,7 +157,16 @@ class CognitiveResultSymbolAPIView(APIView):
         debug = try_create_test_result(request.user, session)
 
         return Response(
-            {"detail": "Symbol 저장 완료", "result_id": result.id, "debug": debug},
+            {
+                "detail": "Symbol 저장 완료",
+                "result_id": result.id,
+                "debug": debug,
+                "debug_info": {
+                    "raw_reaction_times": data.get("reactionTimes"),
+                    "cleaned_reaction_times": cleaned_times,
+                    "calculated_avg_ms": avg_ms,
+                },
+            },
             status=status.HTTP_201_CREATED,
         )
 
