@@ -120,7 +120,9 @@ class CognitiveResultSymbolAPIView(APIView):
         session = get_object_or_404(CognitiveSession, id=session_id, user=request.user)
 
         reaction_times = data.get("reactionTimes", [])
-        avg_ms = sum(reaction_times) / len(reaction_times) if reaction_times else 0
+        avg_ms = (
+            round(sum(reaction_times) / len(reaction_times)) if reaction_times else 0
+        )
 
         symbol_correct = data.get("symbolCorrect") or data.get("symbol_correct") or 0
         symbol_accuracy = (
