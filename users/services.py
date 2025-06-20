@@ -538,6 +538,9 @@ def get_selected_date_detail(user, date):
 
     sleep_detail = get_sleep_detail(user, date)
     cognitive_detail = get_cognitive_detail(user, date)
+
+    sleep_detail = get_sleep_detail(user, date)
+    cognitive_detail = get_cognitive_detail(user, date)
     if not sleep_detail:
         return None
 
