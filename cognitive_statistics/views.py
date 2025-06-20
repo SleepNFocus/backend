@@ -1,3 +1,4 @@
+import json
 from collections import defaultdict
 from random import randint
 
@@ -120,9 +121,21 @@ class CognitiveResultSymbolAPIView(APIView):
         session = get_object_or_404(CognitiveSession, id=session_id, user=request.user)
 
         reaction_times = data.get("reactionTimes", [])
-        avg_ms = (
-            round(sum(reaction_times) / len(reaction_times)) if reaction_times else 0
-        )
+
+        if isinstance(reaction_times, str):
+            try:
+                reaction_times = json.loads(reaction_times)
+            except json.JSONDecodeError:
+                reaction_times = []
+
+        cleaned_times = []
+        for x in reaction_times:
+            if isinstance(x, (int, float)):
+                cleaned_times.append(x)
+            elif isinstance(x, str) and x.isdigit():
+                cleaned_times.append(int(x))
+
+        avg_ms = round(sum(cleaned_times) / len(cleaned_times)) if cleaned_times else 0
 
         symbol_correct = data.get("symbolCorrect") or data.get("symbol_correct") or 0
         symbol_accuracy = (
