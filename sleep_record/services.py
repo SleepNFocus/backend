@@ -35,6 +35,9 @@ def get_sleep_record(user, date):
         sleep_record = SleepRecord.objects.get(user=user, date=date)
 
         return sleep_record
+    except SleepRecord.DoesNotExist:
+        logger.warning("❗수면 기록 없음: user=%s, date=%s", user.id, date)
+        raise ValidationError({"detail": "해당 날짜에 수면 기록이 없습니다."})
     except Exception as e:
         logger.error("💥 수면 기록 조회 오류: %s", e)
         raise ValidationError({"detail": f"수면 기록 조회 실패: {str(e)}"})
