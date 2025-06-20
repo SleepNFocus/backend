@@ -122,12 +122,17 @@ class CognitiveResultSymbolAPIView(APIView):
         reaction_times = data.get("reactionTimes", [])
         avg_ms = sum(reaction_times) / len(reaction_times) if reaction_times else 0
 
+        symbol_correct = data.get("symbolCorrect") or data.get("symbol_correct") or 0
+        symbol_accuracy = (
+            data.get("symbolAccuracy") or data.get("symbol_accuracy") or 0.0
+        )
+
         result = CognitiveResultSymbol.objects.create(
             cognitive_session=session,
-            score=data.get("score"),
-            symbol_correct=data.get("symbolCorrect") or data.get("symbol_correct"),
-            symbol_accuracy=data.get("symbolAccuracy") or data.get("symbol_accuracy"),
-            reaction_avg_ms=avg_ms,  # ✅ 저장
+            score=data.get("score") or 0,
+            symbol_correct=symbol_correct,
+            symbol_accuracy=symbol_accuracy,
+            reaction_avg_ms=avg_ms,
         )
 
         debug = try_create_test_result(request.user, session)
@@ -146,11 +151,17 @@ class CognitiveResultPatternAPIView(APIView):
         session_id = data.get("cognitiveSession") or data.get("cognitive_session")
         session = get_object_or_404(CognitiveSession, id=session_id, user=request.user)
 
+        score = data.get("score") or 0
+        pattern_correct = data.get("patternCorrect") or data.get("pattern_correct") or 0
+        pattern_time_sec = (
+            data.get("patternTimeSec") or data.get("pattern_time_sec") or 0.0
+        )
+
         result = CognitiveResultPattern.objects.create(
             cognitive_session=session,
-            score=data.get("score"),
-            pattern_correct=data.get("patternCorrect") or data.get("pattern_correct"),
-            pattern_time_sec=data.get("patternTimeSec") or data.get("pattern_time_sec"),
+            score=score,
+            pattern_correct=pattern_correct,
+            pattern_time_sec=pattern_time_sec,
         )
 
         debug = try_create_test_result(request.user, session)
