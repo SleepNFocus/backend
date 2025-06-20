@@ -75,7 +75,7 @@ class CognitiveTestResultDetailedSerializer(serializers.Serializer):
             },
             "symbol": {
                 "correct": sym.symbol_correct if sym else 0,
-                "avg_ms": sym.symbol_accuracy * 1000 if sym else 0,
+                "avg_ms": sym.reaction_avg_ms if sym else 0,  # ✅ 수정된 방식
                 "symbol_accuracy": sym.symbol_accuracy if sym else 0,
                 "total_duration_sec": sym.symbol_correct if sym else 0,
                 "average_score": sym.score if sym else 0,

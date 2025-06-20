@@ -119,11 +119,15 @@ class CognitiveResultSymbolAPIView(APIView):
         session_id = data.get("cognitiveSession") or data.get("cognitive_session")
         session = get_object_or_404(CognitiveSession, id=session_id, user=request.user)
 
+        reaction_times = data.get("reactionTimes", [])
+        avg_ms = sum(reaction_times) / len(reaction_times) if reaction_times else 0
+
         result = CognitiveResultSymbol.objects.create(
             cognitive_session=session,
             score=data.get("score"),
             symbol_correct=data.get("symbolCorrect") or data.get("symbol_correct"),
             symbol_accuracy=data.get("symbolAccuracy") or data.get("symbol_accuracy"),
+            reaction_avg_ms=avg_ms,  # ✅ 저장
         )
 
         debug = try_create_test_result(request.user, session)
@@ -275,26 +279,32 @@ def try_create_test_result(user, session):
     srt = CognitiveResultSRT.objects.filter(cognitive_session=session).first()
     sym = CognitiveResultSymbol.objects.filter(cognitive_session=session).first()
     pat = CognitiveResultPattern.objects.filter(cognitive_session=session).first()
+
     if not all([srt, sym, pat]):
         return {"status": "결과 미완성", "session_id": session.id}
+
+    # 안전한 값 추출
+    srt_score = srt.score or 0
+    sym_score = sym.score or 0
+    pat_score = pat.score or 0
+
+    reaction_avg_ms = srt.reaction_avg_ms if srt.reaction_avg_ms is not None else 0
+    symbol_correct = sym.symbol_correct if sym.symbol_correct is not None else 0
+    pattern_time_sec = pat.pattern_time_sec if pat.pattern_time_sec is not None else 0
 
     result = CognitiveTestResult.objects.create(
         user=user,
         test_format=session.test_format,
         cognitive_session=session,
         raw_scores={
-            "srt": srt.score,
-            "symbol": sym.score,
-            "pattern": pat.score,
+            "srt": srt_score,
+            "symbol": sym_score,
+            "pattern": pat_score,
         },
         normalized_scores={},
-        average_score=round((srt.score + sym.score + pat.score) / 3, 2),
-        total_duration_sec=sum(
-            [
-                int((srt.reaction_avg_ms or 0) * 10 // 1000),
-                sym.symbol_correct if sym.symbol_correct is not None else 0,
-                int(pat.pattern_time_sec if pat.pattern_time_sec is not None else 0),
-            ]
+        average_score=round((srt_score + sym_score + pat_score) / 3, 2),
+        total_duration_sec=(
+            int(reaction_avg_ms * 10 // 1000) + symbol_correct + int(pattern_time_sec)
         ),
     )
     return {"status": "생성 완료", "result_id": result.id, "session_id": session.id}
