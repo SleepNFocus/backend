@@ -132,8 +132,11 @@ class CognitiveResultSymbolAPIView(APIView):
         for x in reaction_times:
             if isinstance(x, (int, float)):
                 cleaned_times.append(x)
-            elif isinstance(x, str) and x.isdigit():
-                cleaned_times.append(int(x))
+            elif isinstance(x, str):
+                try:
+                    cleaned_times.append(int(float(x)))
+                except ValueError:
+                    continue
 
         avg_ms = round(sum(cleaned_times) / len(cleaned_times)) if cleaned_times else 0
 
@@ -150,6 +153,7 @@ class CognitiveResultSymbolAPIView(APIView):
             reaction_avg_ms=avg_ms,
         )
 
+        # 통합 결과 생성 시도
         debug = try_create_test_result(request.user, session)
 
         return Response(
