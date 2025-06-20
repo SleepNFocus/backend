@@ -66,6 +66,11 @@ def get_or_create_active_user(provider, social_id, email, nickname, profile_img)
         if user.profile_img:
             profile_img = user.profile_img
 
+        # [수정] 프로필 이미지에 값이 있을 때만 덮어쓰기
+        if profile_img:  # [수정]
+            user.profile_img = profile_img  # [수정]
+            user.save()  # [수정]
+
     # 유저가 없으면 회원가입
     if not user:
         with transaction.atomic():
