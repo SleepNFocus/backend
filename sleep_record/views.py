@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from rest_framework.permissions import IsAuthenticated
@@ -12,6 +13,8 @@ from sleep_record.services import (
     update_sleep_record,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class SleepRecordView(APIView):
     permission_classes = [IsAuthenticated]
@@ -25,14 +28,13 @@ class SleepRecordView(APIView):
         return Response("message : 수면 기록이 작성 되었습니다.", status=201)
 
     def get(self, request: Request) -> Response:
+        date_str = request.query_params.get("date")
 
-        date = request.query_params.get("date")
-
-        if not date:
+        if not date_str:
             return Response({"detail": "date는 필수입니다."}, status=400)
 
         try:
-            date = datetime.strptime(date, "%Y-%m-%d").date()
+            date = datetime.strptime(date_str, "%Y-%m-%d").date()
         except ValueError:
             return Response(
                 {"detail": "날짜 형식은 YYYY-MM-DD여야 합니다."}, status=400
@@ -41,7 +43,7 @@ class SleepRecordView(APIView):
         record = get_sleep_record(user=request.user, date=date)
 
         if record is None:
-            # ✅ 명시적으로 null을 응답 (React Query undefined 방지)
+            logger.info("❗수면 기록 없음: user=%s, date=%s", request.user.id, date)
             return Response(None, status=200)
 
         serializer = SleepRecordSerializer(record)
