@@ -1,7 +1,6 @@
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 
-from django.core.files.storage import default_storage
 from django.db import transaction
 from django.db.models import Avg, Sum
 from django.utils import timezone
