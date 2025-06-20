@@ -1,7 +1,8 @@
+import logging
+
 from rest_framework.exceptions import ValidationError
 
 from sleep_record.models import SleepRecord
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,6 @@ def sleep_duration_score(minutes: int) -> int:
     score = max(max_score - penalty, 0)
 
     return score
-
 
 
 def subjective_quality_score(subjective_quality: int) -> int:
