@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -22,18 +24,42 @@ class SleepRecordView(APIView):
 
         return Response("message : 수면 기록이 작성 되었습니다.", status=201)
 
-    def get(self, request: Request, id) -> Response:
+    def get(self, request: Request) -> Response:
 
-        record = get_sleep_record(user=request.user, id=id)
+        date = request.query_params.get("date")
+
+        if not date:
+            return Response({"detail": "date는 필수입니다."}, status=400)
+
+        try:
+            date = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            return Response(
+                {"detail": "날짜 형식은 YYYY-MM-DD여야 합니다."}, status=400
+            )
+        record = get_sleep_record(user=request.user, date=date)
 
         serializer = SleepRecordSerializer(record)
         return Response(serializer.data, status=200)
 
-    def patch(self, request: Request, id) -> Response:
+    def patch(self, request: Request) -> Response:
+        date = request.query_params.get("date")
 
         serializer = SleepRecordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        update_sleep_record(user=request.user, data=serializer.validated_data, id=id)
+        if not date:
+            return Response({"detail": "date는 필수입니다."}, status=400)
+
+        try:
+            date = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            return Response(
+                {"detail": "날짜 형식은 YYYY-MM-DD여야 합니다."}, status=400
+            )
+
+        update_sleep_record(
+            user=request.user, data=serializer.validated_data, date=date
+        )
 
         return Response("message : 수면 기록이 수정 되었습니다.", status=200)
