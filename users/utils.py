@@ -1,6 +1,5 @@
 from datetime import date, timedelta
 from urllib.request import urlopen
-from uuid import uuid4
 
 import redis
 import requests
@@ -209,9 +208,12 @@ def download_and_save_profile_image(user, url):
     if not url:
         return
     try:
-        # 파일 이름을 uuid4로 고유하게 생성해서 저장 (충돌 방지)
-        file_name = f"{uuid4().hex}.jpg"
+        # [덮어쓰기] 프로필 이미지는 유저별로 항상 같은 이름(profile/{user_id}.jpg)으로 저장
+        file_name = f"profile/{user.user_id}.jpg"
         response = urlopen(url)
+        # [덮어쓰기] 기존 파일 있으면 삭제
+        if user.profile_img:
+            user.profile_img.delete(save=False)
         user.profile_img.save(file_name, ContentFile(response.read()), save=True)
     except Exception as e:
         print(f"[ERROR] 프로필 이미지 다운로드 실패: {e}")
