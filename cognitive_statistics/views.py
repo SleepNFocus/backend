@@ -289,10 +289,12 @@ def try_create_test_result(user, session):
         },
         normalized_scores={},
         average_score=round((srt.score + sym.score + pat.score) / 3, 2),
-        total_duration_sec=(
-            int(srt.reaction_avg_ms * 10 // 1000)
-            + sym.symbol_correct
-            + int(pat.pattern_time_sec)
+        total_duration_sec=sum(
+            [
+                int((srt.reaction_avg_ms or 0) * 10 // 1000),
+                sym.symbol_correct if sym.symbol_correct is not None else 0,
+                int(pat.pattern_time_sec if pat.pattern_time_sec is not None else 0),
+            ]
         ),
     )
     return {"status": "생성 완료", "result_id": result.id, "session_id": session.id}
