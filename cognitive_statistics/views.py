@@ -304,7 +304,9 @@ def try_create_test_result(user, session):
         normalized_scores={},
         average_score=round((srt_score + sym_score + pat_score) / 3, 2),
         total_duration_sec=(
-            int(reaction_avg_ms * 10 // 1000) + symbol_correct + int(pattern_time_sec)
+            int((reaction_avg_ms or 0) * 10 // 1000)
+            + (symbol_correct or 0)
+            + int(pattern_time_sec or 0)
         ),
     )
     return {"status": "생성 완료", "result_id": result.id, "session_id": session.id}
