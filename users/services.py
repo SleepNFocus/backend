@@ -1,5 +1,5 @@
 from collections import defaultdict
-from datetime import date, timedelta, datetime
+from datetime import date, datetime, timedelta
 
 from django.core.files.storage import default_storage
 from django.db import transaction
@@ -239,12 +239,15 @@ def get_daily_cognitive_scores(user, start_date, end_date):
     cognitive_data = defaultdict(list)  # 날짜별 점수 리스트 저장
 
     # 3가지 인지 테스트 결과 모델 반복
-    cognitive_models = [CognitiveResultSRT, CognitiveResultPattern, CognitiveResultSymbol]
+    cognitive_models = [
+        CognitiveResultSRT,
+        CognitiveResultPattern,
+        CognitiveResultSymbol,
+    ]
     for model in cognitive_models:
         # 해당 유저의 테스트 결과에서 기간 내 날짜, 점수만 가져옴
         results = model.objects.filter(
-            cognitive_session__user=user,
-            created_at__date__range=(start_date, end_date)
+            cognitive_session__user=user, created_at__date__range=(start_date, end_date)
         ).values("created_at__date", "score")
         for r in results:
             date_key = r["created_at__date"]
@@ -255,8 +258,7 @@ def get_daily_cognitive_scores(user, start_date, end_date):
 
     # 날짜별 점수 평균값 계산
     daily_scores = {
-        d: round(sum(scores) / len(scores), 1)
-        for d, scores in cognitive_data.items()
+        d: round(sum(scores) / len(scores), 1) for d, scores in cognitive_data.items()
     }
     return daily_scores
 
@@ -277,7 +279,9 @@ def get_record_day_list(user):
     start_date, end_date = today - timedelta(days=89), today  # 최근 90일 범위
 
     sleep_records = get_sleep_records(user, start_date, end_date)  # 날짜별 수면기록
-    cognitive_scores = get_daily_cognitive_scores(user, start_date, end_date)  # 날짜별 인지점수
+    cognitive_scores = get_daily_cognitive_scores(
+        user, start_date, end_date
+    )  # 날짜별 인지점수
 
     results = []
     # 각 날짜마다 기록이 존재하는지 확인
@@ -287,12 +291,18 @@ def get_record_day_list(user):
 
         # 수면 or 인지 데이터 하나라도 있으면 결과에 추가
         if sleep or cognitive_score is not None:
-            results.append({
-                "date": str(single_date),  # 날짜 (문자열)
-                "sleep_hour": round(sleep.sleep_duration / 60, 1) if sleep else 0,  # 수면시간(시간단위)
-                "sleep_score": sleep.score if sleep else 0,  # 수면점수
-                "cognitive_score": cognitive_score if cognitive_score else 0,  # 인지점수
-            })
+            results.append(
+                {
+                    "date": str(single_date),  # 날짜 (문자열)
+                    "sleep_hour": (
+                        round(sleep.sleep_duration / 60, 1) if sleep else 0
+                    ),  # 수면시간(시간단위)
+                    "sleep_score": sleep.score if sleep else 0,  # 수면점수
+                    "cognitive_score": (
+                        cognitive_score if cognitive_score else 0
+                    ),  # 인지점수
+                }
+            )
 
     # 데이터 없으면 에러 반환
     if not results:
@@ -314,29 +324,47 @@ def get_record_week_list(user):
     for week_start, week_end in weekrange(start_date, end_date):
         # 각 주에 해당하는 날짜별 수면 기록 모음
         weekly_sleeps = [
-            sleep_records.get(d) for d in daterange(week_start, week_end) if sleep_records.get(d)
+            sleep_records.get(d)
+            for d in daterange(week_start, week_end)
+            if sleep_records.get(d)
         ]
         # 각 주의 날짜별 인지점수 리스트 추출
-        weekly_cognitive_scores = get_daily_cognitive_scores(user, week_start, week_end).values()
+        weekly_cognitive_scores = get_daily_cognitive_scores(
+            user, week_start, week_end
+        ).values()
 
         # 수면/인지 기록 모두 없으면 skip
         if not weekly_sleeps and not weekly_cognitive_scores:
             continue
 
         # 주간 총 수면시간(분 → 시간), 주간 평균 수면점수/인지점수
-        total_sleep_minutes = sum(r.sleep_duration for r in weekly_sleeps if r.sleep_duration)
-        avg_sleep_score = round(sum(r.score for r in weekly_sleeps if r.score) / len(weekly_sleeps), 1) if weekly_sleeps else 0
-        avg_cognitive_score = round(sum(weekly_cognitive_scores) / len(weekly_cognitive_scores), 1) if weekly_cognitive_scores else 0
+        total_sleep_minutes = sum(
+            r.sleep_duration for r in weekly_sleeps if r.sleep_duration
+        )
+        avg_sleep_score = (
+            round(
+                sum(r.score for r in weekly_sleeps if r.score) / len(weekly_sleeps), 1
+            )
+            if weekly_sleeps
+            else 0
+        )
+        avg_cognitive_score = (
+            round(sum(weekly_cognitive_scores) / len(weekly_cognitive_scores), 1)
+            if weekly_cognitive_scores
+            else 0
+        )
 
         # 결과 추가
-        results.append({
-            "week": week_number,
-            "start_date": week_start,
-            "end_date": week_end,
-            "total_sleep_hours": round(total_sleep_minutes / 60, 1),
-            "average_sleep_score": avg_sleep_score,
-            "average_cognitive_score": avg_cognitive_score,
-        })
+        results.append(
+            {
+                "week": week_number,
+                "start_date": week_start,
+                "end_date": week_end,
+                "total_sleep_hours": round(total_sleep_minutes / 60, 1),
+                "average_sleep_score": avg_sleep_score,
+                "average_cognitive_score": avg_cognitive_score,
+            }
+        )
         week_number += 1
 
     if not results:
@@ -352,16 +380,27 @@ def get_record_month_list(user):
 
     for i in range(12):
         # 월 시작, 끝 날짜 계산
-        y, m = (today.year - (today.month - i - 1) // 12), (today.month - i - 1) % 12 + 1
+        y, m = (today.year - (today.month - i - 1) // 12), (
+            today.month - i - 1
+        ) % 12 + 1
         month_start = date(y, m, 1)
         # 월 마지막날 구하기
-        month_end = date(y, m + 1, 1) - timedelta(days=1) if m != 12 else date(y + 1, 1, 1) - timedelta(days=1)
+        month_end = (
+            date(y, m + 1, 1) - timedelta(days=1)
+            if m != 12
+            else date(y + 1, 1, 1) - timedelta(days=1)
+        )
 
         # 해당 월 전체 수면기록/인지점수
         sleep_records = [
-            r for r in SleepRecord.objects.filter(user=user, date__range=(month_start, month_end))
+            r
+            for r in SleepRecord.objects.filter(
+                user=user, date__range=(month_start, month_end)
+            )
         ]
-        cognitive_scores = get_daily_cognitive_scores(user, month_start, month_end).values()
+        cognitive_scores = get_daily_cognitive_scores(
+            user, month_start, month_end
+        ).values()
 
         # 둘 다 없으면 건너뜀
         if not sleep_records and not cognitive_scores:
@@ -371,12 +410,22 @@ def get_record_month_list(user):
         sleep_hours = [r.sleep_duration / 60 for r in sleep_records if r.sleep_duration]
         sleep_scores = [r.score for r in sleep_records if r.score]
 
-        results.append({
-            "month": f"{y}-{str(m).zfill(2)}",
-            "total_sleep_hours": round(sum(sleep_hours), 1) if sleep_hours else 0,
-            "average_sleep_score": round(sum(sleep_scores) / len(sleep_scores), 1) if sleep_scores else 0,
-            "average_cognitive_score": round(sum(cognitive_scores) / len(cognitive_scores), 1) if cognitive_scores else 0,
-        })
+        results.append(
+            {
+                "month": f"{y}-{str(m).zfill(2)}",
+                "total_sleep_hours": round(sum(sleep_hours), 1) if sleep_hours else 0,
+                "average_sleep_score": (
+                    round(sum(sleep_scores) / len(sleep_scores), 1)
+                    if sleep_scores
+                    else 0
+                ),
+                "average_cognitive_score": (
+                    round(sum(cognitive_scores) / len(cognitive_scores), 1)
+                    if cognitive_scores
+                    else 0
+                ),
+            }
+        )
 
     if not results:
         raise ValidationError("해당 기간 기록이 없습니다.")
