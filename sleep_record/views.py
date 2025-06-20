@@ -37,7 +37,12 @@ class SleepRecordView(APIView):
             return Response(
                 {"detail": "날짜 형식은 YYYY-MM-DD여야 합니다."}, status=400
             )
+
         record = get_sleep_record(user=request.user, date=date)
+
+        if record is None:
+            # ✅ 명시적으로 null을 응답 (React Query undefined 방지)
+            return Response(None, status=200)
 
         serializer = SleepRecordSerializer(record)
         return Response(serializer.data, status=200)
