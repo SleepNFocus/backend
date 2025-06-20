@@ -1,6 +1,10 @@
+import logging
+
 from rest_framework.exceptions import ValidationError
 
 from sleep_record.models import SleepRecord
+
+logger = logging.getLogger(__name__)
 
 
 def create_sleep_record(user, data):
@@ -22,7 +26,7 @@ def create_sleep_record(user, data):
         )
 
     except Exception as e:
-        print("💥 수면 기록 생성 오류:", e)
+        logger.error("💥 수면 기록 생성 오류: %s", e)
         raise ValidationError({"detail": f"수면 기록 생성 실패: {str(e)}"})
 
 
@@ -32,7 +36,7 @@ def get_sleep_record(user, date):
 
         return sleep_record
     except Exception as e:
-        print("💥 수면 기록 조회 오류:", e)
+        logger.error("💥 수면 기록 조회 오류: %s", e)
         raise ValidationError({"detail": f"수면 기록 조회 실패: {str(e)}"})
 
 
@@ -54,27 +58,23 @@ def update_sleep_record(user, data, date):
 
         return sleep_record
     except Exception as e:
-        print("💥 수면 기록 수정 오류:", e)
+        logger.error("💥 수면 기록 수정 오류: %s", e)
         raise ValidationError({"detail": f"수면 기록 수정 실패: {str(e)}"})
 
 
 def sleep_duration_score(minutes: int) -> int:
-    if 420 <= minutes <= 540:
-        return 25
-    elif 390 <= minutes <= 570:
-        return 20
-    elif 360 <= minutes <= 600:
-        return 15
-    elif 330 <= minutes <= 630:
-        return 10
-    elif 300 <= minutes <= 660:
-        return 5
-    elif 270 <= minutes <= 690:
+    ideal_min = 480  # 8시간
+    max_score = 25
+
+    # 예외 처리: 너무 짧거나 너무 긴 경우 무조건 0점
+    if minutes < 270 or minutes > 690:
         return 0
-    elif minutes <= 240 or minutes >= 720:
-        return 0
-    else:
-        return 0
+
+    diff = abs(minutes - ideal_min)
+    penalty = (diff // 30) * 5  # 30분당 -5점
+    score = max(max_score - penalty, 0)
+
+    return score
 
 
 def subjective_quality_score(subjective_quality: int) -> int:
