@@ -194,6 +194,18 @@ class MypageProfileSerializer(serializers.ModelSerializer):
         if mbti == "선택안함":
             validated_data["mbti"] = None
 
+        # 프로필 이미지 새로 업로드시 항상 같은 이름(profile/{user_id}.jpg)으로 저장 (덮어쓰기))
+        profile_img = validated_data.get("profile_img", None)
+        if profile_img:
+            # 기존 파일 삭제
+            if instance.profile_img:
+                instance.profile_img.delete(save=False)
+            # 같은 이름으로 저장
+            file_name = f"profile/{instance.user_id}.jpg"
+            instance.profile_img.save(file_name, profile_img, save=False)
+            # validated_data에서 profile_img 키 제거 (이미 직접 할당함)
+            validated_data.pop("profile_img")
+
         # 입력된 직업 설문 분리
         cognitive_type = validated_data.pop("cognitive_type", None)
         work_time_pattern = validated_data.pop("work_time_pattern", None)
