@@ -43,7 +43,7 @@ class SleepRecordView(APIView):
         record = get_sleep_record(user=request.user, date=date)
 
         if record is None:
-            logger.info("❗수면 기록 없음: user=%s, date=%s", request.user.id, date)
+            logger.info("❗수면 기록 없음: user=%s, date=%s", request.user.user_id, date)
             return Response(None, status=200)
 
         serializer = SleepRecordSerializer(record)
