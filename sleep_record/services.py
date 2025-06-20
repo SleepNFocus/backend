@@ -36,7 +36,7 @@ def get_sleep_record(user, date):
 
         return sleep_record
     except SleepRecord.DoesNotExist:
-        logger.info("❗수면 기록 없음: user=%s, date=%s", user.id, date)
+        logger.info("❗수면 기록 없음: user=%s, date=%s", user.user_id, date)
         return None
     except Exception as e:
         logger.error("💥 수면 기록 조회 오류: %s", e)
