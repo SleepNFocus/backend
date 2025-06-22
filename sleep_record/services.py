@@ -85,6 +85,7 @@ def sleep_duration_score(minutes: int) -> int:
     else:  # 4시간 30분 미만 or 11시간 30분 초과
         return 0
 
+
 def subjective_quality_score(subjective_quality: int) -> int:
     mapping = {0: 0, 1: 10, 2: 20, 3: 25, 4: 30}
     return mapping.get(subjective_quality, 0)  # 잘못된 값은 0 처리
