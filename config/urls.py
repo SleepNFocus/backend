@@ -1,13 +1,78 @@
-from typing import List, Union
+# 작성자: 한율
+from django.conf import settings
+from django.conf.urls.static import static
+from django.contrib import admin
+from django.http import HttpResponse
+from django.urls import include, path
+from django.views.generic import TemplateView
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+from rest_framework import permissions
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from django.urls import URLPattern, URLResolver, path
+from config.health_check import HealthCheckView
 
-from . import views
 
-urlpatterns: List[Union[URLPattern, URLResolver]] = [
-    path("", views.TestPlayListAPIView.as_view(), name="test-play-list"),
-    path("<str:test_type>/", views.TestPlayAPIView.as_view(), name="test-play"),
-    path(
-        "<str:test_type>/submit/", views.TestSubmitAPIView.as_view(), name="test-submit"
-    ),
+def trigger_error(request):
+    1 / 0
+
+
+urlpatterns = [
+    path("", lambda request: HttpResponse("Hello, World!"), name="home"),
+    path("admin/", admin.site.urls),
+    path("api/users/", include("users.urls")),
+    path("api/cognitives/", include("cognitives.urls")),
+    path("api/cognitive-statistics/", include("cognitive_statistics.urls")),
+    path("health/", HealthCheckView.as_view(), name="health-check"),
+    # 🔐 JWT 토큰 발급/갱신 엔드포인트
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    # 각 앱 API 연결
+    path("api/sleepRecord/", include("sleep_record.urls")),
+    path("api/ai-content/", include("ai.urls")),
+    path("api/", include("management.urls")),
 ]
+
+
+if settings.DEBUG:
+    import yaml
+    from drf_yasg import openapi
+    from drf_yasg.views import get_schema_view
+    from rest_framework import permissions
+
+    with open("docs/swagger/swagger.yaml", "r", encoding="utf-8") as f:
+        swagger_yaml = yaml.safe_load(f)
+
+    info = swagger_yaml.get("info", {})
+    schema_view = get_schema_view(
+        openapi.Info(
+            title=info.get("title", "Checker API"),
+            default_version=info.get("version", "v1"),
+            description=info.get("description", ""),
+        ),
+        url=swagger_yaml.get("servers", [{}])[0].get("url", ""),
+        patterns=None,
+        public=True,
+        permission_classes=[permissions.AllowAny],
+        generator_class=None,
+    )
+
+    urlpatterns += [
+        path(
+            "swagger/",
+            schema_view.with_ui("swagger", cache_timeout=0),
+            name="schema-swagger-ui",
+        ),
+        path(
+            "swagger.yaml",
+            TemplateView.as_view(
+                template_name="swagger/swagger.yaml",
+                content_type="text/yaml",
+            ),
+            name="schema-yaml",
+        ),
+        path("sentry-debug/", trigger_error, name="sentry-debug"),
+    ]
+
+# 개발 환경에서 MEDIA 파일(media/*) 접근 가능하도록 URL 패턴 추가
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

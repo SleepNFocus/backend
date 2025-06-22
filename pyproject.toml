@@ -10,8 +10,9 @@ packages = [
   { include = "cognitive_statistics" },
   { include = "cognitives" },
   { include = "config" },
-  { include = "sleep" },
+  { include = "sleep_record" },
   { include = "users" },
+  { include = "ai"}
 ]
 
 [tool.poetry.dependencies]
@@ -22,6 +23,11 @@ django-redis = "^5.4.0"
 python-dotenv = "^1.1.0"
 djangorestframework = "^3.16.0"
 djangorestframework-simplejwt = "^5.5.0"
+drf-yasg = "^1.21.10"
+django-cors-headers = "^4.7.0"
+google-generativeai = "^0.8.5"
+sentry-sdk = "^2.30.0"
+pillow = "^11.2.1"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"

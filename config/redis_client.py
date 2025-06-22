@@ -1,3 +1,6 @@
+# 작성자: 한율
+from __future__ import annotations
+
 import redis
 from django.conf import settings
 

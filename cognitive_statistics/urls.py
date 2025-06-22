@@ -4,38 +4,33 @@ from . import views
 
 urlpatterns = [
     path(
-        "problems/",
-        views.CognitiveTestTypeListAPIView.as_view(),
-        name="cognitive-test-types",
-    ),
-    path(
-        "problems/types/",
-        views.CognitiveTestFormatListAPIView.as_view(),
-        name="cognitive-test-formats",
-    ),
-    path(
-        "time/",
-        views.CognitiveTestTimeSaveAPIView.as_view(),
-        name="cognitive-test-time-save",
-    ),
-    path(
-        "time/guide/",
-        views.CognitiveTestTimeGuideAPIView.as_view(),
-        name="cognitive-test-time-guide",
-    ),
-    path(
         "result/basic/",
         views.CognitiveTestResultBasicAPIView.as_view(),
         name="cognitive-test-result-basic",
     ),
     path(
-        "result/correlation/",
-        views.CognitiveTestResultCorrelationAPIView.as_view(),
-        name="cognitive-test-result-correlation",
+        "session/start/",
+        views.CognitiveSessionCreateAPIView.as_view(),
+        name="cognitive-session-start",
     ),
     path(
-        "result/visualization/",
-        views.CognitiveTestResultVisualizationAPIView.as_view(),
-        name="cognitive-test-result-visualization",
+        "result/srt/",
+        views.CognitiveResultSRTAPIView.as_view(),
+        name="cognitive-result-srt",
+    ),
+    path(
+        "result/pattern/",
+        views.CognitiveResultPatternAPIView.as_view(),
+        name="cognitive-result-pattern",
+    ),
+    path(
+        "result/symbol/",
+        views.CognitiveResultSymbolAPIView.as_view(),
+        name="cognitive-result-symbol",
+    ),
+    path(
+        "result/daily-summary/",
+        views.CognitiveResultDailySummaryAPIView.as_view(),
+        name="cognitive-result-daily-summary",
     ),
 ]

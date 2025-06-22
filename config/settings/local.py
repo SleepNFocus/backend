@@ -1,29 +1,24 @@
+import os
+
 from .base import *  # noqa
 
-DEBUG = True  # 디버그 모드(개발 모드) 에러가 발생 하면 장고에서 노란 화면으로 알려줌
-
+# 로컬 개발 서버는 언제나 모든 호스트 허용
 ALLOWED_HOSTS = ["*"]
 
+# 로컬 환경에서는 모든 origin 허용
+CORS_ALLOW_ALL_ORIGINS = True
+
+# 로컬 DB는 .env 기반 설정 (이미 base.py에서 로드됨)
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "FocusZ",
-        "USER": "dev_user",
-        "PASSWORD": "sleepNfocus",
-        "HOST": "localhost",
-        "PORT": "54324",
+        "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.postgresql"),
+        "NAME": os.getenv("DB_NAME", "FocusZ"),
+        "USER": os.getenv("DB_USER", "focusz"),
+        "PASSWORD": os.getenv("DB_PASSWORD", "sleepNfocus"),
+        "HOST": os.getenv("DB_HOST", "localhost"),
+        "PORT": os.getenv("DB_PORT", "54324"),
+        "OPTIONS": {
+            "client_encoding": "UTF8",
+        },
     }
-}
-
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
-}
-
-SIMPLE_JWT = {
-    "USER_ID_FIELD": "user_id",
-    "AUTH_HEADER_TYPES": ("Bearer",),
-    "BLACKLIST_AFTER_ROTATION": True,
-    "ROTATE_REFRESH_TOKENS": True,
 }
