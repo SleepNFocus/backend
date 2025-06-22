@@ -92,21 +92,13 @@ def subjective_quality_score(subjective_quality: int) -> int:
 
 
 def sleep_latency_score(sleep_latency: int) -> int:
-    if sleep_latency <= 15:
-        return 15
-    elif 15 < sleep_latency <= 30:
-        return 10
-    elif 30 < sleep_latency:
-        return 0
+    mapping = {0: 15, 1: 10, 2: 0}
+    return mapping.get(sleep_latency, 0)
 
 
 def wake_count_score(wake_count: int) -> int:
-    if wake_count == 0:
-        return 10
-    elif wake_count <= 2:
-        return 5
-    else:
-        return 0
+    mapping = {0: 10, 1: 5, 2: 0}
+    return mapping.get(wake_count, 0)
 
 
 def disturb_factors_score(disturb_factors: list[str]) -> int:
