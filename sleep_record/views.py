@@ -10,6 +10,7 @@ from sleep_record.serializers import SleepRecordSerializer
 from sleep_record.services import (
     create_sleep_record,
     get_sleep_record,
+    sleep_record_exists,
     update_sleep_record,
 )
 
@@ -43,7 +44,9 @@ class SleepRecordView(APIView):
         record = get_sleep_record(user=request.user, date=date)
 
         if record is None:
-            logger.info("❗수면 기록 없음: user=%s, date=%s", request.user.user_id, date)
+            logger.info(
+                "❗수면 기록 없음: user=%s, date=%s", request.user.user_id, date
+            )
             return Response(None, status=200)
 
         serializer = SleepRecordSerializer(record)
@@ -70,3 +73,24 @@ class SleepRecordView(APIView):
         )
 
         return Response("message : 수면 기록이 수정 되었습니다.", status=200)
+
+
+class SleepRecordExistsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request) -> Response:
+        date = request.query_params.get("date")
+
+        if not date:
+            return Response({"detail": "date는 필수입니다."}, status=400)
+
+        try:
+            date = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            return Response(
+                {"detail": "날짜 형식은 YYYY-MM-DD여야 합니다."}, status=400
+            )
+
+        exists = sleep_record_exists(user=request.user, date=date)
+
+        return Response({"exists": exists}, status=200)
