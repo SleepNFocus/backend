@@ -85,28 +85,19 @@ def sleep_duration_score(minutes: int) -> int:
     else:  # 4시간 30분 미만 or 11시간 30분 초과
         return 0
 
-
 def subjective_quality_score(subjective_quality: int) -> int:
     mapping = {0: 0, 1: 10, 2: 20, 3: 25, 4: 30}
     return mapping.get(subjective_quality, 0)  # 잘못된 값은 0 처리
 
 
 def sleep_latency_score(sleep_latency: int) -> int:
-    if sleep_latency <= 15:
-        return 15
-    elif 15 < sleep_latency <= 30:
-        return 10
-    elif 30 < sleep_latency:
-        return 0
+    mapping = {0: 15, 1: 10, 2: 0}
+    return mapping.get(sleep_latency, 0)
 
 
 def wake_count_score(wake_count: int) -> int:
-    if wake_count == 0:
-        return 10
-    elif wake_count <= 2:
-        return 5
-    else:
-        return 0
+    mapping = {0: 10, 1: 5, 2: 0}
+    return mapping.get(wake_count, 0)
 
 
 def disturb_factors_score(disturb_factors: list[str]) -> int:
