@@ -70,18 +70,20 @@ def sleep_record_exists(user, date) -> bool:
 
 
 def sleep_duration_score(minutes: int) -> int:
-    ideal_min = 480  # 8시간
-    max_score = 25
-
-    # 예외 처리: 너무 짧거나 너무 긴 경우 무조건 0점
-    if minutes < 270 or minutes > 690:
+    if 420 <= minutes <= 540:  # 이상적인 수면 시간 (7~9시간)
+        return 25
+    elif 390 <= minutes < 420 or 540 < minutes <= 570:
+        return 20
+    elif 360 <= minutes < 390 or 570 < minutes <= 600:
+        return 15
+    elif 330 <= minutes < 360 or 600 < minutes <= 630:
+        return 10
+    elif 300 <= minutes < 330 or 630 < minutes <= 660:
+        return 5
+    elif 270 <= minutes < 300 or 660 < minutes <= 690:
         return 0
-
-    diff = abs(minutes - ideal_min)
-    penalty = (diff // 30) * 5  # 30분당 -5점
-    score = max(max_score - penalty, 0)
-
-    return score
+    else:  # 4시간 30분 미만 or 11시간 30분 초과
+        return 0
 
 
 def subjective_quality_score(subjective_quality: int) -> int:
