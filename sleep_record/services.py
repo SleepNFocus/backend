@@ -65,6 +65,10 @@ def update_sleep_record(user, data, date):
         raise ValidationError({"detail": f"수면 기록 수정 실패: {str(e)}"})
 
 
+def sleep_record_exists(user, date) -> bool:
+    return SleepRecord.objects.filter(user=user, date=date).exists()
+
+
 def sleep_duration_score(minutes: int) -> int:
     ideal_min = 480  # 8시간
     max_score = 25
