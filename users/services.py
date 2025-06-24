@@ -515,6 +515,7 @@ def get_cognitive_detail(user, date):
     pattern_count = pattern_qs.aggregate(total=Sum("pattern_correct"))["total"] or 0
     pattern_time_sec = pattern_qs.aggregate(avg=Avg("pattern_time_sec"))["avg"] or 0
 
+    # 세션별로 첫 번째 결과만 사용해서 정확도 계산!!!!
     session_ids = pattern_qs.values_list("cognitive_session_id", flat=True).distinct()
 
     session_accuracy_list = []
