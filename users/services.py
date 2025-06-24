@@ -516,22 +516,24 @@ def get_cognitive_detail(user, date):
     pattern_time_sec = pattern_qs.aggregate(avg=Avg("pattern_time_sec"))["avg"] or 0
 
     session_ids = pattern_qs.values_list("cognitive_session_id", flat=True).distinct()
-    problems_per_session = CognitiveSessionProblem.objects.filter(
-        session_id__in=session_ids
+
+    session_accuracy_list = []
+    for session_id in session_ids:
+        correct = (
+            pattern_qs.filter(cognitive_session_id=session_id).aggregate(
+                total=Sum("pattern_correct")
+            )["total"]
+            or 0
+        )
+        total = CognitiveSessionProblem.objects.filter(session_id=session_id).count()
+        acc = correct / total if total else 0
+        session_accuracy_list.append(acc)
+
+    pattern_accuracy = (
+        round(sum(session_accuracy_list) / len(session_accuracy_list) * 100, 1)
+        if session_accuracy_list
+        else 0
     )
-
-    session_problem_map = defaultdict(int)
-    for problem in problems_per_session:
-        session_problem_map[problem.session_id] += 1
-
-    total_problems = sum(session_problem_map.values())
-    total_correct = sum([r.pattern_correct for r in pattern_qs])
-
-    if total_problems > 0:
-        pattern_accuracy = round((total_correct / total_problems) * 100, 1)
-        pattern_accuracy = min(pattern_accuracy, 100)
-    else:
-        pattern_accuracy = 0
 
     total_score = srt_score + symbol_score + pattern_score
 
