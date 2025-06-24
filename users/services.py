@@ -517,19 +517,23 @@ def get_cognitive_detail(user, date):
 
     total_correct = 0
     total_problems = 0
+    counted_session_ids = set()
 
     for pattern_result in pattern_qs:
         session = pattern_result.cognitive_session
-        if session:
+        if session and session.id not in counted_session_ids:
+            counted_session_ids.add(session.id)
             session_problem_count = CognitiveSessionProblem.objects.filter(
                 session=session
             ).count()
             total_problems += session_problem_count
             total_correct += pattern_result.pattern_correct
 
-    pattern_accuracy = (
-        round((total_correct / total_problems) * 100, 1) if total_problems else 0
-    )
+    if total_problems > 0:
+        pattern_accuracy = round((total_correct / total_problems) * 100, 1)
+        pattern_accuracy = min(pattern_accuracy, 100)
+    else:
+        pattern_accuracy = 0
 
     total_score = srt_score + symbol_score + pattern_score
 
