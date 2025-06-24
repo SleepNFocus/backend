@@ -10,6 +10,7 @@ from cognitive_statistics.models import (
     CognitiveResultPattern,
     CognitiveResultSRT,
     CognitiveResultSymbol,
+    CognitiveSessionProblem,
 )
 from sleep_record.models import SleepRecord
 
@@ -512,8 +513,18 @@ def get_cognitive_detail(user, date):
 
     pattern_score = pattern_qs.aggregate(avg=Avg("score"))["avg"] or 0
     pattern_count = pattern_qs.aggregate(total=Sum("pattern_correct"))["total"] or 0
-    # 정확도가 없기 때문에 0으로 고정, 필요하다면 따로 계산
-    pattern_accuracy = 0
+    total_problems = 0
+    for pattern_result in pattern_qs:
+        session = pattern_result.cognitive_session
+        if session:
+            total_problems += CognitiveSessionProblem.objects.filter(
+                session=session
+            ).count()
+
+    if total_problems > 0:
+        pattern_accuracy = round(pattern_count / total_problems * 100)
+    else:
+        pattern_accuracy = 0
     pattern_time_sec = pattern_qs.aggregate(avg=Avg("pattern_time_sec"))["avg"] or 0
 
     total_score = srt_score + symbol_score + pattern_score
