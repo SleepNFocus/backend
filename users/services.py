@@ -2,7 +2,7 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta
 
 from django.db import transaction
-from django.db.models import Avg, Sum, Max
+from django.db.models import Avg, Max, Sum
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
