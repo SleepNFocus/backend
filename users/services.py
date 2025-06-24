@@ -494,38 +494,87 @@ def get_sleep_detail(user, date):
 
 # 해당 날짜의 인지 기록 상세
 def get_cognitive_detail(user, date):
-    srt_qs = CognitiveResultSRT.objects.filter(
-        cognitive_session__user=user, created_at__date=date
+    # srt
+    srt_results = list(
+        CognitiveResultSRT.objects.filter(
+            cognitive_session__user=user, created_at__date=date
+        )
     )
-    pattern_qs = CognitiveResultPattern.objects.filter(
-        cognitive_session__user=user, created_at__date=date
+    srt_score = (
+        round(sum(result.score for result in srt_results) / len(srt_results), 1)
+        if srt_results
+        else 0
     )
-    symbol_qs = CognitiveResultSymbol.objects.filter(
-        cognitive_session__user=user, created_at__date=date
+    srt_time_ms = (
+        int(sum(result.reaction_avg_ms for result in srt_results) / len(srt_results))
+        if srt_results
+        else 0
     )
 
-    srt_score = srt_qs.aggregate(avg=Avg("score"))["avg"] or 0
-    srt_time_ms = srt_qs.aggregate(avg=Avg("reaction_avg_ms"))["avg"] or 0
+    # symbol
+    symbol_results = list(
+        CognitiveResultSymbol.objects.filter(
+            cognitive_session__user=user, created_at__date=date
+        )
+    )
+    symbol_score = (
+        round(sum(result.score for result in symbol_results) / len(symbol_results), 1)
+        if symbol_results
+        else 0
+    )
+    symbol_count = (
+        sum(result.symbol_correct for result in symbol_results) if symbol_results else 0
+    )
+    symbol_accuracy = (
+        int(
+            sum(result.symbol_accuracy for result in symbol_results)
+            / len(symbol_results)
+        )
+        if symbol_results
+        else 0
+    )
 
-    symbol_score = symbol_qs.aggregate(avg=Avg("score"))["avg"] or 0
-    symbol_count = symbol_qs.aggregate(total=Sum("symbol_correct"))["total"] or 0
-    symbol_accuracy = symbol_qs.aggregate(avg=Avg("symbol_accuracy"))["avg"] or 0
+    # pattern
+    pattern_results = list(
+        CognitiveResultPattern.objects.filter(
+            cognitive_session__user=user, created_at__date=date
+        ).order_by("cognitive_session_id", "-created_at")
+    )
 
-    pattern_score = pattern_qs.aggregate(avg=Avg("score"))["avg"] or 0
-    pattern_count = pattern_qs.aggregate(total=Sum("pattern_correct"))["total"] or 0
-    total_problems = 0
-    for pattern_result in pattern_qs:
-        session = pattern_result.cognitive_session
-        if session:
-            total_problems += CognitiveSessionProblem.objects.filter(
-                session=session
-            ).count()
+    # 세션별로 최신 결과만 반영
+    session_latest = {}
+    for result in pattern_results:
+        session_id = result.cognitive_session_id
+        if session_id not in session_latest:
+            session_latest[session_id] = result
 
-    if total_problems > 0:
-        pattern_accuracy = round(pattern_count / total_problems * 100)
-    else:
-        pattern_accuracy = 0
-    pattern_time_sec = pattern_qs.aggregate(avg=Avg("pattern_time_sec"))["avg"] or 0
+    pattern_score_list = [r.score for r in session_latest.values()]
+    pattern_time_sec_list = [r.pattern_time_sec for r in session_latest.values()]
+    pattern_correct_list = [r.pattern_correct for r in session_latest.values()]
+
+    pattern_score = (
+        round(sum(pattern_score_list) / len(pattern_score_list), 1)
+        if pattern_score_list
+        else 0
+    )
+    pattern_count = sum(pattern_correct_list)
+    pattern_time_sec = (
+        sum(pattern_time_sec_list) / len(pattern_time_sec_list)
+        if pattern_time_sec_list
+        else 0
+    )
+
+    # 전체 문제수 (세션별)
+    session_problems = {
+        session_id: CognitiveSessionProblem.objects.filter(
+            session_id=session_id
+        ).count()
+        for session_id in session_latest
+    }
+    total_problems = sum(session_problems.values())
+    pattern_accuracy = (
+        int(min((pattern_count / total_problems) * 100, 100)) if total_problems else 0
+    )
 
     total_score = srt_score + symbol_score + pattern_score
 
@@ -538,7 +587,7 @@ def get_cognitive_detail(user, date):
         "pattern_score": round(pattern_score, 1),
         "pattern_count": int(pattern_count),
         "pattern_accuracy": int(pattern_accuracy),
-        "pattern_time_ms": int(pattern_time_sec * 1000),  # 초 → 밀리초 변환
+        "pattern_time_ms": int(pattern_time_sec * 1000),
         "total_score": round(total_score, 1),
     }
 
