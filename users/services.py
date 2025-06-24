@@ -494,49 +494,60 @@ def get_sleep_detail(user, date):
 
 # 해당 날짜의 인지 기록 상세
 def get_cognitive_detail(user, date):
+    # 각 결과 쿼리셋
     srt_qs = CognitiveResultSRT.objects.filter(
-        cognitive_session__user=user, created_at__date=date
-    )
-    pattern_qs = CognitiveResultPattern.objects.filter(
         cognitive_session__user=user, created_at__date=date
     )
     symbol_qs = CognitiveResultSymbol.objects.filter(
         cognitive_session__user=user, created_at__date=date
     )
+    pattern_qs = list(
+        CognitiveResultPattern.objects.filter(
+            cognitive_session__user=user, created_at__date=date
+        )
+    )
 
+    # SRT 데이터
     srt_score = srt_qs.aggregate(avg=Avg("score"))["avg"] or 0
     srt_time_ms = srt_qs.aggregate(avg=Avg("reaction_avg_ms"))["avg"] or 0
 
-    symbol_score = symbol_qs.aggregate(avg=Avg("score"))["avg"] or 0
-    symbol_count = symbol_qs.aggregate(total=Sum("symbol_correct"))["total"] or 0
-    symbol_accuracy = symbol_qs.aggregate(avg=Avg("symbol_accuracy"))["avg"] or 0
+    # Symbol 데이터
+    symbol_agg = symbol_qs.aggregate(
+        score=Avg("score"),
+        count=Sum("symbol_correct"),
+        accuracy=Avg("symbol_accuracy"),
+    )
+    symbol_score = symbol_agg["score"] or 0
+    symbol_count = symbol_agg["count"] or 0
+    symbol_accuracy = symbol_agg["accuracy"] or 0
 
-    pattern_score = pattern_qs.aggregate(avg=Avg("score"))["avg"] or 0
-    pattern_count = pattern_qs.aggregate(total=Sum("pattern_correct"))["total"] or 0
-    pattern_time_sec = pattern_qs.aggregate(avg=Avg("pattern_time_sec"))["avg"] or 0
+    # Pattern 데이터
+    pattern_score = (
+        sum(p.score for p in pattern_qs) / len(pattern_qs) if pattern_qs else 0
+    )
+    pattern_count = sum(p.pattern_correct for p in pattern_qs)
+    pattern_time_sec = (
+        sum(p.pattern_time_sec for p in pattern_qs) / len(pattern_qs)
+        if pattern_qs
+        else 0
+    )
 
-    # 디버깅용: 세션별 문제 수 기록
+    # 정확도 계산 (100% 초과 방지)
     total_problems = 0
-    debug_info = []
-
     for pattern_result in pattern_qs:
         session = pattern_result.cognitive_session
         if session:
-            count = CognitiveSessionProblem.objects.filter(session=session).count()
-            total_problems += count
-            debug_info.append(
-                {
-                    "session_id": session.id,
-                    "pattern_result_id": pattern_result.id,
-                    "problem_count": count,
-                }
-            )
+            total_problems += CognitiveSessionProblem.objects.filter(
+                session=session
+            ).count()
 
     if total_problems > 0:
-        pattern_accuracy = round(pattern_count / total_problems * 100)
+        raw_accuracy = pattern_count / total_problems * 100
+        pattern_accuracy = min(round(raw_accuracy), 100)
     else:
         pattern_accuracy = 0
 
+    # 전체 점수 합산
     total_score = srt_score + symbol_score + pattern_score
 
     return {
@@ -548,9 +559,8 @@ def get_cognitive_detail(user, date):
         "pattern_score": round(pattern_score, 1),
         "pattern_count": int(pattern_count),
         "pattern_accuracy": int(pattern_accuracy),
-        "pattern_time_ms": int(pattern_time_sec * 1000),  # 초 → 밀리초 변환
+        "pattern_time_ms": int(pattern_time_sec * 1000),  # 초 → 밀리초
         "total_score": round(total_score, 1),
-        "__debug": debug_info,  # 디버그 정보 포함
     }
 
 
