@@ -538,29 +538,40 @@ def get_cognitive_detail(user, date):
     pattern_results = list(
         CognitiveResultPattern.objects.filter(
             cognitive_session__user=user, created_at__date=date
-        )
-    )
-    session_max_correct = {}
-    pattern_scores, pattern_time_secs = [], []
-    for pattern in pattern_results:
-        pattern_scores.append(pattern.score)
-        pattern_time_secs.append(pattern.pattern_time_sec)
-        session_id = pattern.cognitive_session_id
-        session_max_correct[session_id] = max(
-            session_max_correct.get(session_id, 0), pattern.pattern_correct
-        )
-    pattern_score = (
-        round(sum(pattern_scores) / len(pattern_scores), 1) if pattern_scores else 0
-    )
-    pattern_count = sum(session_max_correct.values())
-    pattern_time_sec = (
-        sum(pattern_time_secs) / len(pattern_time_secs) if pattern_time_secs else 0
+        ).order_by("cognitive_session_id", "-created_at")
     )
 
-    total_problems = sum(
-        CognitiveSessionProblem.objects.filter(session_id=session_id).count()
-        for session_id in session_max_correct
+    # 세션별로 최신 결과만 반영
+    session_latest = {}
+    for result in pattern_results:
+        session_id = result.cognitive_session_id
+        if session_id not in session_latest:
+            session_latest[session_id] = result
+
+    pattern_score_list = [r.score for r in session_latest.values()]
+    pattern_time_sec_list = [r.pattern_time_sec for r in session_latest.values()]
+    pattern_correct_list = [r.pattern_correct for r in session_latest.values()]
+
+    pattern_score = (
+        round(sum(pattern_score_list) / len(pattern_score_list), 1)
+        if pattern_score_list
+        else 0
     )
+    pattern_count = sum(pattern_correct_list)
+    pattern_time_sec = (
+        sum(pattern_time_sec_list) / len(pattern_time_sec_list)
+        if pattern_time_sec_list
+        else 0
+    )
+
+    # 전체 문제수 (세션별)
+    session_problems = {
+        session_id: CognitiveSessionProblem.objects.filter(
+            session_id=session_id
+        ).count()
+        for session_id in session_latest
+    }
+    total_problems = sum(session_problems.values())
     pattern_accuracy = (
         int(min((pattern_count / total_problems) * 100, 100)) if total_problems else 0
     )
