@@ -515,25 +515,21 @@ def get_cognitive_detail(user, date):
     pattern_count = pattern_qs.aggregate(total=Sum("pattern_correct"))["total"] or 0
     pattern_time_sec = pattern_qs.aggregate(avg=Avg("pattern_time_sec"))["avg"] or 0
 
-    # 정확도 계산을 위한 중복 방지 로직
-    unique_sessions = pattern_qs.values_list(
-        "cognitive_session_id", flat=True
-    ).distinct()
+    total_correct = 0
+    total_problems = 0
 
-    total_problems = CognitiveSessionProblem.objects.filter(
-        session_id__in=unique_sessions
-    ).count()
+    for pattern_result in pattern_qs:
+        session = pattern_result.cognitive_session
+        if session:
+            session_problem_count = CognitiveSessionProblem.objects.filter(
+                session=session
+            ).count()
+            total_problems += session_problem_count
+            total_correct += pattern_result.pattern_correct
 
-    total_correct = (
-        pattern_qs.aggregate(total_correct=Sum("pattern_correct"))["total_correct"] or 0
+    pattern_accuracy = (
+        round((total_correct / total_problems) * 100, 1) if total_problems else 0
     )
-
-    if total_problems > 0:
-        pattern_accuracy = round((total_correct / total_problems) * 100)
-        # 정확도는 최대 100까지만 표현 가능
-        pattern_accuracy = min(pattern_accuracy, 100)
-    else:
-        pattern_accuracy = 0
 
     total_score = srt_score + symbol_score + pattern_score
 
