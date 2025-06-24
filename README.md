@@ -108,8 +108,9 @@
 - **CI/CD**: GitHub Actions + Discord 알림
 
 ### 🏗️ Infra Diagram
+<img width="967" alt="스크린샷 2025-06-24 오후 5 33 52" src="https://github.com/user-attachments/assets/7168b2f2-26ba-4606-a0c3-25ee95c98c54" />
 
-![Web App Reference Architecture (1)](https://github.com/user-attachments/assets/1b43633e-0509-46ac-80d6-9124306e3082)
+
 
 
 
