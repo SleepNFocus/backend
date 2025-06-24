@@ -515,10 +515,6 @@ def get_cognitive_detail(user, date):
     pattern_count = pattern_qs.aggregate(total=Sum("pattern_correct"))["total"] or 0
     pattern_time_sec = pattern_qs.aggregate(avg=Avg("pattern_time_sec"))["avg"] or 0
 
-    total_correct = 0
-    total_problems = 0
-    counted_session_ids = set()
-
     session_ids = pattern_qs.values_list("cognitive_session_id", flat=True).distinct()
     problems_per_session = CognitiveSessionProblem.objects.filter(
         session_id__in=session_ids
