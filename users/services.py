@@ -2,7 +2,7 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta
 
 from django.db import transaction
-from django.db.models import Avg, Max, Sum
+from django.db.models import Avg, Sum
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
@@ -494,51 +494,75 @@ def get_sleep_detail(user, date):
 
 # 해당 날짜의 인지 기록 상세
 def get_cognitive_detail(user, date):
-    srt_qs = CognitiveResultSRT.objects.filter(
-        cognitive_session__user=user, created_at__date=date
-    )
-    pattern_qs = CognitiveResultPattern.objects.filter(
-        cognitive_session__user=user, created_at__date=date
-    )
-    symbol_qs = CognitiveResultSymbol.objects.filter(
-        cognitive_session__user=user, created_at__date=date
-    )
-
-    srt_score = srt_qs.aggregate(avg=Avg("score"))["avg"] or 0
-    srt_time_ms = srt_qs.aggregate(avg=Avg("reaction_avg_ms"))["avg"] or 0
-
-    symbol_score = symbol_qs.aggregate(avg=Avg("score"))["avg"] or 0
-    symbol_count = symbol_qs.aggregate(total=Sum("symbol_correct"))["total"] or 0
-    symbol_accuracy = symbol_qs.aggregate(avg=Avg("symbol_accuracy"))["avg"] or 0
-
-    pattern_score = pattern_qs.aggregate(avg=Avg("score"))["avg"] or 0
-    pattern_count = pattern_qs.aggregate(total=Sum("pattern_correct"))["total"] or 0
-    pattern_time_sec = pattern_qs.aggregate(avg=Avg("pattern_time_sec"))["avg"] or 0
-
-    # 세션별 pattern_correct 최대값만 집계
-    session_ids = pattern_qs.values_list("cognitive_session_id", flat=True).distinct()
-
-    total_correct = 0
-    total_problems = 0
-
-    for session_id in session_ids:
-        # 세션별로 여러 row가 있을 수 있기 때문에 가장 큰 pattern_correct만 사용
-        correct = (
-            pattern_qs.filter(cognitive_session_id=session_id).aggregate(
-                max_correct=Max("pattern_correct")
-            )["max_correct"]
-            or 0
+    # srt
+    srt_results = list(
+        CognitiveResultSRT.objects.filter(
+            cognitive_session__user=user, created_at__date=date
         )
-        problems = CognitiveSessionProblem.objects.filter(session_id=session_id).count()
-        total_correct += correct
-        total_problems += problems
-
-    pattern_count = total_correct
-
-    pattern_accuracy = (
-        round(min((total_correct / total_problems) * 100, 100), 1)
-        if total_problems
+    )
+    srt_score = (
+        round(sum(result.score for result in srt_results) / len(srt_results), 1)
+        if srt_results
         else 0
+    )
+    srt_time_ms = (
+        int(sum(result.reaction_avg_ms for result in srt_results) / len(srt_results))
+        if srt_results
+        else 0
+    )
+
+    # symbol
+    symbol_results = list(
+        CognitiveResultSymbol.objects.filter(
+            cognitive_session__user=user, created_at__date=date
+        )
+    )
+    symbol_score = (
+        round(sum(result.score for result in symbol_results) / len(symbol_results), 1)
+        if symbol_results
+        else 0
+    )
+    symbol_count = (
+        sum(result.symbol_correct for result in symbol_results) if symbol_results else 0
+    )
+    symbol_accuracy = (
+        int(
+            sum(result.symbol_accuracy for result in symbol_results)
+            / len(symbol_results)
+        )
+        if symbol_results
+        else 0
+    )
+
+    # pattern
+    pattern_results = list(
+        CognitiveResultPattern.objects.filter(
+            cognitive_session__user=user, created_at__date=date
+        )
+    )
+    session_max_correct = {}
+    pattern_scores, pattern_time_secs = [], []
+    for pattern in pattern_results:
+        pattern_scores.append(pattern.score)
+        pattern_time_secs.append(pattern.pattern_time_sec)
+        session_id = pattern.cognitive_session_id
+        session_max_correct[session_id] = max(
+            session_max_correct.get(session_id, 0), pattern.pattern_correct
+        )
+    pattern_score = (
+        round(sum(pattern_scores) / len(pattern_scores), 1) if pattern_scores else 0
+    )
+    pattern_count = sum(session_max_correct.values())
+    pattern_time_sec = (
+        sum(pattern_time_secs) / len(pattern_time_secs) if pattern_time_secs else 0
+    )
+
+    total_problems = sum(
+        CognitiveSessionProblem.objects.filter(session_id=session_id).count()
+        for session_id in session_max_correct
+    )
+    pattern_accuracy = (
+        int(min((pattern_count / total_problems) * 100, 100)) if total_problems else 0
     )
 
     total_score = srt_score + symbol_score + pattern_score
