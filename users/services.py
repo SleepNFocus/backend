@@ -10,7 +10,6 @@ from cognitive_statistics.models import (
     CognitiveResultPattern,
     CognitiveResultSRT,
     CognitiveResultSymbol,
-    CognitiveSessionProblem,
 )
 from sleep_record.models import SleepRecord
 
@@ -564,18 +563,6 @@ def get_cognitive_detail(user, date):
         else 0
     )
 
-    # 전체 문제수 (세션별)
-    session_problems = {
-        session_id: CognitiveSessionProblem.objects.filter(
-            session_id=session_id
-        ).count()
-        for session_id in session_latest
-    }
-    total_problems = sum(session_problems.values())
-    pattern_accuracy = (
-        int(min((pattern_count / total_problems) * 100, 100)) if total_problems else 0
-    )
-
     total_score = srt_score + symbol_score + pattern_score
 
     return {
@@ -586,7 +573,6 @@ def get_cognitive_detail(user, date):
         "symbol_accuracy": int(symbol_accuracy),
         "pattern_score": round(pattern_score, 1),
         "pattern_count": int(pattern_count),
-        "pattern_accuracy": int(pattern_accuracy),
         "pattern_time_ms": int(pattern_time_sec * 1000),
         "total_score": round(total_score, 1),
     }
