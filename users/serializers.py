@@ -273,7 +273,6 @@ class MypageRecordDetailCognitiveSerializer(serializers.Serializer):
     symbol_accuracy = serializers.IntegerField()
     pattern_score = serializers.FloatField()
     pattern_count = serializers.IntegerField()
-    pattern_accuracy = serializers.IntegerField()
     pattern_time_ms = serializers.FloatField()
 
 
