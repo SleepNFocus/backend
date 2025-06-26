@@ -2,7 +2,7 @@ import os
 
 from .base import *  # noqa
 
-DEBUG = True  # 디버그 모드(개발 모드) 에러가 발생 하면 장고에서 노란 화면으로 알려줌
+DEBUG = False  # 디버그 모드(개발 모드) 에러가 발생 하면 장고에서 노란 화면으로 알려줌
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",  # 도커 실행 시
@@ -18,6 +18,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8081",
     "https://focuz-admin.netlify.app",
 ]
+
 CORS_ALLOW_CREDENTIALS = True
 
 # DB는 .env 값 기반 설정 (이미 base.py에서 .env 로드됨)
@@ -31,3 +32,18 @@ DATABASES = {
         "PORT": os.getenv("DB_PORT"),
     }
 }
+
+
+INSTALLED_APPS += ["storages"]
+
+# AWS_ACCESS_KEY_ID       = os.getenv("AWS_ACCESS_KEY_ID")
+# AWS_SECRET_ACCESS_KEY   = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")   # dev/prod 분기
+AWS_S3_REGION_NAME      = "ap-northeast-2"
+AWS_S3_SIGNATURE_VERSION = "s3v4"
+AWS_S3_ADDRESSING_STYLE  = "virtual"
+AWS_DEFAULT_ACL          = None
+AWS_S3_FILE_OVERWRITE    = False
+
+MEDIA_URL  = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/"
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
