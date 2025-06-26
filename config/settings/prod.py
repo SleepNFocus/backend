@@ -1,6 +1,7 @@
 import os
 
 from .base import *  # noqa
+from .base import INSTALLED_APPS
 
 DEBUG = False  # 디버그 모드(개발 모드) 에러가 발생 하면 장고에서 노란 화면으로 알려줌
 ALLOWED_HOSTS = [
@@ -38,12 +39,12 @@ INSTALLED_APPS += ["storages"]
 
 # AWS_ACCESS_KEY_ID       = os.getenv("AWS_ACCESS_KEY_ID")
 # AWS_SECRET_ACCESS_KEY   = os.getenv("AWS_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")   # dev/prod 분기
-AWS_S3_REGION_NAME      = "ap-northeast-2"
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")  # dev/prod 분기
+AWS_S3_REGION_NAME = "ap-northeast-2"
 AWS_S3_SIGNATURE_VERSION = "s3v4"
-AWS_S3_ADDRESSING_STYLE  = "virtual"
-AWS_DEFAULT_ACL          = None
-AWS_S3_FILE_OVERWRITE    = False
+AWS_S3_ADDRESSING_STYLE = "virtual"
+AWS_DEFAULT_ACL = None
+AWS_S3_FILE_OVERWRITE = False
 
-MEDIA_URL  = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/"
+MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/"
 DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
