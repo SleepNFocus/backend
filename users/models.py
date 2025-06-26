@@ -124,7 +124,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     social_id = models.CharField(max_length=255)
     email = models.EmailField(max_length=100)
     nickname = models.CharField(max_length=50)
-    profile_img = models.ImageField(upload_to="profile/", null=True, blank=True)
+    profile_img = models.ImageField(upload_to="profile", null=True, blank=True)
     gender = models.CharField(
         max_length=5, choices=Gender.choices, null=True, blank=True
     )

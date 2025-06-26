@@ -202,7 +202,7 @@ class MypageProfileSerializer(serializers.ModelSerializer):
                 instance.profile_img.delete(save=False)
             # 같은 이름으로 저장
             file_name = f"profile/{instance.user_id}.jpg"
-            instance.profile_img.save(file_name, profile_img, save=False)
+            instance.profile_img.save(file_name, profile_img)
             # validated_data에서 profile_img 키 제거 (이미 직접 할당함)
             validated_data.pop("profile_img")
 
