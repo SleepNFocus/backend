@@ -16,7 +16,7 @@ ALLOWED_HOSTS = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8081",
-    "https://focuz-admin.netlify.app/",
+    "https://focuz-admin.netlify.app",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
