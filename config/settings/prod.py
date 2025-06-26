@@ -36,6 +36,9 @@ DATABASES = {
 STORAGES = {
     "default": {
         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            "default_acl": None,        # ACL 아예 안 붙임
+        },
     },
 }
 
