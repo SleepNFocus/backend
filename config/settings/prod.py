@@ -34,11 +34,12 @@ DATABASES = {
 }
 
 STORAGES = {
-    "default": {
+    "default": {                           # ← 이미 있던 미디어용 S3
         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-        "OPTIONS": {
-            "default_acl": None,        # ACL 아예 안 붙임
-        },
+        "OPTIONS": {"default_acl": None},
+    },
+    "staticfiles": {                       # ← 새로 추가!
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
 
