@@ -22,17 +22,27 @@ jobs:
           script: |
             set -e
             cd ~/backend
+            
+            # ── FocusZ 가상환경만 쓰도록 고정 ─────────────────────────
+            export PYENV_ROOT="$HOME/.pyenv"
+            export PATH="$PYENV_ROOT/bin:$PATH"
+            eval "$(pyenv init -)"
+            pyenv activate FocusZ      # ← 핵심: 전역 파이썬 대신 FocusZ 고정
+            # ──────────────────────────────────────────────────────────
+            
+            # Poetry 바이너리 경로
+            export PATH="$HOME/.poetry/bin:$HOME/.local/bin:$PATH"
+            
+            # 환경변수 로드 (.env는 DB·S3 자격증명만 포함)
             set -o allexport
             source .env
             set +o allexport
-            source ~/.bashrc || true
-            export PATH="$HOME/.poetry/bin:$HOME/.local/bin:$PATH"
-
+            
             git pull origin dev
-            poetry install
+            poetry install          # FocusZ site-packages에만 설치
             poetry run python manage.py migrate
             poetry run python manage.py collectstatic --noinput
-
+            
             sudo systemctl restart gunicorn
             sudo systemctl restart nginx
 
@@ -52,16 +62,26 @@ jobs:
           script: |
             set -e
             cd ~/backend
+            
+            # ── FocusZ 가상환경만 쓰도록 고정 ─────────────────────────
+            export PYENV_ROOT="$HOME/.pyenv"
+            export PATH="$PYENV_ROOT/bin:$PATH"
+            eval "$(pyenv init -)"
+            pyenv activate FocusZ      # ← 핵심: 전역 파이썬 대신 FocusZ 고정
+            # ──────────────────────────────────────────────────────────
+            
+            # Poetry 바이너리 경로
+            export PATH="$HOME/.poetry/bin:$HOME/.local/bin:$PATH"
+            
+            # 환경변수 로드 (.env는 DB·S3 자격증명만 포함)
             set -o allexport
             source .env
             set +o allexport
-            source ~/.bashrc || true
-            export PATH="$HOME/.poetry/bin:$HOME/.local/bin:$PATH"
-
+            
             git pull origin dev
-            poetry install
+            poetry install          # FocusZ site-packages에만 설치
             poetry run python manage.py migrate
             poetry run python manage.py collectstatic --noinput
-
+            
             sudo systemctl restart gunicorn
             sudo systemctl restart nginx

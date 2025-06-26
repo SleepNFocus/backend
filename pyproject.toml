@@ -28,6 +28,7 @@ django-cors-headers = "^4.7.0"
 google-generativeai = "^0.8.5"
 sentry-sdk = "^2.30.0"
 pillow = "^11.2.1"
+django-storages = {extras = ["boto3"], version = "^1.14.6"}
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"

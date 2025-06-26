@@ -10,7 +10,6 @@ from cognitive_statistics.models import (
     CognitiveResultPattern,
     CognitiveResultSRT,
     CognitiveResultSymbol,
-    CognitiveSessionProblem,
 )
 from sleep_record.models import SleepRecord
 
@@ -170,11 +169,13 @@ def get_mypage_main_data(user, request):
     if user.status == UserStatus.WITHDRAWN:
         raise PermissionDenied("탈퇴된 유저입니다.")
 
-    # 모든 수면 기록
-    sleep_records = SleepRecord.objects.filter(user=user)
+    # 가입일 기준으로 tracking_days 계산
+    joined_date = user.joined_at.date() if user.joined_at else date.today()
+    today = timezone.now().date()
+    tracking_days = (today - joined_date).days + 1
 
-    # 수면 관련
-    tracking_days = sleep_records.count()
+    # 수면 기록
+    sleep_records = SleepRecord.objects.filter(user=user)
     total_sleep_minutes = (
         sleep_records.aggregate(total=Sum("sleep_duration"))["total"] or 0
     )
@@ -564,18 +565,6 @@ def get_cognitive_detail(user, date):
         else 0
     )
 
-    # 전체 문제수 (세션별)
-    session_problems = {
-        session_id: CognitiveSessionProblem.objects.filter(
-            session_id=session_id
-        ).count()
-        for session_id in session_latest
-    }
-    total_problems = sum(session_problems.values())
-    pattern_accuracy = (
-        int(min((pattern_count / total_problems) * 100, 100)) if total_problems else 0
-    )
-
     total_score = srt_score + symbol_score + pattern_score
 
     return {
@@ -586,7 +575,6 @@ def get_cognitive_detail(user, date):
         "symbol_accuracy": int(symbol_accuracy),
         "pattern_score": round(pattern_score, 1),
         "pattern_count": int(pattern_count),
-        "pattern_accuracy": int(pattern_accuracy),
         "pattern_time_ms": int(pattern_time_sec * 1000),
         "total_score": round(total_score, 1),
     }
