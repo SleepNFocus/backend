@@ -5,9 +5,9 @@ from .base import *  # noqa
 DEBUG = False  # 디버그 모드(개발 모드) 에러가 발생 하면 장고에서 노란 화면으로 알려줌
 ALLOWED_HOSTS = [
     "focusz.site",
-    ".focusz.site",  # *.focusz.site 전부 허용
+    "www.focusz.site",  # *.focusz.site 전부 허용
     "dev.focusz.site",
-    ".dev.focusz.site",
+    "www.dev.focusz.site",
 ]
 
 # 배포 환경에서는 CORS를 제한적으로 허용
@@ -33,10 +33,6 @@ DATABASES = {
     }
 }
 
-
-INSTALLED_APPS += [  # noqa: F405
-    "storages",
-]
 
 # AWS_ACCESS_KEY_ID       = os.getenv("AWS_ACCESS_KEY_ID")
 # AWS_SECRET_ACCESS_KEY   = os.getenv("AWS_SECRET_ACCESS_KEY")
