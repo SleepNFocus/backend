@@ -3,12 +3,20 @@ import os
 from .base import *  # noqa
 
 DEBUG = True  # 디버그 모드(개발 모드) 에러가 발생 하면 장고에서 노란 화면으로 알려줌
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",  # 도커 실행 시
+    "www.dev.focusz.site",
+    "dev.focusz.site",
+    "www.focusz.site",
+    "focusz.site",
+]
 
 # 배포 환경에서는 CORS를 제한적으로 허용
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8081",
+    "https://focuz-admin.netlify.app/",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
