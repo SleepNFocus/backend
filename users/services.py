@@ -169,11 +169,13 @@ def get_mypage_main_data(user, request):
     if user.status == UserStatus.WITHDRAWN:
         raise PermissionDenied("탈퇴된 유저입니다.")
 
-    # 모든 수면 기록
-    sleep_records = SleepRecord.objects.filter(user=user)
+    # 가입일 기준으로 tracking_days 계산
+    joined_date = user.joined_at.date() if user.joined_at else date.today()
+    today = timezone.now().date()
+    tracking_days = (today - joined_date).days + 1
 
-    # 수면 관련
-    tracking_days = sleep_records.count()
+    # 수면 기록
+    sleep_records = SleepRecord.objects.filter(user=user)
     total_sleep_minutes = (
         sleep_records.aggregate(total=Sum("sleep_duration"))["total"] or 0
     )
