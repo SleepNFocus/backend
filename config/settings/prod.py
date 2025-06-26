@@ -1,12 +1,13 @@
 import os  # noqa
+
 from .base import *  # noqa
 
 DEBUG = False  # 디버그 모드(개발 모드) 에러가 발생 하면 장고에서 노란 화면으로 알려줌
 ALLOWED_HOSTS = [
     "focusz.site",
-    ".focusz.site",   # *.focusz.site 전부 허용
+    ".focusz.site",  # *.focusz.site 전부 허용
     "dev.focusz.site",
-    ".dev.focusz.site"
+    ".dev.focusz.site",
 ]
 
 # 배포 환경에서는 CORS를 제한적으로 허용
@@ -18,10 +19,7 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://focuz-admin.netlify.app",
-    "http://localhost:8081"
-]
+CSRF_TRUSTED_ORIGINS = ["https://focuz-admin.netlify.app", "http://localhost:8081"]
 
 # DB는 .env 값 기반 설정 (이미 base.py에서 .env 로드됨)
 DATABASES = {
