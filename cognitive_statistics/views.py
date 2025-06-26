@@ -172,9 +172,12 @@ class CognitiveResultPatternAPIView(APIView):
 
         score = data.get("score") or 0
         pattern_correct = data.get("patternCorrect") or data.get("pattern_correct") or 0
-        pattern_time_sec = (
-            data.get("patternTimeSec") or data.get("pattern_time_sec") or 0.0
-        )
+        # ms -> 초로 변환
+        raw_time = data.get("patternTimeSec") or data.get("pattern_time_sec") or 0.0
+        try:
+            pattern_time_sec = float(raw_time) / 1000
+        except (TypeError, ValueError):
+            pattern_time_sec = 0.0
 
         result = CognitiveResultPattern.objects.create(
             cognitive_session=session,
