@@ -1,5 +1,4 @@
-import os
-
+import os  # noqa
 from .base import *  # noqa
 
 DEBUG = False  # 디버그 모드(개발 모드) 에러가 발생 하면 장고에서 노란 화면으로 알려줌
@@ -37,7 +36,9 @@ DATABASES = {
 }
 
 
-INSTALLED_APPS += ["storages"]
+INSTALLED_APPS += [  # noqa: F405
+    "storages",
+]
 
 # AWS_ACCESS_KEY_ID       = os.getenv("AWS_ACCESS_KEY_ID")
 # AWS_SECRET_ACCESS_KEY   = os.getenv("AWS_SECRET_ACCESS_KEY")
