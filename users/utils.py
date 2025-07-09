@@ -1,6 +1,8 @@
+import time
 from datetime import date, timedelta
 from urllib.request import urlopen
 
+import jwt
 import redis
 import requests
 from django.conf import settings
@@ -157,6 +159,65 @@ def get_google_user_info(access_token):
         "email": data.get("email"),
         "name": data.get("name"),
         "profile_img": data.get("picture"),
+    }
+
+
+# 애플 클라이언트 시크릿 생성
+def generate_apple_client_secret():
+    with open(settings.APPLE_PRIVATE_KEY_PATH, "r") as f:
+        private_key = f.read()
+
+    headers = {
+        "kid": settings.APPLE_KEY_ID,
+        "alg": "ES256",
+    }
+
+    payload = {
+        "iss": settings.APPLE_TEAM_ID,
+        "iat": int(time.time()),
+        "exp": int(time.time()) + 86400 * 180,  # 6개월
+        "aud": "https://appleid.apple.com",
+        "sub": settings.APPLE_CLIENT_ID,
+    }
+
+    client_secret = jwt.encode(
+        payload,
+        private_key,
+        algorithm="ES256",
+        headers=headers,
+    )
+    if isinstance(client_secret, bytes):
+        client_secret = client_secret.decode("utf-8")
+    return client_secret
+
+
+# 애플 인가 코드로 access_token, id_token 받기
+def get_apple_access_token_from_code(code):
+    resp = requests.post(
+        "https://appleid.apple.com/auth/token",
+        data={
+            "client_id": settings.APPLE_CLIENT_ID,
+            "client_secret": generate_apple_client_secret(),
+            "code": code,
+            "grant_type": "authorization_code",
+            "redirect_uri": settings.APPLE_REDIRECT_URI,
+        },
+        headers={"Content-type": "application/x-www-form-urlencoded"},
+    )
+    data = resp.json()
+    if "id_token" not in data:
+        raise Exception(f"Apple 토큰 요청 실패: {data}")
+    return data  # access_token, id_token 포함
+
+
+# 애플 id_token에서 사용자 정보 추출
+def decode_apple_id_token(id_token):
+    payload = jwt.decode(
+        id_token, options={"verify_signature": False, "verify_aud": False}
+    )
+    return {
+        "id": payload.get("sub"),
+        "email": payload.get("email"),
     }
 
 

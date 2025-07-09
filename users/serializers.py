@@ -7,11 +7,11 @@ from .utils import normalize_mbti
 
 # 소셜 로그인(회원가입)
 class SocialLoginSerializer(serializers.Serializer):
-    provider: str = serializers.ChoiceField(
-        choices=[("kakao", "KAKAO"), ("google", "GOOGLE")]
+    provider = serializers.ChoiceField(
+        choices=[("kakao", "KAKAO"), ("google", "GOOGLE"), ("apple", "APPLE")]
     )
-    code: str = serializers.CharField(required=False, allow_blank=True)
-    access_token: str = serializers.CharField(required=False, allow_blank=True)
+    code = serializers.CharField(required=False, allow_blank=True)
+    access_token = serializers.CharField(required=False, allow_blank=True)
 
     # code or access_token 중 하나만 필수
 
