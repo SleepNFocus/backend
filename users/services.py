@@ -19,6 +19,8 @@ from .utils import (
     download_and_save_profile_image,
     generate_jwt_token_pair,
     get_access_token_from_code,
+    get_apple_access_token_from_code,
+    decode_apple_id_token,
     get_google_user_info,
     get_kakao_user_info,
     normalize_profile_img,
@@ -134,11 +136,33 @@ class GoogleHandler(BaseSocialHandler):
         return social_id, email, nickname, profile_img
 
 
+# 애플 소셜 로그인 핸들러
+class AppleHandler(BaseSocialHandler):
+    def get_access_token(self, code=None, access_token=None):
+        # 애플은 code로 토큰 요청
+        if code:
+            return get_apple_access_token_from_code(code)
+        raise Exception("애플 로그인은 code가 필요합니다.")
+
+    def get_user_info(self, access_token_bundle):
+        # id_token에서 사용자 정보 추출
+        id_token = access_token_bundle.get("id_token")
+        return decode_apple_id_token(id_token)
+
+    def extract_user_fields(self, user_info):
+        social_id = str(user_info["id"])
+        email = user_info.get("email")
+        nickname = "애플유저"
+        profile_img = None
+        return social_id, email, nickname, profile_img
+
+
 # 소셜 로그인/자동 로그인 로직 처리
 class SocialLoginService:
     handlers = {
         "kakao": KakaoHandler(),
         "google": GoogleHandler(),
+        "apple": AppleHandler(),
     }
 
     # 소셜 로그인 처리 함수
