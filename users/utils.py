@@ -1,10 +1,10 @@
+import time
 from datetime import date, timedelta
 from urllib.request import urlopen
 
+import jwt
 import redis
 import requests
-import jwt
-import time
 from django.conf import settings
 from django.core.cache import cache
 from django.core.files.base import ContentFile
@@ -164,7 +164,7 @@ def get_google_user_info(access_token):
 
 # 애플 클라이언트 시크릿 생성
 def generate_apple_client_secret():
-    with open(settings.APPLE_PRIVATE_KEY_PATH, 'r') as f:
+    with open(settings.APPLE_PRIVATE_KEY_PATH, "r") as f:
         private_key = f.read()
 
     headers = {
@@ -212,7 +212,9 @@ def get_apple_access_token_from_code(code):
 
 # 애플 id_token에서 사용자 정보 추출
 def decode_apple_id_token(id_token):
-    payload = jwt.decode(id_token, options={"verify_signature": False, "verify_aud": False})
+    payload = jwt.decode(
+        id_token, options={"verify_signature": False, "verify_aud": False}
+    )
     return {
         "id": payload.get("sub"),
         "email": payload.get("email"),

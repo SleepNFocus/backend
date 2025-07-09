@@ -16,11 +16,11 @@ from sleep_record.models import SleepRecord
 from .models import User, UserBlacklist, UserStatus
 from .utils import (
     daterange,
+    decode_apple_id_token,
     download_and_save_profile_image,
     generate_jwt_token_pair,
     get_access_token_from_code,
     get_apple_access_token_from_code,
-    decode_apple_id_token,
     get_google_user_info,
     get_kakao_user_info,
     normalize_profile_img,
