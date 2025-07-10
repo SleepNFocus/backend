@@ -210,7 +210,7 @@ class CognitiveResultDailySummaryAPIView(APIView):
         )
 
         for session in sessions:
-            date_str = session.started_at.date().isoformat()
+            date_str = timezone.localtime(session.started_at).date().isoformat()
 
             srt = CognitiveResultSRT.objects.filter(cognitive_session=session).first()
             if srt:
