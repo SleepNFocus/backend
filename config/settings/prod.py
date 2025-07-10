@@ -8,6 +8,7 @@ ALLOWED_HOSTS = [
     "www.focusz.site",  # *.focusz.site 전부 허용
     "dev.focusz.site",
     "www.dev.focusz.site",
+    '43.200.57.10',
 ]
 
 # 배포 환경에서는 CORS를 제한적으로 허용
