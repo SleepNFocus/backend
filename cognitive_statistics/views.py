@@ -31,9 +31,9 @@ class CognitiveTestResultBasicAPIView(generics.ListAPIView):
     serializer_class = CognitiveTestResultDetailedSerializer
 
     def get_queryset(self):
-        today = datetime.today().date()
-        start = datetime.combine(today, time.min)  # 00:00:00
-        end = datetime.combine(today + timedelta(days=1), time.min)  # 다음날 00:00:00
+        today = timezone.localdate()  # 타임존이 적용된 오늘 날짜
+        start = timezone.make_aware(datetime.combine(today, time.min))  # 00:00:00 타임존 적용된 datetime
+        end = timezone.make_aware(datetime.combine(today + timedelta(days=1), time.min))  # 다음날 00:00:00 타임존 적용된 datetime
 
         return CognitiveTestResult.objects.filter(
             user=self.request.user,
