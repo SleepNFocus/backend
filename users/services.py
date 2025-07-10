@@ -5,6 +5,8 @@ from django.db import transaction
 from django.db.models import Avg, Sum
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
+import pytz
+
 
 from cognitive_statistics.models import (
     CognitiveResultPattern,
@@ -31,6 +33,12 @@ from .utils import (
 # 유저 상태 관련 예외 처리용
 class UserStatusException(Exception):
     pass
+
+
+def get_today_seoul_date():
+    utc_now = timezone.now()
+    seoul_tz = pytz.timezone('Asia/Seoul')
+    return utc_now.astimezone(seoul_tz).date()
 
 
 def get_or_create_active_user(provider, social_id, email, nickname, profile_img):
@@ -199,7 +207,7 @@ def get_mypage_main_data(user, request):
 
     # 가입일 기준으로 tracking_days 계산
     joined_date = user.joined_at.date() if user.joined_at else date.today()
-    today = timezone.now().date()
+    today = get_today_seoul_date()
     tracking_days = (today - joined_date).days + 1
 
     # 수면 기록
@@ -214,7 +222,7 @@ def get_mypage_main_data(user, request):
     average_sleep_score = round(avg_score, 1) if avg_score is not None else 0.0
 
     # 90일치 일별 인지 점수(평균)
-    today = timezone.now().date()
+    today = get_today_seoul_date()
     start_date = today - timedelta(days=89)
     end_date = today
     cognitive_scores = get_daily_cognitive_scores(user, start_date, end_date)
@@ -308,7 +316,7 @@ def get_sleep_records(user, start_date, end_date):
 
 # 최근 90일간 일별 수면/인지 기록 리스트 조회
 def get_record_day_list(user):
-    today = timezone.now().date()
+    today = get_today_seoul_date()
     start_date, end_date = today - timedelta(days=89), today  # 최근 90일 범위
 
     sleep_records = get_sleep_records(user, start_date, end_date)  # 날짜별 수면기록
@@ -346,7 +354,7 @@ def get_record_day_list(user):
 
 # 최근 4주간 주별 수면/인지 기록 리스트 조회
 def get_record_week_list(user):
-    today = timezone.now().date()
+    today = get_today_seoul_date()
     start_date, end_date = today - timedelta(weeks=3), today  # 최근 4주 범위
 
     sleep_records = get_sleep_records(user, start_date, end_date)  # 날짜별 수면기록
@@ -408,7 +416,7 @@ def get_record_week_list(user):
 
 # 최근 12개월간 월별 수면/인지 기록 리스트 조회
 def get_record_month_list(user):
-    today = timezone.now().date()
+    today = get_today_seoul_date()
     results = []
 
     for i in range(12):
