@@ -153,13 +153,9 @@ class AppleHandler(BaseSocialHandler):
         social_id = str(user_info["id"])
         email = user_info.get("email")
 
-        # 최초 로그인 시에만 전달되는 이름
-        first_name = user_info.get("first_name")
-        last_name = user_info.get("last_name")
-
-        if first_name and last_name:
-            nickname = f"{last_name}{first_name}"
-        else:
+        # nickname이 있는 경우 사용하고, 없으면 기본값으로 설정
+        nickname = user_info.get("nickname")
+        if not nickname:
             nickname = "애플유저"
         profile_img = None
         return social_id, email, nickname, profile_img
