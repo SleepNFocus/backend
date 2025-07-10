@@ -8,6 +8,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+import pytz
 
 from cognitives.models import CognitiveProblem
 
@@ -210,7 +211,8 @@ class CognitiveResultDailySummaryAPIView(APIView):
         )
 
         for session in sessions:
-            date_str = timezone.localtime(session.started_at).date().isoformat()
+            seoul_tz = pytz.timezone("Asia/Seoul")
+            date_str = session.started_at.astimezone(seoul_tz).date().isoformat()
 
             srt = CognitiveResultSRT.objects.filter(cognitive_session=session).first()
             if srt:
