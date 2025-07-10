@@ -193,6 +193,11 @@ def generate_apple_client_secret():
 
 # 애플 인가 코드로 access_token, id_token 받기
 def get_apple_access_token_from_code(code):
+    print("[Apple 디버깅] 토큰 요청 시작")
+    print("client_id:", settings.APPLE_CLIENT_ID)
+    print("redirect_uri:", settings.APPLE_REDIRECT_URI)
+    print("code:", code)
+
     resp = requests.post(
         "https://appleid.apple.com/auth/token",
         data={
