@@ -244,6 +244,8 @@ class CognitiveResultDailySummaryAPIView(APIView):
 
         result = []
         for date, data in sorted(daily_summary.items()):
+            print("API date output:", date)
+
             srt_scores = data["srt"]["scores"]
             srt_avg_ms = data["srt"]["avg_ms"]
 
