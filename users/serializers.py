@@ -12,6 +12,7 @@ class SocialLoginSerializer(serializers.Serializer):
     )
     code = serializers.CharField(required=False, allow_blank=True)
     access_token = serializers.CharField(required=False, allow_blank=True)
+    name = serializers.CharField(required=False, allow_blank=True)
 
     # code or access_token 중 하나만 필수
 

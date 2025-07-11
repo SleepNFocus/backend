@@ -1,12 +1,11 @@
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 
+import pytz
 from django.db import transaction
 from django.db.models import Avg, Sum
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
-import pytz
-
 
 from cognitive_statistics.models import (
     CognitiveResultPattern,
@@ -37,7 +36,7 @@ class UserStatusException(Exception):
 
 def get_today_seoul_date():
     utc_now = timezone.now()
-    seoul_tz = pytz.timezone('Asia/Seoul')
+    seoul_tz = pytz.timezone("Asia/Seoul")
     return utc_now.astimezone(seoul_tz).date()
 
 
@@ -146,21 +145,23 @@ class GoogleHandler(BaseSocialHandler):
 
 # 애플 소셜 로그인 핸들러
 class AppleHandler(BaseSocialHandler):
-    def get_access_token(self, code=None, access_token=None):
+    def get_access_token(self, code=None, access_token=None, name=None):
         # 애플은 code로 토큰 요청
         if code:
             return get_apple_access_token_from_code(code)
         raise Exception("애플 로그인은 code가 필요합니다.")
 
-    def get_user_info(self, access_token_bundle):
+    def get_user_info(self, access_token_bundle, name=None):
         # id_token에서 사용자 정보 추출
         id_token = access_token_bundle.get("id_token")
-        return decode_apple_id_token(id_token)
+        user_info = decode_apple_id_token(id_token)
+        if name:
+            user_info["nickname"] = name
+        return user_info
 
     def extract_user_fields(self, user_info):
         social_id = str(user_info["id"])
         email = user_info.get("email")
-
         # nickname이 있는 경우 사용하고, 없으면 기본값으로 설정
         nickname = user_info.get("nickname")
         if not nickname:
@@ -179,13 +180,18 @@ class SocialLoginService:
 
     # 소셜 로그인 처리 함수
     @classmethod
-    def social_login(cls, provider, code=None, access_token=None):
+    def social_login(cls, provider, code=None, access_token=None, name=None):
         handler = cls.handlers.get(provider)
         if not handler:
             raise Exception("지원하지 않는 provider")
 
-        access_token = handler.get_access_token(code, access_token)
-        user_info = handler.get_user_info(access_token)
+        if provider == "apple":
+            access_token_bundle = handler.get_access_token(code, access_token)
+            user_info = handler.get_user_info(access_token_bundle, name)
+        else:
+            access_token = handler.get_access_token(code, access_token)
+            user_info = handler.get_user_info(access_token)
+
         social_id, email, nickname, profile_img = handler.extract_user_fields(user_info)
 
         user = get_or_create_active_user(

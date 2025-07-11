@@ -176,3 +176,8 @@ media/
 
 # VSCode settings
 .vscode/
+
+# logs (Django, custom, etc)
+logs/
+config/logs/
+*.log

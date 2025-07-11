@@ -44,10 +44,11 @@ class SocialLoginView(APIView):
         provider = serializer.validated_data["provider"]
         code = serializer.validated_data.get("code")
         access_token = serializer.validated_data.get("access_token")
+        name = serializer.validated_data.get("name")
 
         try:
             tokens, user = SocialLoginService.social_login(
-                provider=provider, code=code, access_token=access_token
+                provider=provider, code=code, access_token=access_token, name=name
             )
         except Exception as e:
             # 함수로 에러 메세지 반환

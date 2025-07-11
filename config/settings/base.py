@@ -187,30 +187,30 @@ if SENTRY_DSN:
     )
 
 
-LOG_DIR = os.path.join(BASE_DIR, 'logs')  # /home/ubuntu/backend/logs
+LOG_DIR = os.path.join(BASE_DIR, "logs")  # /home/ubuntu/backend/logs
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '[{asctime}] {levelname} {name} - {message}',
-            'style': '{',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{asctime}] {levelname} {name} - {message}",
+            "style": "{",
         },
     },
-    'handlers': {
-        'file': {
-            'level': 'ERROR',  # WARNING 또는 DEBUG로도 가능
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(LOG_DIR, 'django.error.log'),
-            'formatter': 'verbose',
+    "handlers": {
+        "file": {
+            "level": "ERROR",  # WARNING 또는 DEBUG로도 가능
+            "class": "logging.FileHandler",
+            "filename": os.path.join(LOG_DIR, "django.error.log"),
+            "formatter": "verbose",
         },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'ERROR',
-            'propagate': True,
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "ERROR",
+            "propagate": True,
         },
     },
 }
