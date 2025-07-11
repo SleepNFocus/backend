@@ -26,6 +26,7 @@ def validate_birth_year(value):
 class SocialType(models.TextChoices):
     KAKAO = "KAKAO"
     GOOGLE = "GOOGLE"
+    APPLE = "APPLE"
 
 
 class Gender(models.TextChoices):
