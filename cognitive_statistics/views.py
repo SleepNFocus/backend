@@ -37,7 +37,6 @@ class CognitiveTestResultBasicAPIView(generics.ListAPIView):
             timestamp__date=today,
         ).order_by("-timestamp")
 
-
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
 
@@ -210,7 +209,9 @@ class CognitiveResultDailySummaryAPIView(APIView):
         )
 
         for session in sessions:
-            local_dt = timezone.localtime(session.started_at)  # settings.TIME_ZONE 기준으로 변환
+            local_dt = timezone.localtime(
+                session.started_at
+            )  # settings.TIME_ZONE 기준으로 변환
             date_str = local_dt.date().isoformat()
 
             srt = CognitiveResultSRT.objects.filter(cognitive_session=session).first()

@@ -1,12 +1,11 @@
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 
+import pytz
 from django.db import transaction
 from django.db.models import Avg, Sum
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
-import pytz
-
 
 from cognitive_statistics.models import (
     CognitiveResultPattern,
@@ -37,7 +36,7 @@ class UserStatusException(Exception):
 
 def get_today_seoul_date():
     utc_now = timezone.now()
-    seoul_tz = pytz.timezone('Asia/Seoul')
+    seoul_tz = pytz.timezone("Asia/Seoul")
     return utc_now.astimezone(seoul_tz).date()
 
 
@@ -194,7 +193,6 @@ class SocialLoginService:
             user_info = handler.get_user_info(access_token)
 
         social_id, email, nickname, profile_img = handler.extract_user_fields(user_info)
-
 
         user = get_or_create_active_user(
             provider, social_id, email, nickname, profile_img
