@@ -91,8 +91,16 @@ def generate_ai_recommendation(user, date_str):
         date=str(sleep.date),
     )
 
-    genai.configure(api_key=settings.GOOGLE_GENAI_API_KEY)
-    model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
-    response = model.generate_content(prompt)
+    try:
+        genai.configure(api_key=settings.GOOGLE_GENAI_API_KEY)
+        model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
+        response = model.generate_content(prompt)
+        return {"recommendation": response.text}
 
-    return {"recommendation": response.text}
+    except GoogleAPIError as e:
+        logger.error(f"[AI] Google Gemini API Error: {e}")
+        return {"error": "AI 추천 생성에 실패했습니다. 잠시 후 다시 시도해주세요."}
+
+    except Exception as e:
+        logger.exception(f"[AI] 예기치 못한 오류: {e}")
+        return {"error": "서버 오류로 AI 추천을 가져오지 못했습니다."}
