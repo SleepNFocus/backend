@@ -29,6 +29,7 @@ from .utils import (
     weekrange,
 )
 
+
 # 유저 상태 관련 예외 처리용
 class UserStatusException(Exception):
     pass
