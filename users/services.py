@@ -29,7 +29,6 @@ from .utils import (
     weekrange,
 )
 
-log = logging.getLogger("users")
 
 
 # 유저 상태 관련 예외 처리용
@@ -160,8 +159,6 @@ class AppleHandler(BaseSocialHandler):
         user_info = decode_apple_id_token(id_token)
         if name:
             user_info["nickname"] = name
-
-        log.info(f"🍎 Apple ID Token decode 결과: {user_info}")
         return user_info
 
     def extract_user_fields(self, user_info):
