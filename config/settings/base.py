@@ -200,17 +200,26 @@ LOGGING = {
     },
     "handlers": {
         "file": {
-            "level": "ERROR",  # WARNING 또는 DEBUG로도 가능
+            "level": "DEBUG",  # WARNING 또는 DEBUG로도 가능
             "class": "logging.FileHandler",
             "filename": os.path.join(LOG_DIR, "django.error.log"),
             "formatter": "verbose",
         },
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "root": {  # 전체 앱 공통 적용
+        "handlers": ["file", "console"],
+        "level": "DEBUG",
     },
     "loggers": {
         "django": {
-            "handlers": ["file"],
-            "level": "ERROR",
-            "propagate": True,
+            "handlers": ["file", "console"],
+            "level": "DEBUG",
+            "propagate": False,
         },
     },
 }
