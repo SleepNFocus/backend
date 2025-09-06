@@ -37,6 +37,7 @@ class SocialLoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):
+        print("프론트에서 보낸 값:", request.data)
         # serializer로 데이터 검사
         serializer = SocialLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
