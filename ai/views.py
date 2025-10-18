@@ -12,7 +12,7 @@ class AIRecommendContentView(APIView):
         date = request.query_params.get("date")
 
         if not date:
-            return Response({"detail": "날짜를 입력해주세요 (YYYY-MM-DD)"}, status=400)
+            return Response({"detail": "날짜를 입력해주세요!! (YYYY-MM-DD)"}, status=400)
 
         result = generate_ai_recommendation(request.user, date)
 
